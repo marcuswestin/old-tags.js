@@ -1,0 +1,17 @@
+{
+  "author": "Marcus Westin <narcvs@gmail.com> (http://marcuswest.in)",
+  "name": "tags",
+  "description": "A small, fast & standalone convenience library for building dom.",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/marcuswestin/tags.js.git"
+  },
+  "main": "tags.js",
+  "engines": {
+    "node": ">0.4.x"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {}
+}
