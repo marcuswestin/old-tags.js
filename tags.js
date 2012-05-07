@@ -1,15 +1,20 @@
-;(function() {
-	var global = this
+;(function(global) {
+	
+	var create = (typeof Object.create == 'function'
+		? function nativeCreate(protoObj) { return Object.create(protoObj) }
+		: function shimCreate(protoObj) { function F(){}; F.prototype = protoObj; return new F() }
+	)
 	
 	var tags = {
-		create: function(tagName, overrideRender) {
-			var F = function(args) {
-				this._args = slice(args)
-				this._tag = tagName
-				if (overrideRender) { this._renderTag = overrideRender }
+		create: create,
+		createTag: function(tagName, render) {
+			return function tagCreator() {
+				var instance = tags.create(tagsProto)
+				instance.args = Array.prototype.slice.call(arguments)
+				instance.tagName = tagName
+				if (render) { instance.render = render }
+				return instance
 			}
-			F.prototype = tagPrototype
-			return function tagCreator() { return new F(arguments) }
 		},
 		style: function(styles) {
 			return { style:styles }
@@ -17,84 +22,64 @@
 		expose: function() {
 			var tagNames = 'div,span,img,a,p,h1,h2,h3,h4,h5,h6,ol,ul,li,iframe,buttom,input,textarea,form,label,br'.split(',')
 			for (var i=0, tagName; tagName=tagNames[i]; i++) {
-				global[tagName] = tags.create(tagName)
+				global[tagName] = tags.createTag(tagName)
 			}
-			global.raw = tags.create('span', function() {
+			global.raw = tags.createTag('span', function renderRawTag() {
 				var container = document.createElement('span')
-				container.innerHTML = slice(this._args).join(' ')
+				container.innerHTML = this.args.join(' ')
 				return container
 			})
 			global.style = tags.style
 		}
 	}
 	
-	var tagPrototype = {
-		appendTo:function appendTo(tag) {
-			(tag._el ? tag._el : tag).appendChild(this._renderTag())
-			return this
-		},
-		append:function append() {
-			if (this._el) {
-				this._processArgs(arguments, 0)
-			} else {
-				this._args = this._args.concat(slice(arguments))
-			}
-			return this
-		},
-		_renderTag:function _renderTag() {
-			this._el = document.createElement(this._tag)
-			var args = this._args
+	var tagsProto = {
+		__isTag:true,
+		render:function renderTag() {
+			if (this.el) { return this.el }
+			this.el = document.createElement(this.tagName)
+			var args = this.args
 			var index = 0
 			if (typeof args[0] == 'string') {
-				this._el.className = args[0]
+				this.el.className = args[0]
 				index = 1
 			}
-			this._processArgs(this._args, 1)
-			return this._el
+			this._processArgs(args, index)
+			return this.el
 		},
-		_processArgs:function _processArgs(args, index) {
+		_processArgs:function _processTagArgs(args, index) {
 			while (index < args.length) {
 				this._processArg(args[index++])
 			}
 		},
-		_processArg:function _processArg(arg) {
+		_processArg:function _processTagArg(arg) {
 			if (arg == null) { return } // null & undefined
-			var el = this._el
+			var el = this.el
 			var type = typeof arg
-			if (arg._renderTag) {
-				el.appendChild(arg._renderTag())
+			if (arg.__isTag) {
+				el.appendChild(arg.render())
 			} else if (type == 'string' || type == 'number') {
 				el.appendChild(document.createTextNode(arg))
 			// http://stackoverflow.com/questions/120262/whats-the-best-way-to-detect-if-a-given-javascript-object-is-a-dom-element
 			} else if (arg.nodeType && arg.nodeType == 1) {
 				el.appendChild(arg)
-			} else if (isArray(arg)) {
+			} else if ($.isArray(arg)) {
 				this._processArgs(arg, 0)
 			} else if (type == 'function') {
-				arg.call(this)
+				arg.call(el, this)
 			} else {
 				for (var key in arg) {
 					if (!arg.hasOwnProperty(key)) { continue }
 					var val = arg[key]
-					if (key == 'for') {
-						el.setAttribute(key, val)
-					} else if (key == 'style') {
+					if (key == 'style') {
 						for (var styleKey in val) { setStyle(el, styleKey, val[styleKey]) }
 					} else {
-						el[key] = val
+						el.setAttribute(key, val)
 					}
 				}
 			}
 		}
 	}
-	
-	// Adapted from https://gist.github.com/1034882
-	var isArray = Array.isArray || function isArray(arr) {
-		return '' + a !== a // is not the string '[object Array]' and
-				&& {}.toString.call(a) == '[object Array]' // test with Object.prototype.toString
-	}
-	
-	var slice = function(args) { return [].slice.call(args) }
 	
 	var setStyle = function(el, name, val) {
 		if (typeof val == 'number' && name != 'opacity') { val += 'px' }
@@ -104,5 +89,33 @@
 	
 	if (typeof module != 'undefined' && typeof module != 'function') { module.exports = tags }
 	else if (typeof define === 'function' && define.amd) { define(tags) }
-	else { this.tags = tags }
-})()
+	else { global.tags = tags }
+
+	function enableJQueryTags() {
+		function processJqueryArgs(args) {
+			if (!args) { return args }
+			for (var i=0; i<args.length; i++) {
+				if (args[i] && args[i].__isTag) {
+					args[i] = args[i].render()
+				}
+			}
+			return args
+		}
+		
+		var originalInit = $.fn.init
+		$.fn.init = function() {
+			return originalInit.apply(this, processJqueryArgs(arguments))
+		}
+		$.fn.init.prototype = originalInit.prototype
+		
+		var originalDomManip = $.fn.domManip
+		$.fn.domManip = function() {
+			arguments[0] = processJqueryArgs(arguments[0])
+			return originalDomManip.apply(this, arguments)
+		}
+		$.fn.domManip.prototype = originalDomManip.prototype
+	}
+	
+	if (typeof $ != 'undefined') { enableJQueryTags() }
+	
+})(this)
