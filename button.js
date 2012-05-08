@@ -2,7 +2,7 @@ var Rect = require('std/math/Rect')
 
 var dataMap = { id:0 }
 
-var button = module.exports = function button(data, callback) {
+var button = tags.button = function button(data, callback) {
 	return function() {
 		var id = dataMap.id++
 		if (callback) {

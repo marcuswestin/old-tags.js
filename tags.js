@@ -5,8 +5,17 @@
 		: function shimCreate(protoObj) { function F(){}; F.prototype = protoObj; return new F() }
 	)
 	
+	var isTouch
+	try {
+		document.createEvent("TouchEvent")
+		isTouch = ('ontouchstart' in window)
+	} catch (e) {
+		isTouch = false
+	}
+	
 	var tags = {
 		create: create,
+		isTouch:isTouch,
 		createTag: function(tagName, render) {
 			return function tagCreator() {
 				var instance = tags.create(tagsProto)
@@ -87,16 +96,15 @@
 		el.style[name] = val
 	}
 	
-	if (typeof module != 'undefined' && typeof module != 'function') { module.exports = tags }
-	else if (typeof define === 'function' && define.amd) { define(tags) }
-	else { global.tags = tags }
-
-	function enableJQueryTags() {
+	function enableJQueryTags($) {
 		function processJqueryArgs(args) {
 			if (!args) { return args }
 			for (var i=0; i<args.length; i++) {
-				if (args[i] && args[i].__isTag) {
+				if (!args[i]) { continue }
+				if (args[i].__isTag) {
 					args[i] = args[i].render()
+				} else if ($.isArray(args[i])) {
+					args[i] = processJqueryArgs(args[i])
 				}
 			}
 			return args
@@ -111,11 +119,13 @@
 		var originalDomManip = $.fn.domManip
 		$.fn.domManip = function() {
 			arguments[0] = processJqueryArgs(arguments[0])
-			return originalDomManip.apply(this, arguments)
+			return originalDomManip.apply(this, processJqueryArgs(arguments))
 		}
 		$.fn.domManip.prototype = originalDomManip.prototype
 	}
 	
-	if (typeof $ != 'undefined') { enableJQueryTags() }
+	if (typeof jQuery != 'undefined') { enableJQueryTags(jQuery) }
+	
+	global.tags = tags
 	
 })(this)
