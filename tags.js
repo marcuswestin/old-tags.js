@@ -21,7 +21,7 @@
 				var instance = tags.create(tagsProto)
 				instance.args = Array.prototype.slice.call(arguments)
 				instance.tagName = tagName
-				if (render) { instance.render = render }
+				if (render) { instance.__render = render }
 				return instance
 			}
 		},
@@ -44,7 +44,7 @@
 	
 	var tagsProto = {
 		__isTag:true,
-		render:function renderTag() {
+		__render:function renderTag() {
 			if (this.el) { return this.el }
 			this.el = document.createElement(this.tagName)
 			var args = this.args
@@ -53,27 +53,27 @@
 				this.el.className = args[0]
 				index = 1
 			}
-			this._processArgs(args, index)
+			this.__processArgs(args, index)
 			return this.el
 		},
-		_processArgs:function _processTagArgs(args, index) {
+		__processArgs:function processTagArgs(args, index) {
 			while (index < args.length) {
-				this._processArg(args[index++])
+				this.__processArg(args[index++])
 			}
 		},
-		_processArg:function _processTagArg(arg) {
+		__processArg:function processTagArg(arg) {
 			if (arg == null) { return } // null & undefined
 			var el = this.el
 			var type = typeof arg
 			if (arg.__isTag) {
-				el.appendChild(arg.render())
+				el.appendChild(arg.__render())
 			} else if (type == 'string' || type == 'number') {
 				el.appendChild(document.createTextNode(arg))
 			// http://stackoverflow.com/questions/120262/whats-the-best-way-to-detect-if-a-given-javascript-object-is-a-dom-element
 			} else if (arg.nodeType && arg.nodeType == 1) {
 				el.appendChild(arg)
 			} else if ($.isArray(arg)) {
-				this._processArgs(arg, 0)
+				this.__processArgs(arg, 0)
 			} else if (type == 'function') {
 				arg.call(el, this)
 			} else {
@@ -102,7 +102,7 @@
 			for (var i=0; i<args.length; i++) {
 				if (!args[i]) { continue }
 				if (args[i].__isTag) {
-					args[i] = args[i].render()
+					args[i] = args[i].__render()
 				} else if ($.isArray(args[i])) {
 					args[i] = processJqueryArgs(args[i])
 				}

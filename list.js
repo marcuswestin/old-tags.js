@@ -1,17 +1,25 @@
 var list = tags.list = function list(items, onSelect, render) {
-	return div(list.className, function(tag) {
-		list.init($(tag), items, onSelect, render)
-	})
-}
-
-list.init = function($tag, items, onSelect, render) {
 	var data = { id:0 }
-	$tag.append($.map(items, function(item) {
+	var $tag
+	function renderListItem(item) {
 		var id = data.id++
 		data[id] = item
 		return div('list-item', { 'listId':id }, render(item))
-	}))
+	}
 	
+	var result = div(list.className, function(tag) {
+		$tag = $(tag)
+		list.init($tag, data, onSelect)
+		$tag.append($.map(items, renderListItem))
+	})
+	
+	result.append = function(item) { $tag.append(renderListItem(item)) }
+	result.prepend = function(item) { $tag.prepend(renderListItem(item)) }
+	
+	return result
+}
+
+list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
 		$tag.on('click', '.list-item', function(event) {
 			onSelect(data[$(this).attr('listId')])
