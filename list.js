@@ -10,7 +10,7 @@ var list = tags.list = function list(items, onSelect, render) {
 	var result = div(list.className, function(tag) {
 		$tag = $(tag)
 		list.init($tag, data, onSelect)
-		$tag.append($.map(items, renderListItem))
+		$tag.append($.map(items || [], renderListItem))
 	})
 	
 	result.append = function(item) { $tag.append(renderListItem(item)) }
