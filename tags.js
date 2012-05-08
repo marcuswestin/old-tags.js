@@ -70,6 +70,8 @@
 				this.__processArgs(arg, 0)
 			} else if (type == 'function') {
 				arg.call(el, this)
+			} else if (arg instanceof jQuery) {
+				this.__processArgs(arg, 0)
 			} else {
 				for (var key in arg) {
 					if (!arg.hasOwnProperty(key)) { continue }
