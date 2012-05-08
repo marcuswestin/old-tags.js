@@ -33,12 +33,6 @@
 			for (var i=0, tagName; tagName=tagNames[i]; i++) {
 				global[tagName] = tags.createTag(tagName)
 			}
-			global.raw = tags.createTag('span', function renderRawTag() {
-				var container = document.createElement('span')
-				container.innerHTML = this.args.join(' ')
-				return container
-			})
-			global.style = tags.style
 		}
 	}
 	
