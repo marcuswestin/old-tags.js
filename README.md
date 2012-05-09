@@ -128,10 +128,10 @@ Tags comes with a bunch of convenient addons
 	<style type="text/css">
 		/* Buttons get the "active" class applied to them during mousedown/touchdown */
 		.button {
-			border 4px solid #def; padding 5px; border-radius 10px;
+			border:4px solid #def; padding:5px; border-radius:10px; display:inline-block;
 		}
 		.button.active {
-			background #789;
+			background:#567; color:#fff;
 		}
 	</style>
 
@@ -166,19 +166,26 @@ Custom add-ons
 
 Custom add-ons is easy - just return a function! This one gives a div a random color
 
-	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-	<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
-	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
-	<script>
-	$(function() {
-		tags.expose()
-		var randomColor = function($tag) {
-			var colors = []
-			for (var i=0; i<3; i++) {
-				colors.push(Math.floor(Math.random() * 255))
-			}
-			$tag.css({ background:'rgb('+colors.join(',')+')' })
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
+<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
+<script>
+$(function() {
+	tags.expose()
+	var randomColor = function($tag) {
+		var colors = []
+		for (var i=0; i<3; i++) {
+			colors.push(Math.floor(Math.random() * 255))
 		}
-		$(div(randomColor, style({ width:100, height:100 }))).appendTo(document.body)
-	})
-	</script>
+		$tag.css({ background:'rgb('+colors.join(',')+')' })
+	}
+	var square = style({ width:100, height:100 })
+	$(document.body).append(div(
+		div(randomColor, square),
+		div(randomColor, square),
+		div(randomColor, square)
+	))
+})
+</script>
+
