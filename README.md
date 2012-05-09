@@ -57,7 +57,7 @@ Add-ons
 
 Tags comes with a bunch of convenient addons
 
-style.js - convenience function for adding styles to tags
+`tags/style.js` - convenience function for adding styles to tags
 
 	style = tags.style
 	var $body = $(document.body)
@@ -73,7 +73,7 @@ style.js - convenience function for adding styles to tags
 		)
 	)
 
-button.js - make an element into a button (both for mouse and touch based devices)
+`tags/button.js` - make an element into a button (both for mouse and touch based devices)
 
 	<script>
 		$body = $(document.body)
@@ -91,7 +91,7 @@ button.js - make an element into a button (both for mouse and touch based device
 		}
 	</style>
 
-list.js - create a lists of tappable items
+`tags/list.js` - create a lists of tappable items
 
 	list = tags.list
 	var $body = $(document.body)
