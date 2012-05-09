@@ -75,21 +75,10 @@
 			} else {
 				for (var key in arg) {
 					if (!arg.hasOwnProperty(key)) { continue }
-					var val = arg[key]
-					if (key == 'style') {
-						for (var styleKey in val) { setStyle(el, styleKey, val[styleKey]) }
-					} else {
-						el.setAttribute(key, val)
-					}
+					el.setAttribute(key, arg[key])
 				}
 			}
 		}
-	}
-	
-	var setStyle = function(el, name, val) {
-		if (typeof val == 'number' && name != 'opacity') { val += 'px' }
-		else if (name == 'float') { name = 'cssFloat' }
-		el.style[name] = val
 	}
 	
 	function enableJQueryTags($) {
