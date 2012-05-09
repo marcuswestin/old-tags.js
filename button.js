@@ -1,4 +1,26 @@
-var Rect = require('std/math/Rect')
+var rectProto = {
+	init: function(x, y, width, height) {
+		this.x = x
+		this.y = y
+		this.x2 = x + width
+		this.y2 = y + height
+		return this
+	},
+	pad: function(amount) {
+		this.x -= amount
+		this.y -= amount
+		this.x2 += amount
+		this.y2 += amount
+	},
+	containsPoint: function(point) {
+		return this.x < point.x && point.x < this.x2
+			&& this.y < point.y && point.y < this.y2
+	}
+}
+
+function makeRect(x, y, width, height) {
+	return tags.create(rect).init(x, y, width, height)
+}
 
 var dataMap = { id:0 }
 
@@ -81,7 +103,7 @@ var buttons = {
 		event.preventDefault()
 		
 		var offset = $el.offset()
-		$el.data('touchRect', new Rect(offset.left, offset.top, $el.width(), $el.height()).pad(22))
+		$el.data('touchRect', makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(22))
 		
 		setActive($el)
 		cb.call(event.target, $el)

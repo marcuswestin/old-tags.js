@@ -58,8 +58,8 @@ Some more tricks
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<script>
 	$(function() {
+		tags.expose()
 		$(document.body).append(
-			tags.expose()
 			div('demo',
 				// Text and number simply get rendered as text
 				"Hello number ", 5,
@@ -102,7 +102,7 @@ Tags comes with a bunch of convenient addons
 		var large = style({ fontSize:20, height:40 })
 		$body.append(
 			div('greeting', bold,
-				span('header', 'Hello', bold)
+				span('header', 'Hello', bold),
 				span('person', "Marcus", bold, floatingItalic),
 				span('person', "Thomas", large, floatingItalic)
 			)
