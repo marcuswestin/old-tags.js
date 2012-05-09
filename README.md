@@ -16,6 +16,7 @@ Creating DOM is easy!
 	var task = { title:"Build dom creating library for jQuery", assignee:"Marcus", done:true }
 	$tasks.append(
 		div('task',
+			// if the first argument is a string, it will be set as the class name of the element
 			div('title', task.title),
 			div('asignee', task.assignee),
 			div('status', task.done ? 'Completed!' : 'Not done')
@@ -23,29 +24,36 @@ Creating DOM is easy!
 	)
 		
 
-Some more detail
-
-	div('demo',
-		// if the first argument is a string, it will be set as the class name of the element
-		div('greeting', "Hello world!"),
-		div('greeting', "Hello Marcus!"),
-		// Text and number simply get rendered as text
-		"Hello number ", 5,
-		div('list people',
-			// arrays of items all get appended to the parent element
-			$.map(['Marcus', 'John', 'Thomas'], function(name) {
-				return div('person', name)
-			})
-		)
-	)
-
-jQuery automatically operates on tags
+jQuery automatically operates on DOM created with tags
 
 	var $person = $(div('person', 'Hello Marcus')).appendTo(document.body)
 	$person.css('color', 'red')	
 
-Addons
-------
+Some more tricks
+
+	$(document.body).append(
+		div('demo',
+			// Text and number simply get rendered as text
+			"Hello number ", 5,
+			div('list people',
+				// arrays of items all get appended to the parent element
+				$.map(['Marcus', 'John', 'Thomas'], function(name) {
+					return div('person', name)
+				})
+			),
+			// functions get invoked when the tag is rendered, with the jquery-wrapped tag as its argument
+			function($tag) {
+				// Simulate loading data from server
+				var $data = $(div('loading', 'Loading...')).appendTo($tag)
+				setTimeout(function() {
+					$data.empty().append('Data retrieved from server')
+				}, 1000)
+			}
+		)
+	)
+
+Add-ons
+-------
 
 Tags comes with a bunch of convenient addons
 
@@ -101,3 +109,15 @@ list.js - create a lists of tappable items
 	}
 	// Add another item to the list
 	peopleList.append({ name:'Paul' })
+
+Custom add-ons is easy - just return a function! This one gives a div a random color
+
+	var style = tags.style
+	var randomColor = function($tag) {
+		var colors = []
+		for (var i=0; i<3; i++) {
+			colors.push(Math.floor(Math.random() * 255))
+		}
+		$tag.css({ background:'rgb('+colors.join(',')+')' })
+	}
+	$(div(randomColor, style({ width:100, height:100 }))).appendTo(document.body)
