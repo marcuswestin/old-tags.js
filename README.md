@@ -110,6 +110,9 @@ list.js - create a lists of tappable items
 	// Add another item to the list
 	peopleList.append({ name:'Paul' })
 
+Custom add-ons
+--------------
+
 Custom add-ons is easy - just return a function! This one gives a div a random color
 
 	var style = tags.style
