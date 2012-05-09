@@ -19,7 +19,7 @@ var rectProto = {
 }
 
 function makeRect(x, y, width, height) {
-	return tags.create(rect).init(x, y, width, height)
+	return tags.create(rectProto).init(x, y, width, height)
 }
 
 var dataMap = { id:0 }
