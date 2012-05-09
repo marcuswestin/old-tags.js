@@ -57,8 +57,8 @@ var onEnd = function(event, supressHandler) {
 	if (callback) {
 		callback.call(this, event, map.data)
 	}
-	if (module.exports.globalHandler) {
-		module.exports.globalHandler.call(this, event, id)
+	if (tags.button.globalHandler) {
+		tags.button.globalHandler.call(this, event, id)
 	}
 }
 
