@@ -25,16 +25,20 @@
 				return instance
 			}
 		},
-		style: function(styles) {
-			return { style:styles }
-		},
 		expose: function() {
 			var tagNames = 'div,span,img,a,p,h1,h2,h3,h4,h5,h6,ol,ul,li,iframe,buttom,input,textarea,form,label,br'.split(',')
 			for (var i=0, tagName; tagName=tagNames[i]; i++) {
 				global[tagName] = tags.createTag(tagName)
 			}
+			for (var key in tags) {
+				if (dontExpose[key] || !tags.hasOwnProperty(key)) { continue }
+				global[key] = tags[key]
+			}
 		}
 	}
+	
+	var dontExpose = {}
+	for (var key in tags) { dontExpose[key] = true }
 	
 	var tagsProto = {
 		__isTag:true,
