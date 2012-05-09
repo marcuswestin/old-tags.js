@@ -69,7 +69,7 @@
 			} else if ($.isArray(arg)) {
 				this.__processArgs(arg, 0)
 			} else if (type == 'function') {
-				arg.call(el, this)
+				arg.call(el, $(el))
 			} else if (arg instanceof jQuery) {
 				this.__processArgs(arg, 0)
 			} else {
