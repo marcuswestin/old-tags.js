@@ -1,8 +1,8 @@
 tags.js
 =======
 
-A small library for creating dom. Made to work with jQuery.
------------------------------------------------------------
+A ~100 line library for creating dom. Made to work with jQuery.
+---------------------------------------------------------------
 
 Setup
 
