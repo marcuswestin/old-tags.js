@@ -105,7 +105,7 @@ Tags comes with a bunch of convenient addons
 		var large = style({ fontSize:20, height:40 })
 		$('#tags-demo').append(
 			div('greeting', bold,
-				span('header', 'Hello', bold),
+				span('header', 'Hello', bold, style({ color:'green' })),
 				span('person', "Marcus", bold, floatingItalic),
 				span('person', "Thomas", large, floatingItalic)
 			)
