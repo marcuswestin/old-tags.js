@@ -4,14 +4,17 @@ tags.js
 A ~100 line library for creating dom. Made to work with jQuery.
 ---------------------------------------------------------------
 
+All of the examples below work by simply copying and pasting them into any html document.
+
 Setup
 
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose() // expose tag functions: div, span, p, h1, etc
-		$(document.body).append(
+		$('#tags-demo').append(
 			div('greeting', 'Hello world!')
 		)
 	})
@@ -21,10 +24,11 @@ Creating DOM is easy!
 
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
-		var $taskList = $(document.body)
+		var $taskList = $('#tags-demo')
 		var task = { title:"Build dom creating library for jQuery", assignee:"Marcus", done:true }
 		$taskList.append(
 			div('task',
@@ -41,14 +45,12 @@ jQuery automatically operates on DOM created with tags
 
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
-		var $body = $(document.body)
-		
-		var $person = $(div('person', 'Hello Marcus')).appendTo(document.body)
+		var $person = $(div('person', 'Hello Marcus')).appendTo($('#tags-demo'))
 		$person.css('color', 'red')
-		$body.append($person)
 	})
 	</script>
 
@@ -56,10 +58,11 @@ Some more tricks
 
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
-		$(document.body).append(
+		$('#tags-demo').append(
 			div('demo',
 				// Text and number simply get rendered as text
 				"Hello number ", 5,
@@ -92,18 +95,19 @@ Tags comes with a bunch of convenient addons
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
-		var $body = $(document.body)
 		var bold = style({ fontWeight:'bold' })
 		var floatingItalic = style({ 'float':'left', fontStyle:'italic' })
 		// numeric arguments automatically get postfixed with "px" 
-		$body.append(
-			div('greeting', bold, style({ fontSize:20, height:40 }),
+		var large = style({ fontSize:20, height:40 })
+		$('#tags-demo').append(
+			div('greeting', bold,
 				span('header', 'Hello', bold),
 				span('person', "Marcus", bold, floatingItalic),
-				span('person', "Thomas", floatingItalic)
+				span('person', "Thomas", large, floatingItalic)
 			)
 		)
 	})
@@ -114,6 +118,7 @@ Tags comes with a bunch of convenient addons
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/button.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
@@ -139,13 +144,13 @@ Tags comes with a bunch of convenient addons
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
-		var $body = $(document.body)
 		var people = [{ name:'Marcus' }, { name:'Thomas' }, { name:'Jon' }]
 		var peopleList
-		$body.append(
+		$('#tags-demo').append(
 			div('people',
 				peopleList=list(people, onSelect, function renderPerson(person) {
 					return div('person', person.name)
@@ -169,6 +174,7 @@ Custom add-ons is easy - just return a function! This one gives a div a random c
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
+	<div id="tags-demo"></div>
 	<script>
 	$(function() {
 		tags.expose()
@@ -180,10 +186,11 @@ Custom add-ons is easy - just return a function! This one gives a div a random c
 			$tag.css({ background:'rgb('+colors.join(',')+')' })
 		}
 		var square = style({ width:100, height:100 })
-		$(document.body).append(div(
+		$('#tags-demo').append(div(
 			div(randomColor, square),
 			div(randomColor, square),
 			div(randomColor, square)
 		))
 	})
 	</script>
+	
