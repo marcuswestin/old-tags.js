@@ -99,12 +99,11 @@ Tags comes with a bunch of convenient addons
 		var bold = style({ fontWeight:'bold' })
 		var floatingItalic = style({ 'float':'left', fontStyle:'italic' })
 		// numeric arguments automatically get postfixed with "px" 
-		var large = style({ fontSize:20, height:40 })
 		$body.append(
-			div('greeting', bold,
+			div('greeting', bold, style({ fontSize:20, height:40 }),
 				span('header', 'Hello', bold),
 				span('person', "Marcus", bold, floatingItalic),
-				span('person', "Thomas", large, floatingItalic)
+				span('person', "Thomas", floatingItalic)
 			)
 		)
 	})
@@ -166,26 +165,25 @@ Custom add-ons
 
 Custom add-ons is easy - just return a function! This one gives a div a random color
 
-<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
-<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
-<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
-<script>
-$(function() {
-	tags.expose()
-	var randomColor = function($tag) {
-		var colors = []
-		for (var i=0; i<3; i++) {
-			colors.push(Math.floor(Math.random() * 255))
+	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
+	<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
+	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
+	<script>
+	$(function() {
+		tags.expose()
+		var randomColor = function($tag) {
+			var colors = []
+			for (var i=0; i<3; i++) {
+				colors.push(Math.floor(Math.random() * 255))
+			}
+			$tag.css({ background:'rgb('+colors.join(',')+')' })
 		}
-		$tag.css({ background:'rgb('+colors.join(',')+')' })
-	}
-	var square = style({ width:100, height:100 })
-	$(document.body).append(div(
-		div(randomColor, square),
-		div(randomColor, square),
-		div(randomColor, square)
-	))
-})
-</script>
-
+		var square = style({ width:100, height:100 })
+		$(document.body).append(div(
+			div(randomColor, square),
+			div(randomColor, square),
+			div(randomColor, square)
+		))
+	})
+	</script>
