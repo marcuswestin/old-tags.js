@@ -117,7 +117,7 @@ Tags comes with a bunch of convenient addons
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	tags.expose('div,span')
+	tags.expose()
 	$(function() {
 		var bold = style({ fontWeight:'bold' })
 		var floatingItalic = style({ 'float':'left', fontStyle:'italic' })
@@ -140,7 +140,7 @@ Tags comes with a bunch of convenient addons
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/button.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	tags.expose('div,input')
+	tags.expose()
 	$(function() {
 		var $input
 		$(document.body).append(
@@ -168,7 +168,7 @@ Tags comes with a bunch of convenient addons
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/list.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	tags.expose('div')
+	tags.expose()
 	$(function() {
 		var people = [{ name:'Marcus' }, { name:'Thomas' }, { name:'Jon' }]
 		var peopleList
@@ -198,7 +198,7 @@ Custom add-ons is easy - just return a function! This one gives a div a random c
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/style.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	tags.expose('div')
+	tags.expose()
 	$(function() {
 		var randomColor = function($tag) {
 			var colors = []
