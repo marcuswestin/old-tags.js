@@ -85,11 +85,12 @@ var buttons = {
 	onTouchCancel: function(event) {
 		onEnd.call(this, event, true)
 	},
-	onMouseDown: function(handler, e) {
+	onMouseDown: function(event) {
 		buttons.init(event, function($el) {
 			$el.on('mouseout', setElInactive)
 			$el.on('mouseover', setElActive)
-			var el = this, handler
+			var el = this
+			var handler
 			$(document).on('mouseup', handler=function(event) {
 				onEnd.call(el, event)
 				$(document).off('mouseup', handler)
