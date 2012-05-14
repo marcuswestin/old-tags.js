@@ -37,11 +37,6 @@ var button = tags.button = function button(data, callback) {
 }
 button.className = 'dom-buttom'
 
-$(function() {
-	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
-	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
-})
-
 var onEnd = function(event, supressHandler) {
 	event.preventDefault()
 	$el = $(this)
@@ -116,3 +111,8 @@ var touchInsideTapRect = function($el, event) {
 	var touchRect = $el.data('touchRect')
 	return touchRect.containsPoint({ x:touch.pageX, y:touch.pageY })
 }
+
+$(function() {
+	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
+	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+})
