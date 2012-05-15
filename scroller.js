@@ -53,6 +53,9 @@ var scroller = {
 		this.renderHeadContent(this.$head.empty(), currentView, viewBelow, fromView)
 		this._scroll()
 	},
+	current:function() {
+		return this.stack[this.stack.length - 1]
+	},
 	_scroll:function() {
 		var offset = this.stack.length - 1
 		$(this._slider).css('-webkit-transform', 'translateX('+(-offset * viewport.width())+'px)')
