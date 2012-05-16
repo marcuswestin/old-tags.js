@@ -1,6 +1,7 @@
-module.exports = {
+tags.viewport = {
 	fit:fit,
 	getSize:getSize,
+	size:getSize,
 	width:width,
 	height:height,
 	react:react
