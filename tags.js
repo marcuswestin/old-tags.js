@@ -68,6 +68,8 @@
 			var type = typeof arg
 			if (arg.__isTag) {
 				el.appendChild(arg.__render())
+			} else if (arg.toTag) {
+				this.__processArg(arg.toTag())
 			} else if (type == 'string' || type == 'number') {
 				el.appendChild(document.createTextNode(arg))
 			// http://stackoverflow.com/questions/120262/whats-the-best-way-to-detect-if-a-given-javascript-object-is-a-dom-element
