@@ -42,6 +42,8 @@ $(function() {
 	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
 })
 
+button.onError = function() {}
+
 var onEnd = function(event, supressHandler) {
 	event.preventDefault()
 	$el = $(this)
