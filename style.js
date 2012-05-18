@@ -14,7 +14,7 @@ tags.style = function style(styles) {
 		var elStyle = $tag[0].style
 		for (var name in styles) {
 			var value = styles[name]
-			if (typeof value == 'number' && name != 'opacity') { value += 'px' }
+			if (typeof value == 'number' && name != 'opacity' && name != 'zIndex') { value += 'px' }
 			else if (name == 'float') { name = 'cssFloat' }
 			elStyle[name] = value
 		}

@@ -25,8 +25,11 @@
 				return instance
 			}
 		},
-		expose: function() {
-			var tagNames = 'div,span,img,a,p,h1,h2,h3,h4,h5,h6,ol,ul,li,iframe,buttom,input,textarea,form,label,br,canvas'.split(',')
+		expose: function(tagNames) {
+			if (!tagNames) {
+				tagNames = 'div,span,img,a,p,h1,h2,h3,h4,h5,h6,ol,ul,li,iframe,buttom,input,textarea,form,label,br,canvas'
+			}
+			tagNames = tagNames.split(',')
 			for (var i=0, tagName; tagName=tagNames[i]; i++) {
 				global[tagName] = tags.createTag(tagName)
 			}
@@ -65,6 +68,8 @@
 			var type = typeof arg
 			if (arg.__isTag) {
 				el.appendChild(arg.__render())
+			} else if (arg.toTag) {
+				this.__processArg(arg.toTag())
 			} else if (type == 'string' || type == 'number') {
 				el.appendChild(document.createTextNode(arg))
 			// http://stackoverflow.com/questions/120262/whats-the-best-way-to-detect-if-a-given-javascript-object-is-a-dom-element

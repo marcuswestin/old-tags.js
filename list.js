@@ -1,10 +1,10 @@
 var list = tags.list = function list(items, onSelect, render) {
 	var data = { id:0 }
 	var $tag
-	function renderListItem(item) {
+	function renderListItem(item, key) {
 		var id = data.id++
-		data[id] = item
-		return div('list-item', { 'listId':id }, render(item))
+		data[id] = { item:item, key:key }
+		return div('list-item', { 'listId':id }, render(item, key))
 	}
 	
 	var result = div(list.className, function(tag) {
@@ -13,8 +13,8 @@ var list = tags.list = function list(items, onSelect, render) {
 		$tag.append($.map(items || [], renderListItem))
 	})
 	
-	result.append = function(item) { $tag.append(renderListItem(item)) }
-	result.prepend = function(item) { $tag.prepend(renderListItem(item)) }
+	result.append = function(item, key) { $tag.append(renderListItem(item, key)) }
+	result.prepend = function(item, key) { $tag.prepend(renderListItem(item, key)) }
 	
 	return result
 }
@@ -22,7 +22,8 @@ var list = tags.list = function list(items, onSelect, render) {
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
 		$tag.on('click', '.list-item', function(event) {
-			onSelect(data[$(this).attr('listId')])
+			var result = data[$(this).attr('listId')]
+			onSelect(result.item, result.key)
 		})
 		return
 	}
@@ -51,9 +52,9 @@ list.init = function($tag, data, onSelect) {
 
 	$tag.on('touchend', function(event) {
 		if (tapElement) {
-			var item = data[$(tapElement).attr('listId')]
+			var result = data[$(tapElement).attr('listId')]
 			clear()
-			onSelect(item)
+			onSelect(result.item, result.key)
 			event.preventDefault()
 		} else {
 			clear()

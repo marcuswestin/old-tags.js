@@ -35,13 +35,8 @@ var button = tags.button = function button(data, callback) {
 		$(this).attr('button-id', id).addClass(button.className)
 	}
 }
+
 button.className = 'dom-buttom'
-
-$(function() {
-	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
-	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
-})
-
 button.onError = function() {}
 
 var onEnd = function(event, supressHandler) {
@@ -87,11 +82,12 @@ var buttons = {
 	onTouchCancel: function(event) {
 		onEnd.call(this, event, true)
 	},
-	onMouseDown: function(handler, e) {
+	onMouseDown: function(event) {
 		buttons.init(event, function($el) {
 			$el.on('mouseout', setElInactive)
 			$el.on('mouseover', setElActive)
-			var el = this, handler
+			var el = this
+			var handler
 			$(document).on('mouseup', handler=function(event) {
 				onEnd.call(el, event)
 				$(document).off('mouseup', handler)
@@ -117,3 +113,8 @@ var touchInsideTapRect = function($el, event) {
 	var touchRect = $el.data('touchRect')
 	return touchRect.containsPoint({ x:touch.pageX, y:touch.pageY })
 }
+
+$(function() {
+	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
+	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+})
