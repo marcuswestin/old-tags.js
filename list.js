@@ -1,10 +1,32 @@
-var list = tags.list = function list(items, onSelect, render) {
-	var data = { id:0 }
+var getId = function() { return getId.id++ }
+getId.id = 1
+
+var list = tags.list = function list(items, onSelect, idFun, render) {
+	if (arguments.length == 3) {
+		render = idFun
+		idFun = getId
+	}
+	var data = {}
+	var uniqueId = 'list-'+getId()+'-'
 	var $tag
-	function renderListItem(item, key) {
-		var id = data.id++
-		data[id] = { item:item, key:key }
-		return div('list-item', { 'listId':id }, render(item, key))
+	function renderListItem(item) {
+		var id = idFun(item)
+		data[id] = item
+		return div('list-item', { id:uniqueId+id, 'listId':id }, render(item))
+	}
+	
+	function addItems(newItems, appendOrPrepend) {
+		if (!$.isArray(newItems)) { newItems = [newItems] }
+		for (var i=0; i<newItems.length; i++) {
+			var item = newItems[i]
+			var id = idFun(item)
+			var el = $tag.find('#'+uniqueId+id)[0]
+			if (el) {
+				appendOrPrepend.call($tag, el)
+			} else {
+				appendOrPrepend.call($tag, renderListItem(item))
+			}
+		}
 	}
 	
 	var result = div(list.className, function(tag) {
@@ -13,8 +35,13 @@ var list = tags.list = function list(items, onSelect, render) {
 		$tag.append($.map(items || [], renderListItem))
 	})
 	
-	result.append = function(item, key) { $tag.append(renderListItem(item, key)) }
-	result.prepend = function(item, key) { $tag.prepend(renderListItem(item, key)) }
+	result.append = function(newItems) { addItems(newItems, $tag.append) }
+	result.prepend = function(newItems) { addItems(newItems, $tag.prepend) }
+	result.empty = function() {
+		$tag.empty()
+		return this
+	}
+	result.find = function(selector) { return $tag.find(selector) }
 	
 	return result
 }
@@ -22,8 +49,9 @@ var list = tags.list = function list(items, onSelect, render) {
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
 		$tag.on('click', '.list-item', function(event) {
-			var result = data[$(this).attr('listId')]
-			onSelect(result.item, result.key)
+			var id = $(this).attr('listId')
+			var result = data[id]
+			onSelect(result, id)
 		})
 		return
 	}
@@ -52,9 +80,10 @@ list.init = function($tag, data, onSelect) {
 
 	$tag.on('touchend', function(event) {
 		if (tapElement) {
-			var result = data[$(tapElement).attr('listId')]
+			var id = $(tapElement).attr('listId')
+			var result = data[id]
 			clear()
-			onSelect(result.item, result.key)
+			onSelect(result, id)
 			event.preventDefault()
 		} else {
 			clear()
