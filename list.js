@@ -20,12 +20,8 @@ var list = tags.list = function list(items, onSelect, idFun, render) {
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
 			var id = idFun(item)
-			var el = $tag.find('#'+uniqueId+id)[0]
-			if (el) {
-				appendOrPrepend.call($tag, el)
-			} else {
-				appendOrPrepend.call($tag, renderListItem(item))
-			}
+			$tag.find('#'+uniqueId+id).remove()
+			appendOrPrepend.call($tag, renderListItem(item))
 		}
 	}
 	
