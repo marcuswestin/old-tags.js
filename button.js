@@ -6,11 +6,12 @@ var rectProto = {
 		this.y2 = y + height
 		return this
 	},
-	pad: function(amount) {
-		this.x -= amount
-		this.y -= amount
-		this.x2 += amount
-		this.y2 += amount
+	pad: function(width, top, bottom) {
+		this.x -= width
+		this.x2 += width
+		this.y -= top
+		this.y2 += bottom
+		return this
 	},
 	containsPoint: function(point) {
 		return this.x < point.x && point.x < this.x2
@@ -35,59 +36,57 @@ var button = tags.button = function button(data, callback) {
 		$(this).attr('button-id', id).addClass(button.className)
 	}
 }
-button.className = 'dom-buttom'
 
-var onEnd = function(event, supressHandler) {
+button.className = 'dom-buttom'
+button.onError = function() {}
+
+var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
-	$el = $(this)
-		.off('touchmove').off('touchend').off('touchcancel')
-		.off('mouseout').off('mouseover').off('mouseup')
 	
-	var id = $(this).attr('button-id')
+	$el.off('touchmove').off('touchend').off('touchcancel')
+	$el.off('mouseout').off('mouseover').off('mouseup')
+	
+	var id = $el.attr('button-id')
 	var map = dataMap[id]
 	var callback = isActive($el) && !supressHandler && map.cb
 	
 	setInactive($el)
 	
 	if (callback) {
-		callback.call(this, event, map.data)
+		callback.call($el[0], event, map.data)
 	}
 	if (tags.button.globalHandler) {
-		tags.button.globalHandler.call(this, event, id)
+		tags.button.globalHandler.call($el[0], event, id)
 	}
 }
 
 function setActive($el) { $el.addClass('active') }
 function setInactive($el) { $el.removeClass('active') }
 function isActive($el) { return $el.hasClass('active') }
-function setElInactive() { return setInactive($(this)) }
-function setElActive() { return setActive($(this)) }
 
 var buttons = {
 	onTouchStart: function(event) {
 		buttons.init(event, function($el) {
-			$el.on('touchmove', buttons.onTouchMove)
-			$el.on('touchend', onEnd)
-			$el.on('touchcancel', buttons.onTouchCancel)
+			$el.on('touchmove', function(event) { buttons.onTouchMove(event, $el) })
+			$el.on('touchend', function(event) { onEnd(event, $el) })
+			$el.on('touchcancel', function(event) { buttons.onTouchCancel(event, $el) })
 		})
 	},
-	onTouchMove: function(event) {
+	onTouchMove: function(event, $el) {
 		event.preventDefault()
-		var $el = $(this)
 		if (touchInsideTapRect($el, event)) { setActive($el) }
 		else { setInactive($el) }
 	},
-	onTouchCancel: function(event) {
-		onEnd.call(this, event, true)
+	onTouchCancel: function(event, $el) {
+		onEnd(event, $el, true)
 	},
 	onMouseDown: function(event) {
 		buttons.init(event, function($el) {
-			$el.on('mouseout', setElInactive)
-			$el.on('mouseover', setElActive)
-			var el = this
+			$el.on('mouseout', function() { setInactive($el) })
+			$el.on('mouseover', function() { setActive($el) })
 			var handler
 			$(document).on('mouseup', handler=function(event) {
-				onEnd.call(el, event)
+				onEnd(event, $el)
 				$(document).off('mouseup', handler)
 			})
 		})
@@ -99,7 +98,8 @@ var buttons = {
 		event.preventDefault()
 		
 		var offset = $el.offset()
-		$el.data('touchRect', makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(22))
+		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(26, 3, 35)
+		$el.data('touchRect', touchRect)
 		
 		setActive($el)
 		cb.call(event.target, $el)
@@ -109,7 +109,7 @@ var buttons = {
 var touchInsideTapRect = function($el, event) {
 	var touch = event.originalEvent.touches[0]
 	var touchRect = $el.data('touchRect')
-	return touchRect.containsPoint({ x:touch.pageX, y:touch.pageY })
+	return touchRect && touchRect.containsPoint({ x:touch.pageX, y:touch.pageY })
 }
 
 $(function() {

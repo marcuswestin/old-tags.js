@@ -1,10 +1,8 @@
-var viewport = require('./viewport')
-
-module.exports = function() {
-	return create(scroller, { stack:[] })
+tags.scroller = function() {
+	return $.extend(tags.create(scrollerBase), { stack:[] })
 }
 
-var scroller = {
+var scrollerBase = {
 	renderHead:function(headHeight, renderHeadContent) {
 		this.renderHeadContent = renderHeadContent
 		this.headHeight = headHeight
@@ -12,7 +10,7 @@ var scroller = {
 	},
 	renderBody:function(numViews, renderBodyContent) {
 		this.renderBodyContent = renderBodyContent
-		var viewportSize = viewport.getSize()
+		var viewportSize = tags.viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
 		var crop = style({ overflowX:'hidden' })
 		var scrollable = style({ 'overflow-y':'scroll', '-webkit-overflow-scrolling':'touch' })
@@ -52,6 +50,9 @@ var scroller = {
 		var viewBelow = stack[stack.length - 2]
 		this.renderHeadContent(this.$head.empty(), currentView, viewBelow, fromView)
 		this._scroll()
+	},
+	current:function() {
+		return this.stack[this.stack.length - 1]
 	},
 	_scroll:function() {
 		var offset = this.stack.length - 1
