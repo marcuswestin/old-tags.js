@@ -23,7 +23,7 @@ list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
 		$tag.on('click', '.list-item', function(event) {
 			var result = data[$(this).attr('listId')]
-			onSelect(result.item, result.key)
+			onSelect(result.item, result.key, event)
 		})
 		return
 	}
@@ -54,7 +54,7 @@ list.init = function($tag, data, onSelect) {
 		if (tapElement) {
 			var result = data[$(tapElement).attr('listId')]
 			clear()
-			onSelect(result.item, result.key)
+			onSelect(result.item, result.key, event)
 			event.preventDefault()
 		} else {
 			clear()

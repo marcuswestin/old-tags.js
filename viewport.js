@@ -1,4 +1,4 @@
-tags.viewport = {
+var viewport = tags.viewport = {
 	fit:fit,
 	getSize:getSize,
 	size:getSize,
@@ -7,10 +7,10 @@ tags.viewport = {
 	react:react
 }
 
-function fit() {
-	var el = this
+function fit($el) {
+	var $el = $el || $(this)
 	var resize = function() {
-		$(el).height(viewport.height()).width(viewport.width())
+		$el.height(viewport.height()).width(viewport.width())
 	}
 	$win.resize(resize)
 	resize()
