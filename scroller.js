@@ -1,5 +1,6 @@
-tags.scroller = function(onViewChange) {
-	return $.extend(tags.create(scrollerBase), { stack:[], onViewChange:onViewChange })
+tags.scroller = function(opts) {
+	opts = opts || {}
+	return $.extend(tags.create(scrollerBase), { stack:[], onViewChange:opts.onViewChange, duration:opts.duration || 500 })
 }
 
 var scrollerBase = {
@@ -18,7 +19,7 @@ var scrollerBase = {
 		var slider = style({
 			height:viewport.height() - this.headHeight,
 			width:viewport.width() * numViews,
-			'-webkit-transition':'-webkit-transform 0.70s',
+			'-webkit-transition':'-webkit-transform '+this.duration/1000+'s',
 			position:'relative'
 		})
 		
