@@ -1,5 +1,6 @@
-tags.scroller = function() {
-	return $.extend(tags.create(scrollerBase), { stack:[] })
+tags.scroller = function(opts) {
+	opts = opts || {}
+	return $.extend(tags.create(scrollerBase), { stack:[], onViewChange:opts.onViewChange, duration:opts.duration || 500 })
 }
 
 var scrollerBase = {
@@ -18,7 +19,7 @@ var scrollerBase = {
 		var slider = style({
 			height:viewport.height() - this.headHeight,
 			width:viewport.width() * numViews,
-			'-webkit-transition':'-webkit-transform 0.70s',
+			'-webkit-transition':'-webkit-transform '+this.duration/1000+'s',
 			position:'relative'
 		})
 		
@@ -39,6 +40,7 @@ var scrollerBase = {
 		var stack = this.stack
 		var viewBelow = views[stack.length - 1]
 		this.stack.push(newView)
+		if (this.onViewChange) { this.onViewChange() }
 		this.renderHeadContent(this.$head.empty(), newView, viewBelow)
 		this.renderBodyContent(views[this.stack.length - 1].empty(), newView, viewBelow)
 		this._scroll()
@@ -48,6 +50,7 @@ var scrollerBase = {
 		var fromView = stack.pop()
 		var currentView = stack[stack.length - 1]
 		var viewBelow = stack[stack.length - 2]
+		if (this.onViewChange) { this.onViewChange() }
 		this.renderHeadContent(this.$head.empty(), currentView, viewBelow, fromView)
 		this._scroll()
 	},
