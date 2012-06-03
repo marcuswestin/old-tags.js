@@ -79,6 +79,8 @@
 				this.__processArgs(arg, 0)
 			} else if (type == 'function') {
 				arg.call(el, $(el))
+			} else if (arg.renderTag) {
+				this.__processArgs(arg.renderTag($(el)), 0)
 			} else if (arg instanceof jQuery) {
 				this.__processArgs(arg, 0)
 			} else {
