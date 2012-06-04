@@ -16,6 +16,7 @@ var list = tags.list = function list(items, onSelect, idFun, render) {
 	}
 	
 	function addItems(newItems, appendOrPrepend) {
+		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
