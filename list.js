@@ -48,7 +48,7 @@ list.init = function($tag, data, onSelect) {
 			var $el = $(this)
 			var id = $el.attr('listId')
 			var result = data[id]
-			onSelect(result, id, $el)
+			onSelect(result, id, $el, event)
 		})
 		return
 	}
@@ -81,7 +81,7 @@ list.init = function($tag, data, onSelect) {
 			var id = $el.attr('listId')
 			var result = data[id]
 			clear()
-			onSelect(result, id, $el)
+			onSelect(result, id, $el, event)
 			event.preventDefault()
 		} else {
 			clear()
