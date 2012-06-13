@@ -7,7 +7,7 @@ var scrollerBase = {
 	renderHead:function(headHeight, renderHeadContent) {
 		this.renderHeadContent = renderHeadContent
 		this.headHeight = headHeight
-		return this.$head=$(div('scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:1 })))
+		return this.$head=$(div('scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
 	},
 	renderBody:function(numViews, renderBodyContent) {
 		this.renderBodyContent = renderBodyContent
