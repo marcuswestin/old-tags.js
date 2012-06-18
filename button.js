@@ -92,7 +92,7 @@ var buttons = {
 		})
 	},
 	init:function(event, cb) {
-		var $el = $(event.target)
+		var $el = $(event.currentTarget) //$(event.target)
 		if ($el.hasClass('disabled')) { return }
 		
 		event.preventDefault()
