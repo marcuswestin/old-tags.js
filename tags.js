@@ -116,6 +116,20 @@
 			return originalDomManip.apply(this, processJqueryArgs(arguments))
 		}
 		$.fn.domManip.prototype = originalDomManip.prototype
+		
+		var originalAppend = $.fn.append
+		$.fn.append = function() {
+			if (arguments.length == 1) {
+				var arg = arguments[0]
+				if ($.isArray(arg)) {
+					for (var i=0; i<arg.length; i++) { this.append(arg[i]) }
+				} else {
+					originalAppend.call(this, arg)
+				}
+			} else {
+				for (var i=0; i<arguments.length; i++) { this.append(arguments[i]) }
+			}
+		}
 	}
 	
 	if (typeof jQuery != 'undefined') { enableJQueryTags(jQuery) }

@@ -208,11 +208,11 @@ Custom add-ons is easy - just return a function! This one gives a div a random c
 			$tag.css({ background:'rgb('+colors.join(',')+')' })
 		}
 		var square = style({ width:100, height:100 })
-		$('#tags-demo').append(div(
+		$('#tags-demo').append(
 			div(randomColor, square),
 			div(randomColor, square),
 			div(randomColor, square)
-		))
+		)
 	})
 	</script>
 	
