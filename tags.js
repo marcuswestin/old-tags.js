@@ -131,6 +131,7 @@
 			} else {
 				for (var i=0; i<arguments.length; i++) { this.append(arguments[i]) }
 			}
+			return this
 		}
 	}
 	
