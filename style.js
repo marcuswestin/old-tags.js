@@ -20,3 +20,14 @@ tags.style = function style(styles) {
 		}
 	}
 }
+
+tags.style.disableSelection = tags.style({
+	'-moz-user-select':'none',
+	'-webkit-user-select':'none',
+	'user-select':'none',
+	'-ms-user-select':'none'
+})
+
+tags.style.transition = function(name, duration) {
+	return style({ '-webkit-transition':name+' '+(duration/1000)+'s' })
+}
