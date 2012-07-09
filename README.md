@@ -174,9 +174,9 @@ Tags comes with a bunch of convenient addons
 		var peopleList
 		$('#tags-demo').append(
 			div('people',
-				peopleList=list(people, onSelect, function renderPerson(person) {
+				peopleList=list({ items:people, onSelect:onSelect, renderItem:function renderPerson(person) {
 					return div('person', person.name)
-				})
+				}})
 			)
 		)
 		function onSelect(person) {

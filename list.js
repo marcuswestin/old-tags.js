@@ -1,18 +1,35 @@
+var options = require('std/options')
+
 var getId = function() { return getId.id++ }
 getId.id = 1
 
-var list = tags.list = function list(items, onSelect, idFun, render) {
-	if (arguments.length == 3) {
-		render = idFun
-		idFun = getId
+var list = tags.list = function list(opts) {
+	if (arguments.length != 1) {
+		opts = {
+			items: arguments[0],
+			onSelect: arguments[1],
+			getItemId: arguments[2],
+			renderItem: arguments[3]
+		}
+		if (arguments.length == 3) {
+			opts.renderItem = opts.getItemId
+			opts.getItemId = getId
+		}
 	}
+	opts = options(opts, {
+		items:null,
+		onSelect:null,
+		getItemId:getId,
+		renderItem:null
+	})
+	
 	var data = {}
 	var uniqueId = 'list-'+getId()+'-'
 	var $tag
 	function renderListItem(item) {
-		var id = idFun(item)
+		var id = opts.getItemId(item)
 		data[id] = item
-		return div('list-item', { id:uniqueId+id, 'listId':id }, render(item))
+		return div('list-item', { id:uniqueId+id, 'listId':id }, opts.renderItem(item))
 	}
 	
 	function addItems(newItems, appendOrPrepend) {
@@ -20,7 +37,7 @@ var list = tags.list = function list(items, onSelect, idFun, render) {
 		if (!$.isArray(newItems)) { newItems = [newItems] }
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
-			var id = idFun(item)
+			var id = opts.getItemId(item)
 			$tag.find('#'+uniqueId+id).remove()
 			appendOrPrepend.call($tag, renderListItem(item))
 		}
@@ -28,8 +45,8 @@ var list = tags.list = function list(items, onSelect, idFun, render) {
 	
 	var result = div(list.className, function(tag) {
 		$tag = $(tag)
-		list.init($tag, data, onSelect)
-		$tag.append($.map(items || [], renderListItem))
+		list.init($tag, data, opts.onSelect)
+		$tag.append($.map(opts.items || [], renderListItem))
 	})
 	
 	result.append = function(newItems) { addItems(newItems, $tag.append) }
