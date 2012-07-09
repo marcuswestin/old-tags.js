@@ -51,6 +51,7 @@ var list = tags.list = function list(opts) {
 	
 	result.append = function(newItems) { addItems(newItems, $tag.append) }
 	result.prepend = function(newItems) { addItems(newItems, $tag.prepend) }
+	result.height = function() { return $tag.height() }
 	result.empty = function() {
 		$tag.empty()
 		return this
