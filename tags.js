@@ -78,7 +78,12 @@
 			} else if ($.isArray(arg)) {
 				this.__processArgs(arg, 0)
 			} else if (type == 'function') {
-				arg.call(el, $(el))
+				var result = arg.call(el, $(el))
+				if ($.isArray(result)) {
+					this.__processArgs(result, 0)
+				} else {
+					this.__processArg(result)
+				}
 			} else if (arg.renderTag) {
 				this.__processArgs(arg.renderTag($(el)), 0)
 			} else if (arg instanceof jQuery) {
