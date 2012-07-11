@@ -113,6 +113,9 @@ var touchInsideTapRect = function($el, event) {
 }
 
 $(function() {
-	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
-	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+	if (tags.isTouch) {
+		$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
+	} else {
+		$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+	}
 })
