@@ -43,8 +43,11 @@ button.onError = function() {}
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
 	
-	$el.off('touchmove').off('touchend').off('touchcancel')
-	$el.off('mouseout').off('mouseover').off('mouseup')
+	if (tags.isTouch) {
+		$el.off('touchmove').off('touchend').off('touchcancel')
+	} else {
+		$el.off('mouseout').off('mouseover').off('mouseup')
+	}
 	
 	var id = $el.attr('button-id')
 	var map = dataMap[id]
