@@ -43,8 +43,11 @@ button.onError = function() {}
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
 	
-	$el.off('touchmove').off('touchend').off('touchcancel')
-	$el.off('mouseout').off('mouseover').off('mouseup')
+	if (tags.isTouch) {
+		$el.off('touchmove').off('touchend').off('touchcancel')
+	} else {
+		$el.off('mouseout').off('mouseover').off('mouseup')
+	}
 	
 	var id = $el.attr('button-id')
 	var map = dataMap[id]
@@ -113,6 +116,9 @@ var touchInsideTapRect = function($el, event) {
 }
 
 $(function() {
-	$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
-	$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+	if (tags.isTouch) {
+		$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
+	} else {
+		$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+	}
 })
