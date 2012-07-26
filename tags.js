@@ -13,6 +13,11 @@
 		return result
 	}
 	
+	var eventPos = function($e, index) {
+		var obj = tags.isTouch ? $e.originalEvent.touches[index || 0] : $e.originalEvent
+		return { x:obj.pageX, y:obj.pageY }
+	}
+	
 	var isTouch
 	try {
 		document.createEvent("TouchEvent")
@@ -25,6 +30,7 @@
 		create: create,
 		options: options,
 		isTouch: isTouch,
+		eventPos: eventPos,
 		createTag: function(tagName, render) {
 			return function tagCreator() {
 				var instance = tags.create(tagsProto)
