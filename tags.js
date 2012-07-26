@@ -5,6 +5,14 @@
 		: function shimCreate(protoObj) { function F(){}; F.prototype = protoObj; return new F() }
 	)
 	
+	var options = function(opts, defaults) {
+		var result = {}
+		for (var key in defaults) {
+			result[key] = (typeof opts[key] != 'undefined' ? opts[key] : defaults[key])
+		}
+		return result
+	}
+	
 	var isTouch
 	try {
 		document.createEvent("TouchEvent")
@@ -15,7 +23,8 @@
 	
 	var tags = {
 		create: create,
-		isTouch:isTouch,
+		options: options,
+		isTouch: isTouch,
 		createTag: function(tagName, render) {
 			return function tagCreator() {
 				var instance = tags.create(tagsProto)

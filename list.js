@@ -1,5 +1,3 @@
-var options = require('std/options')
-
 var getId = function() { return getId.id++ }
 getId.id = 1
 
@@ -16,7 +14,7 @@ var list = tags.list = function list(opts) {
 			opts.getItemId = getId
 		}
 	}
-	opts = options(opts, {
+	opts = tags.options(opts, {
 		items:null,
 		onSelect:null,
 		getItemId:getId,
