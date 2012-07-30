@@ -6,7 +6,7 @@ var rectProto = {
 		this.y2 = y + height
 		return this
 	},
-	pad: function(width, top, bottom) {
+	pad: function(top, right, bottom, left) {
 		this.x -= width
 		this.x2 += width
 		this.y -= top
@@ -101,7 +101,7 @@ var buttons = {
 		event.preventDefault()
 		
 		var offset = $el.offset()
-		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(26, 3, 35)
+		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(26, 3, 26, 35)
 		$el.data('touchRect', touchRect)
 		
 		setActive($el)
