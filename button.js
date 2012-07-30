@@ -7,8 +7,8 @@ var rectProto = {
 		return this
 	},
 	pad: function(top, right, bottom, left) {
-		this.x -= width
-		this.x2 += width
+		this.x -= left
+		this.x2 += right
 		this.y -= top
 		this.y2 += bottom
 		return this
