@@ -101,7 +101,7 @@ var buttons = {
 		event.preventDefault()
 		
 		var offset = $el.offset()
-		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(26, 3, 26, 35)
+		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(31, 15, 35, 15)
 		$el.data('touchRect', touchRect)
 		
 		setActive($el)
