@@ -14,7 +14,7 @@
 	}
 	
 	var eventPos = function($e, index) {
-		var obj = tags.isTouch ? $e.originalEvent.touches[index || 0] : $e.originalEvent
+		var obj = tags.isTouch ? $e.originalEvent.changedTouches[index || 0] : $e.originalEvent
 		return { x:obj.pageX, y:obj.pageY }
 	}
 	
