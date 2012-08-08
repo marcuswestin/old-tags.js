@@ -6,7 +6,8 @@ var list = tags.list = function list(opts) {
 		items:null,
 		onSelect:logOnSelect,
 		getItemId:getId,
-		renderItem:renderItemJson
+		renderItem:renderItemJson,
+		reAddItems:false
 	})
 	
 	var data = {}
@@ -21,12 +22,21 @@ var list = tags.list = function list(opts) {
 	function addItems(newItems, appendOrPrepend) {
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
+		var count = 0
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
 			var id = opts.getItemId(item)
-			$tag.find('#'+uniqueId+id).remove()
+			if ($tag.find('#'+uniqueId+id).length) {
+				if (opts.reAddItems) {
+					$tag.find('#'+uniqueId+id).remove()
+				} else {
+					return
+				}
+			}
+			count++
 			appendOrPrepend.call($tag, renderListItem(item))
 		}
+		return { newItems:count }
 	}
 	
 	var result = div(list.className, function(tag) {
@@ -35,8 +45,8 @@ var list = tags.list = function list(opts) {
 		$tag.append($.map(opts.items || [], renderListItem))
 	})
 	
-	result.append = function(newItems) { addItems(newItems, $tag.append) }
-	result.prepend = function(newItems) { addItems(newItems, $tag.prepend) }
+	result.append = function(newItems) { return addItems(newItems, $tag.append) }
+	result.prepend = function(newItems) { return addItems(newItems, $tag.prepend) }
 	result.height = function() { return $tag.height() }
 	result.empty = function() {
 		$tag.empty()
