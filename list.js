@@ -2,18 +2,6 @@ var getId = function() { return getId.id++ }
 getId.id = 1
 
 var list = tags.list = function list(opts) {
-	if (arguments.length != 1) {
-		opts = {
-			items: arguments[0],
-			onSelect: arguments[1],
-			getItemId: arguments[2],
-			renderItem: arguments[3]
-		}
-		if (arguments.length == 3) {
-			opts.renderItem = opts.getItemId
-			opts.getItemId = getId
-		}
-	}
 	opts = tags.options(opts, {
 		items:null,
 		onSelect:null,
