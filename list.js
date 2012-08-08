@@ -30,7 +30,7 @@ var list = tags.list = function list(opts) {
 				if (opts.reAddItems) {
 					$tag.find('#'+uniqueId+id).remove()
 				} else {
-					return
+					continue
 				}
 			}
 			count++
