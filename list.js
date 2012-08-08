@@ -4,9 +4,9 @@ getId.id = 1
 var list = tags.list = function list(opts) {
 	opts = tags.options(opts, {
 		items:null,
-		onSelect:null,
+		onSelect:logOnSelect,
 		getItemId:getId,
-		renderItem:null
+		renderItem:renderItemJson
 	})
 	
 	var data = {}
@@ -99,3 +99,11 @@ list.init = function($tag, data, onSelect) {
 } 
 
 list.className = 'dom-list'
+
+function renderItemJson(item) {
+	return div('json-item', JSON.stringify(item))
+}
+
+function logOnSelect(item) {
+	console.log('tags-list item selected:', item)
+}
