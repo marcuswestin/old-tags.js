@@ -1,4 +1,4 @@
-var getId = function() { return getId.id++ }
+var getId = function() { return 'list-item-'+(getId.id++) }
 getId.id = 1
 
 var list = tags.list = function list(opts) {
@@ -16,7 +16,7 @@ var list = tags.list = function list(opts) {
 	function renderListItem(item) {
 		var id = opts.getItemId(item)
 		data[id] = item
-		return div('list-item', { id:uniqueId+id, 'listId':id }, opts.renderItem(item))
+		return div('list-item', { id:id }, opts.renderItem(item))
 	}
 	
 	function addItems(newItems, appendOrPrepend) {
@@ -61,7 +61,7 @@ list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
 		$tag.on('click', '.list-item', function(event) {
 			var $el = $(this)
-			var id = $el.attr('listId')
+			var id = $el.attr('id')
 			var result = data[id]
 			onSelect(result, id, $el, event)
 		})
@@ -93,7 +93,7 @@ list.init = function($tag, data, onSelect) {
 	$tag.on('touchend', function(event) {
 		if (tapElement) {
 			var $el = $(tapElement)
-			var id = $el.attr('listId')
+			var id = $el.attr('id')
 			var result = data[id]
 			clear()
 			onSelect(result, id, $el, event)
