@@ -39,7 +39,7 @@ var list = tags.list = function list(opts) {
 		return { newItems:count }
 	}
 	
-	var result = div(list.className, function(tag) {
+	var result = div('dom-list', function(tag) {
 		$tag = $(tag)
 		list.init($tag, data, opts.onSelect)
 		$tag.append($.map(opts.items || [], renderListItem))
@@ -107,8 +107,6 @@ list.init = function($tag, data, onSelect) {
 		clear()
 	})
 } 
-
-list.className = 'dom-list'
 
 function renderItemJson(item) {
 	return div('json-item', JSON.stringify(item))
