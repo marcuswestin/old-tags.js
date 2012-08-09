@@ -11,7 +11,6 @@ var list = tags.list = function list(opts) {
 	})
 	
 	var data = {}
-	var uniqueId = 'list-'+getId()+'-'
 	var $tag
 	function renderListItem(item) {
 		var id = opts.getItemId(item)
@@ -26,9 +25,9 @@ var list = tags.list = function list(opts) {
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
 			var id = opts.getItemId(item)
-			if ($tag.find('#'+uniqueId+id).length) {
+			if ($tag.find('#'+id).length) {
 				if (opts.reAddItems) {
-					$tag.find('#'+uniqueId+id).remove()
+					$tag.find('#'+id).remove()
 				} else {
 					continue
 				}
