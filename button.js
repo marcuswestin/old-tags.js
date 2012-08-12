@@ -38,7 +38,6 @@ var button = tags.button = function button(data, callback) {
 }
 
 button.className = 'dom-buttom'
-button.onError = function() {}
 
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
