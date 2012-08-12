@@ -141,7 +141,7 @@
 		$.fn.domManip.prototype = originalDomManip.prototype
 		
 		var originalAppend = $.fn.append
-		$.fn.append = function() {
+		$.fn.append = function jqAppendMonkeyPath() {
 			if (arguments.length == 1) {
 				var arg = arguments[0]
 				if ($.isArray(arg)) {
