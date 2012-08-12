@@ -21,7 +21,6 @@ var scrollerBase = {
 		var slider = style({
 			height:viewport.height() - this.headHeight,
 			width:viewport.width() * numViews,
-			'-webkit-transition':'-webkit-transform '+this.duration/1000+'s',
 			position:'relative'
 		})
 		
@@ -37,7 +36,10 @@ var scrollerBase = {
 		this.push({})
 		return this.body
 	},
-	push:function(newView) {
+	push:function(newView, opts) {
+		opts = tags.options(opts, {
+			animate:true
+		})
 		var views = this.views
 		var stack = this.stack
 		var viewBelow = views[stack.length - 1]
@@ -45,22 +47,29 @@ var scrollerBase = {
 		if (this.onViewChange) { this.onViewChange() }
 		this.renderHeadContent(this.$head.empty(), newView, viewBelow)
 		this.renderBodyContent(views[this.stack.length - 1].empty(), newView, viewBelow)
-		this._scroll()
+		this._scroll(opts.animate)
 	},
-	pop:function() {
+	pop:function(opts) {
+		opts = tags.options(opts, {
+			animate:true
+		})
 		var stack = this.stack
 		var fromView = stack.pop()
 		var currentView = stack[stack.length - 1]
 		var viewBelow = stack[stack.length - 2]
 		if (this.onViewChange) { this.onViewChange() }
 		this.renderHeadContent(this.$head.empty(), currentView, viewBelow, fromView)
-		this._scroll()
+		this._scroll(opts.animate)
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
 	},
-	_scroll:function() {
+	_scroll:function(animate) {
 		var offset = this.stack.length - 1
-		$(this._slider).css('-webkit-transform', 'translateX('+(-offset * viewport.width())+'px)')
+		var transition = animate ? '-webkit-transform '+this.duration/1000+'s' : 'none'
+		$(this._slider).css({
+			'-webkit-transition': transition,
+			'-webkit-transform':'translateX('+(-offset * viewport.width())+'px)'
+		})
 	}
 }
