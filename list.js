@@ -13,10 +13,6 @@ var list = tags.list = function list(opts) {
 	var data = {}
 	var $tag
 	
-	var getItemId = function(item) {
-		return 'tags-list-item-'+opts.getItemId(item)
-	}
-	
 	function renderListItem(item) {
 		var id = getItemId(item)
 		data[id] = item
@@ -43,12 +39,13 @@ var list = tags.list = function list(opts) {
 		return { newItems:count }
 	}
 	
+	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
 	var result = div('dom-list', function(tag) {
 		$tag = $(tag)
 		list.init($tag, data, opts.onSelect)
 		$tag.append($.map(opts.items || [], renderListItem))
 	})
-	
+	result.getItemId = getItemId
 	result.append = function listAppend(newItems) { return addItems(newItems, $tag.append) }
 	result.prepend = function listPrepend(newItems) { return addItems(newItems, $tag.prepend) }
 	result.height = function() { return $tag.height() }
