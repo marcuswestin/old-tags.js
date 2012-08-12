@@ -48,6 +48,7 @@ var scrollerBase = {
 	pop:function(opts) {
 		opts = tags.options(opts, {
 			render:true,
+			useStaleView:true,
 			animate:true
 		})
 		opts.index = this.stack.length - 2
@@ -58,6 +59,7 @@ var scrollerBase = {
 		opts = tags.options(opts, {
 			animate:false,
 			render:false,
+			useStaleView:false,
 			index:null, // required
 			view:null   // required
 		})
@@ -72,9 +74,12 @@ var scrollerBase = {
 			this.$head.empty().append(
 				this.renderHeadContent(opts.view, { viewBelow:viewBelow })
 			)
-			this.views[opts.index].empty().append(
-				this.renderBodyContent(opts.view)
-			)
+			var keepStaleView = (opts.useStaleView && this.views[opts.index])
+			if (!keepStaleView) {
+				this.views[opts.index].empty().append(
+					this.renderBodyContent(opts.view)
+				)
+			}
 			this._scroll(opts.animate)
 		}
 	},
