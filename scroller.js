@@ -12,7 +12,7 @@ var scrollerBase = {
 		return this.$head=$(div('scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
 	},
 	renderBody:function(numViews, renderBodyContent) {
-		this.renderBodyContent = renderBodyContent
+		this._renderBodyContent = renderBodyContent
 		var viewportSize = tags.viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
 		var crop = style({ overflowX:'hidden' })
@@ -82,6 +82,12 @@ var scrollerBase = {
 			}
 			this._scroll(opts.animate)
 		}
+	},
+	renderBodyContent:function(view, opts) {
+		return div('scroller-bouncer', style({ // the bouncer makes the content view always bounce-scrollable
+			height:viewport.height()-this.headHeight - 7,
+			width:viewport.width()
+		}), this._renderBodyContent(view, opts))
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
