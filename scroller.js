@@ -1,6 +1,7 @@
 tags.scroller = function(opts) {
 	opts = tags.options(opts, {
-		duration:500
+		duration:500,
+		onViewChange:null
 	})
 	return $.extend(tags.create(scrollerBase), { stack:[], onViewChange:opts.onViewChange, duration:opts.duration })
 }
