@@ -1,19 +1,24 @@
-var getId = function() { return 'list-item-'+(getId.id++) }
-getId.id = 1
+var defaultGetItemId = function() { getId.id++ }
+defaultGetItemId.id = 1
 
 var list = tags.list = function list(opts) {
 	opts = tags.options(opts, {
 		items:null,
 		onSelect:logOnSelect,
-		getItemId:getId,
+		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
 		reAddItems:false
 	})
 	
 	var data = {}
 	var $tag
+	
+	var getItemId = function(item) {
+		return 'tags-list-item-'+opts.getItemId(item)
+	}
+	
 	function renderListItem(item) {
-		var id = opts.getItemId(item)
+		var id = getItemId(item)
 		data[id] = item
 		return div('list-item', { id:id }, opts.renderItem(item))
 	}
@@ -24,7 +29,7 @@ var list = tags.list = function list(opts) {
 		var count = 0
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
-			var id = opts.getItemId(item)
+			var id = getItemId(item)
 			if ($tag.find('#'+id).length) {
 				if (opts.reAddItems) {
 					$tag.find('#'+id).remove()
