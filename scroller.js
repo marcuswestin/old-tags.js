@@ -38,28 +38,45 @@ var scrollerBase = {
 	},
 	push:function(newView, opts) {
 		opts = tags.options(opts, {
+			render:true,
 			animate:true
 		})
-		var views = this.views
-		var stack = this.stack
-		var viewBelow = views[stack.length - 1]
-		this.stack.push(newView)
-		if (this.onViewChange) { this.onViewChange() }
-		this.$head.empty().append(this.renderHeadContent(newView, { viewBelow:viewBelow, viewAbove:null }))
-		views[this.stack.length - 1].empty().append(this.renderBodyContent(newView))
-		this._scroll(opts.animate)
+		opts.index = this.stack.length
+		opts.view = newView
+		this.set(opts)
 	},
 	pop:function(opts) {
 		opts = tags.options(opts, {
+			render:true,
 			animate:true
 		})
-		var stack = this.stack
-		var viewAbove = stack.pop()
-		var currentView = stack[stack.length - 1]
-		var viewBelow = stack[stack.length - 2]
-		if (this.onViewChange) { this.onViewChange() }
-		this.$head.empty().append(this.renderHeadContent(currentView, { viewBelow:viewBelow, viewAbove:viewAbove }))
-		this._scroll(opts.animate)
+		opts.index = this.stack.length - 2
+		opts.view = this.stack[opts.index] // just set to view currently at the target index
+		this.set(opts)
+	},
+	set:function(opts) {
+		opts = tags.options(opts, {
+			animate:false,
+			render:false,
+			index:null, // required
+			view:null   // required
+		})
+		this.stack.length = opts.index + 1
+		this.stack[opts.index] = opts.view
+		
+		if (opts.render) {
+			var viewBelow = this.views[opts.index - 1]
+			if (this.onViewChange) {
+				this.onViewChange()
+			}
+			this.$head.empty().append(
+				this.renderHeadContent(opts.view, { viewBelow:viewBelow })
+			)
+			this.views[opts.index].empty().append(
+				this.renderBodyContent(opts.view)
+			)
+			this._scroll(opts.animate)
+		}
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
