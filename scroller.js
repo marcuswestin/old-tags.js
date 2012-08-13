@@ -1,19 +1,26 @@
 tags.scroller = function(opts) {
 	opts = tags.options(opts, {
 		duration:500,
-		onViewChange:null
+		onViewChange:null,
+		alwaysBounce:true
 	})
-	return $.extend(tags.create(scrollerBase), { stack:[], onViewChange:opts.onViewChange, duration:opts.duration })
+	return $.extend(tags.create(scrollerBase), {
+		onViewChange:opts.onViewChange,
+		duration:opts.duration,
+		alwaysBounce:opts.alwaysBounce,
+		stack:[]
+	})
 }
 
 var scrollerBase = {
+	headHeight:0,
 	renderHead:function(headHeight, renderHeadContent) {
 		this.renderHeadContent = renderHeadContent
 		this.headHeight = headHeight
 		return this.$head=$(div('scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
 	},
 	renderBody:function(numViews, renderBodyContent) {
-		this._renderBodyContent = renderBodyContent
+		this.renderBodyContent = renderBodyContent
 		var viewportSize = tags.viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
 		var crop = style({ overflowX:'hidden' })
@@ -58,37 +65,48 @@ var scrollerBase = {
 	},
 	set:function(opts) {
 		opts = tags.options(opts, {
-			animate:false,
-			render:false,
+			render:true,
 			useStaleView:false,
+			alwaysBounce:null,
+			animate:null,
 			index:null, // required
 			view:null   // required
 		})
+		
+		var isNewTopView = opts.index == this.stack.length
+		var animate = (opts.animate === null ? isNewTopView : opts.animate)
+		
 		this.stack.length = opts.index + 1
 		this.stack[opts.index] = opts.view
 		
 		if (opts.render) {
-			var viewBelow = this.views[opts.index - 1]
 			if (this.onViewChange) {
 				this.onViewChange()
 			}
-			this.$head.empty().append(
-				this.renderHeadContent(opts.view, { viewBelow:viewBelow })
-			)
-			var keepStaleView = (opts.useStaleView && this.views[opts.index])
-			if (!keepStaleView) {
-				this.views[opts.index].empty().append(
-					this.renderBodyContent(opts.view)
+			if (this.$head) {
+				this.$head.empty().append(
+					this.renderHeadContent(opts.view, { viewBelow:this.views[opts.index - 1] })
 				)
 			}
-			this._scroll(opts.animate)
+			var keepStaleView = (opts.useStaleView && this.views[opts.index])
+			if (!keepStaleView) {
+				this.views[opts.index].empty().append(this._renderBodyContent(opts))
+			}
+			this._scroll(animate)
 		}
 	},
-	renderBodyContent:function(view, opts) {
-		return div('scroller-bouncer', style({ // the bouncer makes the content view always bounce-scrollable
-			height:viewport.height()-this.headHeight - 7,
-			width:viewport.width()
-		}), this._renderBodyContent(view, opts))
+	_renderBodyContent:function(opts) {
+		var renderOpts = { index:opts.index }
+		var alwaysBounce = (opts.alwaysBounce === null ? this.alwaysBounce : opts.alwaysBounce)
+		if (alwaysBounce) {
+			var bounceStyle = style({ // the bouncer makes the content view always bounce-scrollable
+				height:viewport.height()-this.headHeight - 7,
+				width:viewport.width()
+			})
+			return div('scroller-bouncer', bounceStyle, this.renderBodyContent(opts.view, renderOpts))
+		} else {
+			return this.renderBodyContent(opts.view, renderOpts)
+		}
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
