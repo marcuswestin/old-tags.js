@@ -1,4 +1,4 @@
-var defaultGetItemId = function() { getId.id++ }
+var defaultGetItemId = function() { defaultGetItemId.id++ }
 defaultGetItemId.id = 1
 
 var list = tags.list = function list(opts) {
