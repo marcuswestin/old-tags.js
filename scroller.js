@@ -1,6 +1,6 @@
 tags.scroller = function(opts) {
 	opts = tags.options(opts, {
-		duration:500,
+		duration:350,
 		onViewChange:null,
 		alwaysBounce:true
 	})
