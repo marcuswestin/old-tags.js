@@ -62,48 +62,46 @@
 	var tagsProto = {
 		__isTag:true,
 		__render:function renderTag() {
-			if (this.el) { return this.el }
-			this.el = document.createElement(this.tagName)
+			var el = document.createElement(this.tagName)
 			var args = this.args
 			var index = 0
 			if (typeof args[0] == 'string') {
-				this.el.className = args[0]
+				el.className = args[0]
 				index = 1
 			}
-			this.__processArgs(args, index)
-			return this.el
+			this.__processArgs(el, args, index)
+			return el
 		},
-		__processArgs:function processTagArgs(args, index) {
+		__processArgs:function processTagArgs(el, args, index) {
 			while (index < args.length) {
-				this.__processArg(args[index++])
+				this.__processArg(el, args[index++])
 			}
 		},
-		__processArg:function processTagArg(arg) {
+		__processArg:function processTagArg(el, arg) {
 			if (arg == null) { return } // null & undefined
-			var el = this.el
 			var type = typeof arg
 			if (arg.__isTag) {
 				el.appendChild(arg.__render())
 			} else if (arg.toTag) {
-				this.__processArg(arg.toTag())
+				this.__processArg(el, arg.toTag())
 			} else if (type == 'string' || type == 'number') {
 				el.appendChild(document.createTextNode(arg))
 			// http://stackoverflow.com/questions/120262/whats-the-best-way-to-detect-if-a-given-javascript-object-is-a-dom-element
 			} else if (arg.nodeType && arg.nodeType == 1) {
 				el.appendChild(arg)
 			} else if ($.isArray(arg)) {
-				this.__processArgs(arg, 0)
+				this.__processArgs(el, arg, 0)
 			} else if (type == 'function') {
 				var result = arg.call(el, $(el))
 				if ($.isArray(result)) {
-					this.__processArgs(result, 0)
+					this.__processArgs(el, result, 0)
 				} else {
-					this.__processArg(result)
+					this.__processArg(el, result)
 				}
 			} else if (arg.renderTag) {
-				this.__processArgs(arg.renderTag($(el)), 0)
+				this.__processArgs(el, arg.renderTag($(el)), 0)
 			} else if (arg instanceof jQuery) {
-				this.__processArgs(arg, 0)
+				this.__processArgs(el, arg, 0)
 			} else {
 				for (var key in arg) {
 					if (!arg.hasOwnProperty(key)) { continue }
