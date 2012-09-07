@@ -99,7 +99,7 @@
 					this.__processArg(el, result)
 				}
 			} else if (arg.renderTag) {
-				this.__processArgs(el, arg.renderTag($(el)), 0)
+				this.__processArgs(el, $(arg.renderTag($(el))), 0)
 			} else if (arg instanceof jQuery) {
 				this.__processArgs(el, arg, 0)
 			} else {
@@ -142,8 +142,12 @@
 		$.fn.append = function jqAppendMonkeyPath() {
 			if (arguments.length == 1) {
 				var arg = arguments[0]
-				if ($.isArray(arg)) {
+				if (arg == undefined) {
+					return
+				} else if ($.isArray(arg)) {
 					for (var i=0; i<arg.length; i++) { this.append(arg[i]) }
+				} else if (arg.renderTag) {
+					originalAppend.call(this, arg.renderTag())
 				} else {
 					originalAppend.call(this, arg)
 				}
