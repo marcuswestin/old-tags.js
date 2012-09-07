@@ -34,11 +34,11 @@ var scrollerBase = {
 		
 		this.body=div('scroller-body', style({ position:'absolute', top:this.headHeight, overflowX:'hidden' }),
 			div('scroller-overflow', contentSize, crop,
-				this._slider=div('scroller-slider', slider,
+				this.$slider=$(div('scroller-slider', slider,
 					this.views=map(new Array(numViews), function() {
 						return $(div('scroller-view', contentSize, crop, floating, scrollable))
 					})
-				)
+				))
 			)
 		)
 		this.push({})
@@ -114,7 +114,7 @@ var scrollerBase = {
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
 		var transition = animate ? '-webkit-transform '+this.duration/1000+'s' : 'none'
-		$(this._slider).css({
+		this.$slider.css({
 			'-webkit-transition': transition,
 			'-webkit-transform':'translateX('+(-offset * viewport.width())+'px)'
 		})
