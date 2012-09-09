@@ -44,7 +44,7 @@ function react(callback) {
 
 function height() { return $win.height() }
 function width() { return $win.width() }
-function getSize() { return { width:width(), height:height() } }
+function getSize() { return { width:viewport.width(), height:viewport.height() } }
 
 var $win = $(window)
 var callbacks = []
