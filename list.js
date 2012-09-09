@@ -60,7 +60,7 @@ var list = tags.list = function list(opts) {
 
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
-		$tag.on('click', '.list-item', function(event) {
+		$tag.on('mousedown', '.list-item', function(event) {
 			var $el = $(this)
 			var id = $el.attr('id')
 			var result = data[id]
