@@ -113,10 +113,8 @@ var scrollerBase = {
 	},
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
-		var transition = animate ? '-webkit-transform '+this.duration/1000+'s' : 'none'
-		this.$slider.css({
-			'-webkit-transition': transition,
-			'-webkit-transform':'translateX('+(-offset * viewport.width())+'px)'
-		})
+		this.$slider.css(
+			style.translate.x(-offset * viewport.width(), animate ? this.duration : 'none')
+		)
 	}
 }
