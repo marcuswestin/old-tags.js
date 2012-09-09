@@ -10,6 +10,10 @@
 */
 
 tags.style = function style(styles) {
+	if (arguments.length > 1) {
+		var args = [{}].concat(Array.prototype.slice.call(arguments))
+		styles = $.extend.apply($, args)
+	}
 	return function($tag) {
 		var elStyle = $tag[0].style
 		for (var name in styles) {
