@@ -15,6 +15,11 @@ var baseRouter = {
 	route:function(handler) {
 		this._changeHandler = handler
 		window.onpopstate = bind(this, this._onChange)
+		setTimeout(bind(this, function() {
+			// In Chrome, assigning onpopstate automatically fires the handler
+			// In Firefox, it does not. Manually call onChange if it was not already called once
+			if (!this._fired) { this._onChange() }
+		}))
 		return this
 	},
 	error:function(handler) {
@@ -28,6 +33,7 @@ var baseRouter = {
 		return this
 	},
 	_onChange:function() {
+		this._fired = true
 		var path = location.pathname
 		for (var i=0; i<this._routes.length; i++) {
 			var route = this._routes[i]
