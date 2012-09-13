@@ -15,11 +15,12 @@ var baseRouter = {
 	route:function(handler) {
 		this._changeHandler = handler
 		window.onpopstate = bind(this, this._onChange)
-		setTimeout(bind(this, function() {
+		var self = this
+		setTimeout(function() {
 			// In Chrome, assigning onpopstate automatically fires the handler
 			// In Firefox, it does not. Manually call onChange if it was not already called once
-			if (!this._fired) { this._onChange() }
-		}))
+			if (!self._fired) { self._onChange() }
+		})
 		return this
 	},
 	error:function(handler) {
