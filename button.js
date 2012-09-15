@@ -23,18 +23,23 @@ function makeRect(x, y, width, height) {
 	return tags.create(rectProto).init(x, y, width, height)
 }
 
-var dataMap = { id:0 }
+var callbackMap = { id:0 }
 
-var button = tags.button = function button(data, callback) {
-	return function() {
-		var id = dataMap.id++
-		if (callback) {
-			dataMap[id] = { data:data, cb:callback }
-		} else {
-			dataMap[id] = { cb:data }
-		}
-		$(this).attr('button-id', id).addClass(button.className)
+var button = tags.button = function button(/* [el,] callback */) {
+	if (arguments.length == 1) {
+		var callback = arguments[0]
+		return function() { makeButton($(this), callback) }
+	} else {
+		var $el = $(arguments[0])
+		var callback = arguments[1]
+		makeButton($el, callback)
 	}
+}
+
+function makeButton($el, callback) {
+	var id = callbackMap.id++
+	callbackMap[id] = callback
+	$el.attr('button-id', id).addClass(button.className)
 }
 
 button.className = 'dom-buttom'
@@ -49,13 +54,12 @@ var onEnd = function(event, $el, supressHandler) {
 	}
 	
 	var id = $el.attr('button-id')
-	var map = dataMap[id]
-	var callback = isActive($el) && !supressHandler && map.cb
+	var callback = isActive($el) && !supressHandler && callbackMap[id]
 	
 	setInactive($el)
 	
 	if (callback) {
-		callback.call($el[0], event, map.data)
+		callback.call($el[0], event)
 	}
 	if (tags.button.globalHandler) {
 		tags.button.globalHandler.call($el[0], event, id)
