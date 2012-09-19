@@ -5,6 +5,20 @@
 		: function shimCreate(protoObj) { function F(){}; F.prototype = protoObj; return new F() }
 	)
 	
+	var options = function(opts, defaults) {
+		if (!opts) { opts = {} }
+		var result = {}
+		for (var key in defaults) {
+			result[key] = (typeof opts[key] != 'undefined' ? opts[key] : defaults[key])
+		}
+		return result
+	}
+	
+	var eventPos = function($e, index) {
+		var obj = tags.isTouch ? $e.originalEvent.changedTouches[index || 0] : $e.originalEvent
+		return { x:obj.pageX, y:obj.pageY }
+	}
+	
 	var isTouch
 	try {
 		document.createEvent("TouchEvent")
@@ -15,7 +29,9 @@
 	
 	var tags = {
 		create: create,
-		isTouch:isTouch,
+		options: options,
+		isTouch: isTouch,
+		eventPos: eventPos,
 		createTag: function(tagName, render) {
 			return function tagCreator() {
 				var instance = tags.create(tagsProto)
@@ -83,7 +99,7 @@
 					this.__processArg(el, result)
 				}
 			} else if (arg.renderTag) {
-				this.__processArgs(el, arg.renderTag($(el)), 0)
+				this.__processArgs(el, $(arg.renderTag($(el))), 0)
 			} else if (arg instanceof jQuery) {
 				this.__processArgs(el, arg, 0)
 			} else {
@@ -123,11 +139,15 @@
 		$.fn.domManip.prototype = originalDomManip.prototype
 		
 		var originalAppend = $.fn.append
-		$.fn.append = function() {
+		$.fn.append = function jqAppendMonkeyPath() {
 			if (arguments.length == 1) {
 				var arg = arguments[0]
-				if ($.isArray(arg)) {
+				if (arg == undefined) {
+					return
+				} else if ($.isArray(arg)) {
 					for (var i=0; i<arg.length; i++) { this.append(arg[i]) }
+				} else if (arg.renderTag) {
+					originalAppend.call(this, arg.renderTag())
 				} else {
 					originalAppend.call(this, arg)
 				}

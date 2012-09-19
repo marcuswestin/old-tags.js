@@ -1,39 +1,54 @@
-var getId = function() { return getId.id++ }
-getId.id = 1
+var defaultGetItemId = function() { return defaultGetItemId.id++ }
+defaultGetItemId.id = 1
 
-var list = tags.list = function list(items, onSelect, idFun, render) {
-	if (arguments.length == 3) {
-		render = idFun
-		idFun = getId
-	}
+var list = tags.list = function list(opts) {
+	opts = tags.options(opts, {
+		items:null,
+		onSelect:logOnSelect,
+		getItemId:defaultGetItemId,
+		renderItem:renderItemJson,
+		reAddItems:false
+	})
+	
 	var data = {}
-	var uniqueId = 'list-'+getId()+'-'
 	var $tag
+	
 	function renderListItem(item) {
-		var id = idFun(item)
+		var id = getItemId(item)
 		data[id] = item
-		return div('list-item', { id:uniqueId+id, 'listId':id }, render(item))
+		return div('list-item', { id:id }, opts.renderItem(item))
 	}
 	
 	function addItems(newItems, appendOrPrepend) {
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
+		var count = 0
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
-			var id = idFun(item)
-			$tag.find('#'+uniqueId+id).remove()
+			var id = getItemId(item)
+			if ($tag.find('#'+id).length) {
+				if (opts.reAddItems) {
+					$tag.find('#'+id).remove()
+				} else {
+					continue
+				}
+			}
+			count++
 			appendOrPrepend.call($tag, renderListItem(item))
 		}
+		return { newItems:count }
 	}
 	
-	var result = div(list.className, function(tag) {
+	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
+	var result = div('dom-list', function(tag) {
 		$tag = $(tag)
-		list.init($tag, data, onSelect)
-		$tag.append($.map(items || [], renderListItem))
+		list.init($tag, data, opts.onSelect)
+		$tag.append($.map(opts.items || [], renderListItem))
 	})
-	
-	result.append = function(newItems) { addItems(newItems, $tag.append) }
-	result.prepend = function(newItems) { addItems(newItems, $tag.prepend) }
+	result.getItemId = getItemId
+	result.append = function listAppend(newItems) { return addItems(newItems, $tag.append) }
+	result.prepend = function listPrepend(newItems) { return addItems(newItems, $tag.prepend) }
+	result.height = function() { return $tag.height() }
 	result.empty = function() {
 		$tag.empty()
 		return this
@@ -45,9 +60,9 @@ var list = tags.list = function list(items, onSelect, idFun, render) {
 
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
-		$tag.on('click', '.list-item', function(event) {
+		$tag.on('mousedown', '.list-item', function(event) {
 			var $el = $(this)
-			var id = $el.attr('listId')
+			var id = $el.attr('id')
 			var result = data[id]
 			onSelect(result, id, $el, event)
 		})
@@ -79,7 +94,7 @@ list.init = function($tag, data, onSelect) {
 	$tag.on('touchend', function(event) {
 		if (tapElement) {
 			var $el = $(tapElement)
-			var id = $el.attr('listId')
+			var id = $el.attr('id')
 			var result = data[id]
 			clear()
 			onSelect(result, id, $el, event)
@@ -94,4 +109,10 @@ list.init = function($tag, data, onSelect) {
 	})
 } 
 
-list.className = 'dom-list'
+function renderItemJson(item) {
+	return div('json-item', JSON.stringify(item))
+}
+
+function logOnSelect(item) {
+	console.log('tags-list item selected:', item)
+}

@@ -10,6 +10,10 @@
 */
 
 tags.style = function style(styles) {
+	if (arguments.length > 1) {
+		var args = [{}].concat(Array.prototype.slice.call(arguments))
+		styles = $.extend.apply($, args)
+	}
 	return function($tag) {
 		var elStyle = $tag[0].style
 		for (var name in styles) {
@@ -28,6 +32,20 @@ tags.style.disableSelection = tags.style({
 	'-ms-user-select':'none'
 })
 
-tags.style.transition = function(name, duration) {
-	return style({ '-webkit-transition':name+' '+(duration/1000)+'s' })
+tags.style.transition = function(properties, duration) {
+	return {
+		// '-webkit-transition-timing-function': 'linear',
+		'-webkit-transition-property': properties,
+		'-webkit-transition-duration': duration+'ms'
+	}
 }
+
+tags.style.translate = function(x, y, duration) {
+	var res = { '-webkit-transform':'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
+	if (duration != null) {
+		res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms'
+	}
+	return res
+}
+tags.style.translate.y = function(y, duration) { return tags.style.translate(0, y, duration) }
+tags.style.translate.x = function(x, duration) { return tags.style.translate(x, 0, duration) }

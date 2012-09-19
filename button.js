@@ -6,9 +6,9 @@ var rectProto = {
 		this.y2 = y + height
 		return this
 	},
-	pad: function(width, top, bottom) {
-		this.x -= width
-		this.x2 += width
+	pad: function(top, right, bottom, left) {
+		this.x -= left
+		this.x2 += right
 		this.y -= top
 		this.y2 += bottom
 		return this
@@ -23,22 +23,26 @@ function makeRect(x, y, width, height) {
 	return tags.create(rectProto).init(x, y, width, height)
 }
 
-var dataMap = { id:0 }
+var callbackMap = { id:0 }
 
-var button = tags.button = function button(data, callback) {
-	return function() {
-		var id = dataMap.id++
-		if (callback) {
-			dataMap[id] = { data:data, cb:callback }
-		} else {
-			dataMap[id] = { cb:data }
-		}
-		$(this).attr('button-id', id).addClass(button.className)
+var button = tags.button = function button(/* [el,] callback */) {
+	if (arguments.length == 1) {
+		var callback = arguments[0]
+		return function() { makeButton($(this), callback) }
+	} else {
+		var $el = $(arguments[0])
+		var callback = arguments[1]
+		makeButton($el, callback)
 	}
 }
 
+function makeButton($el, callback) {
+	var id = callbackMap.id++
+	callbackMap[id] = callback
+	$el.attr('button-id', id).addClass(button.className)
+}
+
 button.className = 'dom-buttom'
-button.onError = function() {}
 
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
@@ -50,13 +54,12 @@ var onEnd = function(event, $el, supressHandler) {
 	}
 	
 	var id = $el.attr('button-id')
-	var map = dataMap[id]
-	var callback = isActive($el) && !supressHandler && map.cb
+	var callback = isActive($el) && !supressHandler && callbackMap[id]
 	
 	setInactive($el)
 	
 	if (callback) {
-		callback.call($el[0], event, map.data)
+		callback.call($el[0], event)
 	}
 	if (tags.button.globalHandler) {
 		tags.button.globalHandler.call($el[0], event, id)
@@ -101,7 +104,7 @@ var buttons = {
 		event.preventDefault()
 		
 		var offset = $el.offset()
-		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(26, 3, 35)
+		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(31, 15, 35, 15)
 		$el.data('touchRect', touchRect)
 		
 		setActive($el)
