@@ -74,12 +74,19 @@ function selectEl(el, data, onSelect) {
 
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
-		$tag.on('mousedown', '.list-item', function(event) {
-			var $el = $(this)
-			var id = $el.attr('id')
-			var result = data[id]
-			onSelect(result, id, $el, event)
+		$tag.on('mousedown', '.list-item', function($e) {
+			$e.preventDefault()
+			selectEl(this, data, onSelect)
 		})
+		var $currentHighlight
+		$tag.on('mouseover', '.list-item', function($e) {
+			if ($currentHighlight) { $currentHighlight.removeClass('active') }
+			var $currentHighlight = $(this).addClass('active')
+		})
+		$tag.on('mouseout', '.list-item', function($e) {
+			$(this).removeClass('active')
+		})
+		
 		return
 	}
 	
