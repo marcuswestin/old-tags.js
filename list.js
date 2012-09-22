@@ -48,6 +48,14 @@ var list = tags.list = function list(opts) {
 	result.append = function listAppend(newItems) { return addItems(newItems, $tag.append) }
 	result.prepend = function listPrepend(newItems) { return addItems(newItems, $tag.prepend) }
 	result.height = function() { return $tag.height() }
+	result.update = function(item) {
+		var $el = $('#'+getItemId(item))
+		$el.empty().append(opts.renderItem(item))
+	}
+	result.select = function(item) {
+		var el = $('#'+getItemId(item))[0]
+		selectEl(el, data, opts.onSelect)
+	}
 	result.empty = function() {
 		$tag.empty()
 		return this
@@ -55,6 +63,13 @@ var list = tags.list = function list(opts) {
 	result.find = function(selector) { return $tag.find(selector) }
 	
 	return result
+}
+
+function selectEl(el, data, onSelect) {
+	var id = el.getAttribute('id')
+	var result = data[id]
+	if (result == null) { return }
+	onSelect.call(el, result)
 }
 
 list.init = function($tag, data, onSelect) {
@@ -92,12 +107,10 @@ list.init = function($tag, data, onSelect) {
 
 	$tag.on('touchend', function(event) {
 		if (tapElement) {
-			var $el = $(tapElement)
-			var id = $el.attr('id')
-			var result = data[id]
+			var el = tapElement
 			clear()
-			onSelect(result, id, $el, event)
 			event.preventDefault()
+			selectEl(el, data, onSelect)
 		} else {
 			clear()
 		}

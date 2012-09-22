@@ -139,22 +139,30 @@
 		$.fn.domManip.prototype = originalDomManip.prototype
 		
 		var originalAppend = $.fn.append
-		$.fn.append = function jqAppendMonkeyPath() {
-			if (arguments.length == 1) {
-				var arg = arguments[0]
-				if (arg == undefined) {
-					return
-				} else if ($.isArray(arg)) {
-					for (var i=0; i<arg.length; i++) { this.append(arg[i]) }
-				} else if (arg.renderTag) {
-					originalAppend.call(this, arg.renderTag())
-				} else {
-					originalAppend.call(this, arg)
-				}
-			} else {
-				for (var i=0; i<arguments.length; i++) { this.append(arguments[i]) }
+		$.fn.append = function jqAppendMonkeyPatch() {
+			for (var i=0; i<arguments.length; i++) {
+				renderTagArgs.call(this, arguments[i], originalAppend)
 			}
 			return this
+		}
+		var originalAfter = $.fn.after
+		$.fn.after = function jqAfterMonkeyPatch() {
+			for (var i=0; i<arguments.length; i++) {
+				renderTagArgs.call(this, arguments[i], originalAfter)
+			}
+			return this
+		}
+		
+		function renderTagArgs(arg, originalJqFn) {
+			if (arg == undefined) {
+				return
+			} else if ($.isArray(arg)) {
+				for (var i=0; i<arg.length; i++) { renderTagArgs.call(this, arg[i], originalJqFn) }
+			} else if (arg.renderTag) {
+				originalJqFn.call(this, arg.renderTag())
+			} else {
+				originalJqFn.call(this, arg)
+			}
 		}
 	}
 	
