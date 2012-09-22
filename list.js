@@ -27,11 +27,10 @@ var list = tags.list = function list(opts) {
 			var item = newItems[i]
 			var id = getItemId(item)
 			if ($tag.find('#'+id).length) {
-				if (opts.reAddItems) {
-					$tag.find('#'+id).remove()
-				} else {
+				if (!opts.reAddItems) {
 					continue
 				}
+				$tag.find('#'+id).remove()
 			}
 			count++
 			appendOrPrepend.call($tag, renderListItem(item))
