@@ -39,8 +39,8 @@ var list = tags.list = function list(opts) {
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
-	var result = div('dom-list', function(tag) {
-		$tag = $(tag)
+	var result = div('dom-list', function(_$tag) {
+		$tag = _$tag
 		list.init($tag, data, opts.onSelect)
 		$tag.append($.map(opts.items || [], renderListItem))
 	})
