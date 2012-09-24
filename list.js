@@ -49,7 +49,9 @@ var list = tags.list = function list(opts) {
 	result.prepend = function listPrepend(newItems) { return addItems(newItems, $tag.prepend) }
 	result.height = function() { return $tag.height() }
 	result.update = function(item) {
-		var $el = $('#'+getItemId(item))
+		var itemId = getItemId(item)
+		var $el = $('#'+itemId)
+		data[itemId] = item
 		$el.empty().append(opts.renderItem(item))
 	}
 	result.select = function(item) {
