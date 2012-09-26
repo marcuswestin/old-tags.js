@@ -1,4 +1,4 @@
-tags.router = function() {
+module.exports = function router() {
 	return tags.create(baseRouter).init()
 }
 

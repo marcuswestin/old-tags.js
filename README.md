@@ -12,7 +12,7 @@ Setup
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	tags.expose() // expose div, span, input, etc as tag functions
+	var div = tags.expose() // expose div, span, input, etc as tag functions
 	$(function() {
 		$('#tags-demo').append(
 			div('greeting', 'Hello world!')
@@ -88,14 +88,14 @@ Some more tricks
 Custom tags
 -----------
 
-You can create custom tags with `tags.createTag()`
+You can create custom tags with `tags()`
 
 	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 	<script src="https://raw.github.com/marcuswestin/tags.js/master/tags.js"></script>
 	<div id="tags-demo"></div>
 	<script>
-	var div = tags.createTag('div')
-	var foo = tags.createTag('foo')
+	var div = tags('div')
+	var foo = tags('foo')
 	$(function() {
 		$('#tags-demo').append(
 			div('container',

@@ -1,3 +1,16 @@
+var tags = require('./tags')
+
+module.exports = button
+
+function button(callback) {
+	var callback = arguments[0]
+	return function($el) { makeButton($el, callback) }
+}
+
+function makeRect(x, y, width, height) {
+	return tags.create(rectProto).init(x, y, width, height)
+}
+
 var rectProto = {
 	init: function(x, y, width, height) {
 		this.x = x
@@ -19,22 +32,7 @@ var rectProto = {
 	}
 }
 
-function makeRect(x, y, width, height) {
-	return tags.create(rectProto).init(x, y, width, height)
-}
-
 var callbackMap = { id:0 }
-
-var button = tags.button = function button(/* [el,] callback */) {
-	if (arguments.length == 1) {
-		var callback = arguments[0]
-		return function() { makeButton($(this), callback) }
-	} else {
-		var $el = $(arguments[0])
-		var callback = arguments[1]
-		makeButton($el, callback)
-	}
-}
 
 function makeButton($el, callback) {
 	var id = callbackMap.id++
@@ -42,7 +40,7 @@ function makeButton($el, callback) {
 	$el.attr('button-id', id).addClass(button.className)
 }
 
-button.className = 'dom-buttom'
+button.className = 'dom-button'
 
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
@@ -61,8 +59,8 @@ var onEnd = function(event, $el, supressHandler) {
 	if (callback) {
 		callback.call($el[0], event)
 	}
-	if (tags.button.globalHandler) {
-		tags.button.globalHandler.call($el[0], event, id)
+	if (button.globalHandler) {
+		button.globalHandler.call($el[0], event, id)
 	}
 }
 

@@ -1,4 +1,8 @@
-tags.scroller = function(opts) {
+var tags = require('./tags')
+var viewport = require('./viewport')
+var div = tags('div')
+
+module.exports = function scroller(opts) {
 	opts = tags.options(opts, {
 		duration:350,
 		onViewChange:null,

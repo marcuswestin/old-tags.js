@@ -1,4 +1,4 @@
-var viewport = tags.viewport = {
+var viewport = module.exports = {
 	fit:fit,
 	getSize:getSize,
 	size:getSize,

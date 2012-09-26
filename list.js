@@ -1,7 +1,12 @@
+var tags = require('./tags')
+var div = tags('div')
+
 var defaultGetItemId = function(item) { return item.id ? item.id : defaultGetItemId.id++ }
 defaultGetItemId.id = 1
 
-var list = tags.list = function list(opts) {
+module.exports = list
+
+function list(opts) {
 	opts = tags.options(opts, {
 		items:null,
 		onSelect:logOnSelect,
