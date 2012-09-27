@@ -66,7 +66,7 @@ editable.show = function($el, opts) {
 		$input.off('keydown').off('keypress').off('blur').blur().remove()
 	}
 	function onChange() {
-		$el.text($input.val())
+		$el.text($input.val() || '-')
 		$input.css(getLayout())
 	}
 	function getLayout() {
