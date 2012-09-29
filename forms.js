@@ -14,12 +14,11 @@ function field(id, labelText, opts) {
 	var fieldOpts = options(opts, { input:input })
 	if (!opts) { opts = {} }
 	if (!opts.id) { opts.id = id }
-	return div(field.className,
+	return div('tags-forms-field',
 		label({ 'for':id }, labelText),
 		fieldOpts.input(null, opts)
 	)
 }
-field.className = 'field'
 
 function checkbox(className, opts) {
 	if (typeof className == 'object' && !opts) {
@@ -32,7 +31,7 @@ function checkbox(className, opts) {
 		disabled: false,
 		onChange: null
 	})
-	var $input = $(input(classNames(checkbox, className), { type:'checkbox', id:id }, function() {
+	var $input = $(input(tags.classNames('tags-forms-checkbox', className), { type:'checkbox', id:id }, function() {
 		this.checked = opts.value
 	}))
 	if (opts.onChange) {
@@ -42,7 +41,6 @@ function checkbox(className, opts) {
 	}
 	return $input
 }
-checkbox.className
 
 function select(className, opts) {// name, selectOptions, opts) {
 	if (typeof className == 'objects' && !opts) {
@@ -58,7 +56,7 @@ function select(className, opts) {// name, selectOptions, opts) {
 	})
 	var selectOptions = opts.options
 	var attrsHtml = (opts.id ? ' id="'+opts.id+'" name="'+opts.id+'"' : '')
-	var $select = $('<select class="'+classNames(select, className)+'" '+attrsHtml+'>'+$.map(selectOptions, function(option) {
+	var $select = $('<select class="'+tags.classNames('tags-forms-select', className)+'" '+attrsHtml+'>'+$.map(selectOptions, function(option) {
 		var selected = ((opts.value && opts.value == (option.value ? option.value : option)) ? 'selected=true' : '')
 		var value = option.value ? option.value : option
 		var label = option.label ? option.label : option
@@ -71,7 +69,6 @@ function select(className, opts) {// name, selectOptions, opts) {
 	}
 	return $select
 }
-select.className = 'select'
 
 function submission(text, submittingText, opts, onsubmit) {
 	if (!onsubmit && typeof opts == 'function') {
@@ -79,7 +76,7 @@ function submission(text, submittingText, opts, onsubmit) {
 		opts = null
 	}
 	var form, submit
-	return [div(submission.className, text, button(function() {
+	return [div('tags-forms-submission', text, button(function() {
 		$(form).submit()
 	}), function() {
 		// Allow for the node to be appended to the form before climbind the dom tree
@@ -97,7 +94,7 @@ function submission(text, submittingText, opts, onsubmit) {
 						$input.attr('__wasDisabled', $input.prop('disabled'))
 						$input.prop('disabled', true).addClass('disabled')
 					}
-					$(form).find('.'+submission.className).text(submittingText).addClass('disabled')
+					$(form).find('.tags-forms-submission').text(submittingText).addClass('disabled')
 				} else {
 					var $inputs = $(form).find('input')
 					for (var i=0, input; input = $inputs[i]; i++) {
@@ -106,7 +103,7 @@ function submission(text, submittingText, opts, onsubmit) {
 							$input.prop('disabled', false).removeProp('disabled').removeClass('disabled')
 						}
 					}
-					$(form).find('.'+submission.className).text(text).removeClass('disabled')
+					$(form).find('.tags-forms-submission').text(text).removeClass('disabled')
 				}
 			}
 			$(form).on('submit', function($e) {
@@ -120,7 +117,4 @@ function submission(text, submittingText, opts, onsubmit) {
 		}, 0)
 	}), input({ type:'submit' }, style({ visibility:'hidden', position:'absolute', top:-999999, left:-999999 }))]
 }
-submission.className = 'submission'
-
-function classNames(obj, c2) { return obj.className + (c2 ? ' ' + c2 : '') }
 

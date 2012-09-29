@@ -16,7 +16,6 @@ var keys = { ESC:27, RETURN:13, BACKSPACE:8 }
 var pad = 6
 var paddingLeft = 4
 
-editable.className = 'editable'
 editable.show = function($el, opts) {
 	if (typeof opts == 'function') {
 		opts = { onSave:opts }
@@ -27,7 +26,7 @@ editable.show = function($el, opts) {
 	})
 	
 	var value = (opts.value == null ? $el.text() : opts.value)
-	var $input = $(input()).val(value)
+	var $input = $(input('tags-editable')).val(value)
 		.css({ position:'absolute', paddingLeft:paddingLeft, fontFamily:$el.css('fontFamily'), fontSize:$el.css('fontSize') })
 		.css(getLayout())
 		.on('keydown', onKeyDown).on('keypress', onKeyPress).on('blur', finish)

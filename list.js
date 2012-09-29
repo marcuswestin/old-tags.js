@@ -6,7 +6,11 @@ defaultGetItemId.id = 1
 
 module.exports = list
 
-function list(opts) {
+function list(className, opts) {
+	if (arguments.length == 1) {
+		opts = className
+		className = null
+	}
 	opts = tags.options(opts, {
 		items:null,
 		onSelect:logOnSelect,
@@ -21,7 +25,7 @@ function list(opts) {
 	function renderListItem(item) {
 		var id = getItemId(item)
 		data[id] = item
-		return div('list-item', { id:id }, opts.renderItem(item))
+		return div('tags-list-item', { id:id }, opts.renderItem(item))
 	}
 	
 	function addItems(newItems, appendOrPrepend) {
@@ -44,7 +48,7 @@ function list(opts) {
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
-	var result = div('dom-list', function(_$tag) {
+	var result = div(tags.classNames('tags-list', className), function(_$tag) {
 		$tag = _$tag
 		list.init($tag, data, opts.onSelect)
 		$tag.append($.map(opts.items || [], renderListItem))
@@ -81,16 +85,16 @@ function selectEl(el, data, onSelect) {
 
 list.init = function($tag, data, onSelect) {
 	if (!tags.isTouch) {
-		$tag.on('mousedown', '.list-item', function($e) {
+		$tag.on('mousedown', '.tags-list-item', function($e) {
 			$e.preventDefault()
 			selectEl(this, data, onSelect)
 		})
 		var $currentHighlight
-		$tag.on('mouseover', '.list-item', function($e) {
+		$tag.on('mouseover', '.tags-list-item', function($e) {
 			if ($currentHighlight) { $currentHighlight.removeClass('active') }
 			var $currentHighlight = $(this).addClass('active')
 		})
-		$tag.on('mouseout', '.list-item', function($e) {
+		$tag.on('mouseout', '.tags-list-item', function($e) {
 			$(this).removeClass('active')
 		})
 		
@@ -105,7 +109,7 @@ list.init = function($tag, data, onSelect) {
 		tapElement = null
 	}
 	
-	$tag.on('touchstart', '.list-item', function onTouchStart(event) {
+	$tag.on('touchstart', '.tags-list-item', function onTouchStart(event) {
 		var touch = event.originalEvent.touches[0]
 		tapY = touch.pageY
 		tapElement = event.currentTarget

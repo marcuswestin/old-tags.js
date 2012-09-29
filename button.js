@@ -37,10 +37,8 @@ var callbackMap = { id:0 }
 function makeButton($el, callback) {
 	var id = callbackMap.id++
 	callbackMap[id] = callback
-	$el.attr('button-id', id).addClass(button.className)
+	$el.attr('button-id', id).addClass('tags-button')
 }
-
-button.className = 'dom-button'
 
 var onEnd = function(event, $el, supressHandler) {
 	event.preventDefault()
@@ -118,8 +116,8 @@ var touchInsideTapRect = function($el, event) {
 
 $(function() {
 	if (tags.isTouch) {
-		$(document).on('touchstart', '.'+button.className, buttons.onTouchStart)
+		$(document).on('touchstart', '.tags-button', buttons.onTouchStart)
 	} else {
-		$(document).on('mousedown', '.'+button.className, buttons.onMouseDown)
+		$(document).on('mousedown', '.tags-button', buttons.onMouseDown)
 	}
 })

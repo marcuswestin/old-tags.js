@@ -2,7 +2,9 @@ var tags = require('./tags')
 var viewport = require('./viewport')
 var div = tags('div')
 
-module.exports = function scroller(opts) {
+module.exports = scroller
+
+function scroller(opts) {
 	opts = tags.options(opts, {
 		duration:350,
 		onViewChange:null,
@@ -21,7 +23,7 @@ var scrollerBase = {
 	renderHead:function(headHeight, renderHeadContent) {
 		this.renderHeadContent = renderHeadContent
 		this.headHeight = headHeight
-		return this.$head=$(div('scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
+		return this.$head=$(div('tags-scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
 	},
 	renderBody:function(numViews, renderBodyContent) {
 		this.renderBodyContent = renderBodyContent
@@ -36,11 +38,11 @@ var scrollerBase = {
 			position:'relative'
 		})
 		
-		this.body=div('scroller-body', style({ position:'absolute', top:this.headHeight, overflowX:'hidden' }),
-			div('scroller-overflow', contentSize, crop,
-				this.$slider=$(div('scroller-slider', slider,
+		this.body=div('tags-scroller-body', style({ position:'absolute', top:this.headHeight, overflowX:'hidden' }),
+			div('tags-scroller-overflow', contentSize, crop,
+				this.$slider=$(div('tags-scroller-slider', slider,
 					this.views=map(new Array(numViews), function() {
-						return $(div('scroller-view', contentSize, crop, floating, scrollable))
+						return $(div('tags-scroller-view', contentSize, crop, floating, scrollable))
 					})
 				))
 			)
@@ -107,7 +109,7 @@ var scrollerBase = {
 				height:viewport.height()-this.headHeight - 7,
 				width:viewport.width()
 			})
-			return div('scroller-bouncer', bounceStyle, this.renderBodyContent(opts.view, renderOpts))
+			return div('tags-scroller-bouncer', bounceStyle, this.renderBodyContent(opts.view, renderOpts))
 		} else {
 			return this.renderBodyContent(opts.view, renderOpts)
 		}

@@ -29,6 +29,10 @@ var eventPos = function($e, index) {
 	return { x:obj.pageX, y:obj.pageY }
 }
 
+var classNames = function(c1, c2) {
+	return c1 + (c2 ? ' ' + c2 : '')
+}
+
 var isTouch
 try {
 	document.createEvent("TouchEvent")
@@ -41,6 +45,7 @@ tags.create = create
 tags.options = options
 tags.isTouch = isTouch
 tags.eventPos = eventPos
+tags.classNames = classNames
 
 var tagsProto = {
 	__isTag:true,
