@@ -25,7 +25,7 @@ var scrollerBase = {
 	},
 	renderBody:function(numViews, renderBodyContent) {
 		this.renderBodyContent = renderBodyContent
-		var viewportSize = tags.viewport.size()
+		var viewportSize = viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
 		var crop = style({ overflowX:'hidden' })
 		var scrollable = style({ 'overflow-y':'scroll', '-webkit-overflow-scrolling':'touch' })
