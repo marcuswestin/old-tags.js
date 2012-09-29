@@ -16,11 +16,13 @@ function list(className, opts) {
 		onSelect:logOnSelect,
 		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
-		reAddItems:false
+		reAddItems:false,
+		renderEmpty:null
 	})
 	
 	var data = {}
 	var $tag
+	var isEmpty = false
 	
 	function renderListItem(item) {
 		var id = getItemId(item)
@@ -31,6 +33,8 @@ function list(className, opts) {
 	function addItems(newItems, appendOrPrepend) {
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
+		if (newItems.length == 0) { return }
+		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		var count = 0
 		for (var i=0; i<newItems.length; i++) {
 			var item = newItems[i]
@@ -50,8 +54,14 @@ function list(className, opts) {
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
 	var result = div(tags.classNames('tags-list', className), function(_$tag) {
 		$tag = _$tag
-		list.init($tag, data, opts.onSelect)
-		$tag.append($.map(opts.items || [], renderListItem))
+		list.init($tag, selectEl)
+		var items = opts.items || []
+		if (items.length) {
+			$tag.append($.map(items, renderListItem))
+		} else {
+			isEmpty = true
+			if (opts.renderEmpty) { $tag.append(opts.renderEmpty()) }
+		}
 	})
 	result.getItemId = getItemId
 	result.append = function listAppend(newItems) { return addItems(newItems, $tag.append) }
@@ -63,31 +73,40 @@ function list(className, opts) {
 		data[itemId] = item
 		$el.empty().append(opts.renderItem(item))
 	}
-	result.select = function(item) {
+	result.select = result.selectItem = function(item) {
 		var el = $('#'+getItemId(item))[0]
-		selectEl(el, data, opts.onSelect)
+		selectEl(el)
+	}
+	result.selectIndex = function(index) {
+		var el = $tag[0].children[index]
+		selectEl(el)
 	}
 	result.empty = function() {
+		isEmpty = true
 		$tag.empty()
+		data = {}
+		if (opts.renderEmpty) {
+			$tag.append(opts.renderEmpty())
+		}
 		return this
 	}
 	result.find = function(selector) { return $tag.find(selector) }
+
+	function selectEl(el) {
+		var id = el.getAttribute('id')
+		var result = data[id]
+		if (result == null) { return }
+		opts.onSelect.call(el, result)
+	}
 	
 	return result
 }
 
-function selectEl(el, data, onSelect) {
-	var id = el.getAttribute('id')
-	var result = data[id]
-	if (result == null) { return }
-	onSelect.call(el, result)
-}
-
-list.init = function($tag, data, onSelect) {
+list.init = function($tag, selectEl) {
 	if (!tags.isTouch) {
 		$tag.on('mousedown', '.tags-list-item', function($e) {
 			$e.preventDefault()
-			selectEl(this, data, onSelect)
+			selectEl(this)
 		})
 		var $currentHighlight
 		$tag.on('mouseover', '.tags-list-item', function($e) {
@@ -128,7 +147,7 @@ list.init = function($tag, data, onSelect) {
 			var el = tapElement
 			clear()
 			event.preventDefault()
-			selectEl(el, data, onSelect)
+			selectEl(el)
 		} else {
 			clear()
 		}
