@@ -117,6 +117,9 @@ var scrollerBase = {
 	current:function() {
 		return this.stack[this.stack.length - 1]
 	},
+	getCurrentView:function() {
+		return this.views[this.stack.length - 1]
+	},
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
 		this.$slider.css(
