@@ -37,18 +37,22 @@ function list(className, opts) {
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		var count = 0
 		for (var i=0; i<newItems.length; i++) {
-			var item = newItems[i]
-			var id = getItemId(item)
-			if ($tag.find('#'+id).length) {
-				if (!opts.reAddItems) {
-					continue
-				}
-				$tag.find('#'+id).remove()
-			}
+			appendItem(newItems[i], appendOrPrepend)
 			count++
-			appendOrPrepend.call($tag, renderListItem(item))
 		}
+		isEmpty = false
 		return { newItems:count }
+	}
+	
+	function appendItem(item, appendOrPrepend) {
+		var id = getItemId(item)
+		if ($tag.find('#'+id).length) {
+			if (!opts.reAddItems) {
+				return
+			}
+			$tag.find('#'+id).remove()
+		}
+		appendOrPrepend.call($tag, renderListItem(item))
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
