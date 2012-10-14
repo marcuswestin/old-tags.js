@@ -50,7 +50,7 @@ var scrollerBase = {
 		this.push({})
 		return this.body
 	},
-	push:function(newView, opts) {
+	push:function scollerPush(newView, opts) {
 		opts = tags.options(opts, {
 			render:true,
 			animate:true
@@ -59,7 +59,7 @@ var scrollerBase = {
 		opts.view = newView
 		this.set(opts)
 	},
-	pop:function(opts) {
+	pop:function scrollerPop(opts) {
 		opts = tags.options(opts, {
 			render:true,
 			useStaleView:true,
@@ -69,7 +69,7 @@ var scrollerBase = {
 		opts.view = this.stack[opts.index] // just set to view currently at the target index
 		this.set(opts)
 	},
-	set:function(opts) {
+	set:function scrollerSet(opts) {
 		opts = tags.options(opts, {
 			render:true,
 			useStaleView:false,
