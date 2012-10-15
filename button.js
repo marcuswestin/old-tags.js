@@ -2,9 +2,13 @@ var tags = require('./tags')
 
 module.exports = button
 
-function button(callback) {
-	var callback = arguments[0]
-	return function($el) { makeButton($el, callback) }
+function button(el, callback) {
+	if (arguments.length == 2) {
+		makeButton($(el), callback)
+	} else {
+		callback = el
+		return function($el) { makeButton($el, callback) }
+	}
 }
 
 function makeRect(x, y, width, height) {
