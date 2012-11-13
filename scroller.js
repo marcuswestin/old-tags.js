@@ -110,7 +110,7 @@ var scrollerBase = {
 		var alwaysBounce = (opts.alwaysBounce === null ? this.alwaysBounce : opts.alwaysBounce)
 		if (alwaysBounce) {
 			var bounceStyle = style({ // the bouncer makes the content view always bounce-scrollable
-				height:viewport.height()-this.headHeight - 7,
+				height:viewport.height()-this.headHeight + 1,
 				width:viewport.width()
 			})
 			return div('tags-scroller-bouncer', bounceStyle, this.renderBodyContent(opts.view, renderOpts))
