@@ -132,10 +132,12 @@ list.init = function($tag, selectEl) {
 		tapElement = null
 	}
 	
+	var touchStartTime
 	$tag.on('touchstart', '.tags-list-item', function onTouchStart(event) {
 		var touch = event.originalEvent.touches[0]
 		tapY = touch.pageY
 		tapElement = event.currentTarget
+		touchStartTime = new Date().getTime()
 	})
 
 	$tag.on('touchmove', function onTouchMove(event) {
@@ -146,19 +148,18 @@ list.init = function($tag, selectEl) {
 		}
 	})
 
+	var waitToSeeIfScrollHappened
 	$tag.on('touchend', function(event) {
-		if (tapElement) {
+		clearTimeout(waitToSeeIfScrollHappened)
+		if (!tapElement) { return clear() }
+		waitToSeeIfScrollHappened = setTimeout(function() {
+			var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
+			if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
 			var el = tapElement
 			clear()
 			event.preventDefault()
 			selectEl(el)
-		} else {
-			clear()
-		}
-	})
-
-	$tag.on('touchend', function() {
-		clear()
+		}, 50)
 	})
 } 
 

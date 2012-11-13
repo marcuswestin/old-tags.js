@@ -42,7 +42,11 @@ var scrollerBase = {
 			div('tags-scroller-overflow', contentSize, crop,
 				this.$slider=$(div('tags-scroller-slider', slider,
 					this.views=map(new Array(numViews), function() {
-						return $(div('tags-scroller-view', contentSize, crop, floating, scrollable))
+						return $(div('tags-scroller-view', contentSize, crop, floating, scrollable, function($scrollView) {
+							$scrollView.on('scroll', function() {
+								tags.__lastScroll__ = new Date().getTime()
+							})
+						}))
 					})
 				))
 			)
