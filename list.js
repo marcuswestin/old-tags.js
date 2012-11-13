@@ -32,7 +32,7 @@ function list(className, opts) {
 	function addItems(newItems, addOpts, appendOrPrepend) {
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
-		if (newItems.length == 0) { return }
+		if (newItems.length == 0) { return renderEmpty() }
 		addOpts = tags.options(addOpts, {
 			updateItems:false
 		})
@@ -65,10 +65,15 @@ function list(className, opts) {
 		if (items.length) {
 			$tag.append($.map(items, renderListItem))
 		} else {
-			isEmpty = true
-			if (opts.renderEmpty) { $tag.append(opts.renderEmpty()) }
+			renderEmpty()
 		}
 	})
+	
+	var renderEmpty = function() {
+		isEmpty = true
+		if (opts.renderEmpty) { $tag.append(opts.renderEmpty()) }
+	}
+	
 	result.getItemId = getItemId
 	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag.append) }
 	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag.prepend) }
