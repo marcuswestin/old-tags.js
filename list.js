@@ -16,7 +16,6 @@ function list(className, opts) {
 		onSelect:logOnSelect,
 		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
-		reAddItems:false,
 		renderEmpty:null
 	})
 	
@@ -30,24 +29,27 @@ function list(className, opts) {
 		return div('tags-list-item', { id:id }, opts.renderItem(item))
 	}
 	
-	function addItems(newItems, appendOrPrepend) {
+	function addItems(newItems, addOpts, appendOrPrepend) {
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
 		if (newItems.length == 0) { return }
+		addOpts = tags.options(addOpts, {
+			updateItems:false
+		})
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		var count = 0
 		for (var i=0; i<newItems.length; i++) {
-			appendItem(newItems[i], appendOrPrepend)
+			appendItem(newItems[i], addOpts, appendOrPrepend)
 			count++
 		}
 		isEmpty = false
 		return { newItems:count }
 	}
 	
-	function appendItem(item, appendOrPrepend) {
+	function appendItem(item, addOpts, appendOrPrepend) {
 		var id = getItemId(item)
 		if ($tag.find('#'+id).length) {
-			if (!opts.reAddItems) {
+			if (!addOpts.updateItems) {
 				return
 			}
 			$tag.find('#'+id).remove()
@@ -68,8 +70,8 @@ function list(className, opts) {
 		}
 	})
 	result.getItemId = getItemId
-	result.append = function listAppend(newItems) { return addItems(newItems, $tag.append) }
-	result.prepend = function listPrepend(newItems) { return addItems(newItems, $tag.prepend) }
+	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag.append) }
+	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag.prepend) }
 	result.height = function() { return $tag.height() }
 	result.update = function(item) {
 		var itemId = getItemId(item)
