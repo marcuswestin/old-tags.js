@@ -34,8 +34,7 @@ var scrollerBase = {
 		var floating = style({ 'float':'left' })
 		var slider = style({
 			height:viewport.height() - this.headHeight,
-			width:viewport.width() * numViews,
-			position:'relative'
+			width:viewport.width() * numViews
 		})
 		
 		this.body=div('tags-scroller-body', style({ position:'absolute', top:this.headHeight, overflowX:'hidden' }),
@@ -53,6 +52,10 @@ var scrollerBase = {
 		)
 		this.push({})
 		return this.body
+	},
+	renderFoot:function(renderFootContent) {
+		this.renderFootContent = renderFootContent
+		return this.$foot = $(div('tags-scroller-foot'), style({ width:'100%', position:'absolute', bottom:0, zIndex:2 }))
 	},
 	push:function scollerPush(newView, opts) {
 		opts = tags.options(opts, {
@@ -96,6 +99,11 @@ var scrollerBase = {
 			if (this.$head) {
 				this.$head.empty().append(
 					this.renderHeadContent(opts.view, { viewBelow:this.views[opts.index - 1] })
+				)
+			}
+			if (this.$foot) {
+				this.$foot.empty().append(
+					this.renderFootContent(opts.view, { viewBelow:this.views[opts.index - 1] })
 				)
 			}
 			var keepStaleView = (opts.useStaleView && this.views[opts.index])
