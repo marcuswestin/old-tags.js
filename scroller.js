@@ -30,7 +30,7 @@ var scrollerBase = {
 		var viewportSize = viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
 		var crop = style({ overflowX:'hidden' })
-		var scrollable = style({ 'overflow-y':'scroll', '-webkit-overflow-scrolling':'touch' })
+		var scrollable = style({ overflowY:'scroll', webkitOverflowScrolling:'touch' })
 		var floating = style({ 'float':'left' })
 		var slider = style({
 			height:viewport.height() - this.headHeight,

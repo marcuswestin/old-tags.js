@@ -27,23 +27,23 @@ var style = module.exports = function style(styles) {
 
 style.disableSelection = style({
 	'-moz-user-select':'none',
-	'-webkit-user-select':'none',
+	webkitUserSelect:'none',
 	'user-select':'none',
 	'-ms-user-select':'none'
 })
 
 style.transition = function(properties, duration) {
 	return {
-		// '-webkit-transition-timing-function': 'linear',
-		'-webkit-transition-property': properties,
-		'-webkit-transition-duration': duration+'ms'
+		// webkitTransitionTimingFunction: 'linear',
+		webkitTransitionProperty: properties,
+		webkitTransitionDuration: duration+'ms'
 	}
 }
 
 style.translate = function(x, y, duration) {
-	var res = { '-webkit-transform':'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
+	var res = { webkitTransform:'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
 	if (duration != null) {
-		res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms'
+		res.webkitTransition = '-webkit-transform '+Math.round(duration)+'ms'
 	}
 	return res
 }
