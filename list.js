@@ -71,7 +71,7 @@ function list(className, opts) {
 	
 	var renderEmpty = function() {
 		isEmpty = true
-		if (opts.renderEmpty) { $tag.append(opts.renderEmpty()) }
+		if (opts.renderEmpty) { $tag.empty().append(opts.renderEmpty()) }
 	}
 	
 	result.getItemId = getItemId
