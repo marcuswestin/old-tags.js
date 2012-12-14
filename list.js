@@ -115,7 +115,7 @@ function list(className, opts) {
 
 list.init = function($tag, selectEl) {
 	if (!tags.isTouch) {
-		$tag.on('mousedown', '.tags-list-item', function($e) {
+		$tag.on('click', '.tags-list-item', function($e) {
 			$e.preventDefault()
 			selectEl(this)
 		})
