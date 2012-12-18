@@ -34,10 +34,13 @@ style.disableSelection = style({
 
 style.transition = function(properties, duration) {
 	return {
-		// webkitTransitionTimingFunction: 'linear',
-		webkitTransitionProperty: properties,
-		webkitTransitionDuration: duration+'ms'
+		// -webkit-transition-timing-function: 'linear',
+		'-webkit-transition-property': properties,
+		'-webkit-transition-duration': duration+'ms'
 	}
+}
+style.transition.none = function(properties) {
+	return style.transition(properties, 0)
 }
 
 style.translate = function(x, y, duration) {
