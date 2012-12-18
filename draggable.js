@@ -12,10 +12,13 @@ var dragEvents = {
 	end: tags.isTouch ? 'touchend' : 'mouseup'
 }
 
+var history = null
 function posWithDistance($e, pos0) {
 	var pos = tags.eventPos($e)
 	pos.dx = pos.x - pos0.x
 	pos.dy = pos.y - pos0.y
+	pos.history = history
+	history.push(pos)
 	return pos
 }
 
@@ -32,6 +35,8 @@ function makeDraggable($el, opts) {
 		$e.preventDefault()
 		var pos0 = tags.eventPos($e)
 		var isDragging = false
+		history = []
+		
 		$(document)
 			.on(dragEvents.move, onMove)
 			.on(dragEvents.end, onEnd)
@@ -66,6 +71,7 @@ function makeDraggable($el, opts) {
 			} else {
 				opts.tap.call($el)
 			}
+			history = null
 		}
 	})
 }
