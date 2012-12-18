@@ -12,33 +12,25 @@ var dragEvents = {
 	end: tags.isTouch ? 'touchend' : 'mouseup'
 }
 
-var history = null
-function posWithDistance($e, pos0) {
-	var pos = tags.eventPos($e)
-	pos.dx = pos.x - pos0.x
-	pos.dy = pos.y - pos0.y
-	pos.history = history
-	history.push(pos)
-	return pos
-}
-
 function makeDraggable($el, opts) {
 	opts = tags.options(opts, {
-		start:function(pos) {},
-		move:function(pos) {},
-		end:function(pos) {},
+		start:function(pos, history) {},
+		move:function(pos, history) {},
+		end:function(pos, history) {},
 		tap:function() {},
 		threshold:3
 	})
+
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
 	var isDragging = false
+
 	$el.on(dragEvents.start, function onDragStart($e) {
 		$e.preventDefault()
 		
 		if (isDragging) { return }
 		
+		var history = []
 		var pos0 = tags.eventPos($e)
-		history = []
 		
 		$(document)
 			.on(dragEvents.move, onMove)
@@ -48,21 +40,35 @@ function makeDraggable($el, opts) {
 			onStart($e)
 		}
 
+		function posForEvent($e) {
+			var pos = tags.eventPos($e)
+			var penUltPos = history[history.length - 1]
+			if (penUltPos) {
+				pos.change = { x:pos.x - penUltPos.x, y:pos.y - penUltPos.y }
+			} else {
+				pos.change = { x:0, y:0 }
+			}
+			pos.distance = { x:pos.x-pos0.x, y:pos.y-pos0.y }
+			history.push(pos)
+			return pos
+		}
+
 		function onStart($e) {
 			isDragging = true
-			opts.start.call($el, posWithDistance($e, pos0))
+			opts.start.call($el, posForEvent($e), history)
 		}
 
 		function onMove($e) {
-			var pos = posWithDistance($e, pos0)
+			var pos = posForEvent($e)
 			if (!isDragging) {
-				var abSquared = pos.dx*pos.dx + pos.dy*pos.dy
+				var dx = pos.distance.x, dy = pos.distance.y
+				var abSquared = dx*dx + dy*dy
 				if (abSquared < thresholdSquared) {
 					return // not yet dragging
 				}
 				onStart($e)
 			}
-			opts.move.call($el, posWithDistance($e, pos0))
+			opts.move.call($el, pos, history)
 		}
 
 		function onEnd($e) {
@@ -71,7 +77,7 @@ function makeDraggable($el, opts) {
 				.off(dragEvents.end, onEnd)
 			
 			if (isDragging) {
-				opts.end.call($el, posWithDistance($e, pos0))
+				opts.end.call($el, posForEvent($e), history)
 			} else {
 				opts.tap.call($el)
 			}
