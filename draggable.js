@@ -49,7 +49,9 @@ function makeDraggable($el, opts) {
 			var pos = posWithDistance($e, pos0)
 			if (!isDragging) {
 				var abSquared = pos.dx*pos.dx + pos.dy*pos.dy
-				if (abSquared < thresholdSquared) { return }
+				if (abSquared < thresholdSquared) {
+					return // not yet dragging
+				}
 				onStart($e)
 			}
 			opts.move.call($el, posWithDistance($e, pos0))
