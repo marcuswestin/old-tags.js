@@ -9,6 +9,7 @@ module.exports = function draggable(opts) {
 var dragEvents = {
 	start: tags.isTouch ? 'touchstart' : 'mousedown',
 	move: tags.isTouch ? 'touchmove' : 'mousemove',
+	cancel: tags.isTouch ? 'touchcancel' : 'mousecancel',
 	end: tags.isTouch ? 'touchend' : 'mouseup'
 }
 
@@ -16,6 +17,7 @@ function makeDraggable($el, opts) {
 	opts = tags.options(opts, {
 		start:function(pos, history) {},
 		move:function(pos, history) {},
+		cancel:null,
 		end:function(pos, history) {},
 		tap:function() {},
 		threshold:3
@@ -35,6 +37,7 @@ function makeDraggable($el, opts) {
 		$(document)
 			.on(dragEvents.move, onMove)
 			.on(dragEvents.end, onEnd)
+			.on(dragEvents.cancel, onCancel)
 		
 		if (!opts.threshold) {
 			onStart($e)
@@ -71,16 +74,30 @@ function makeDraggable($el, opts) {
 			opts.move.call($el, pos, history)
 		}
 
+		function onCancel($e) {
+			if (!isDragging) { return }
+			if (opts.cancel) {
+				opts.cancel.call($el, posForEvent($e), history)
+			} else {
+				opts.end.call($el, posForEvent($e), history)
+			}
+			cleanUp()
+		}
+
 		function onEnd($e) {
-			$(document)
-				.off(dragEvents.move, onMove)
-				.off(dragEvents.end, onEnd)
-			
 			if (isDragging) {
 				opts.end.call($el, posForEvent($e), history)
 			} else {
 				opts.tap.call($el)
 			}
+			cleanUp()
+		}
+		
+		function cleanUp() {
+			$(document)
+				.off(dragEvents.move, onMove)
+				.off(dragEvents.end, onEnd)
+				.off(dragEvents.cancel, onCancel)
 			
 			isDragging = false
 			history = null
