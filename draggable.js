@@ -31,10 +31,13 @@ function makeDraggable($el, opts) {
 		threshold:3
 	})
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
+	var isDragging = false
 	$el.on(dragEvents.start, function onDragStart($e) {
 		$e.preventDefault()
+		
+		if (isDragging) { return }
+		
 		var pos0 = tags.eventPos($e)
-		var isDragging = false
 		history = []
 		
 		$(document)
@@ -66,11 +69,14 @@ function makeDraggable($el, opts) {
 			$(document)
 				.off(dragEvents.move, onMove)
 				.off(dragEvents.end, onEnd)
+			
 			if (isDragging) {
 				opts.end.call($el, posWithDistance($e, pos0))
 			} else {
 				opts.tap.call($el)
 			}
+			
+			isDragging = false
 			history = null
 		}
 	})
