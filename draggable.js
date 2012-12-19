@@ -15,6 +15,8 @@ var dragEvents = {
 
 function makeDraggable($el, opts) {
 	opts = tags.options(opts, {
+		down:function(){},
+		up:function(){},
 		start:function(pos, history) {},
 		move:function(pos, history) {},
 		cancel:null,
@@ -38,6 +40,8 @@ function makeDraggable($el, opts) {
 			.on(dragEvents.move, onMove)
 			.on(dragEvents.end, onEnd)
 			.on(dragEvents.cancel, onCancel)
+		
+		opts.down.call($el)
 		
 		if (!opts.threshold) {
 			onStart($e)
@@ -101,6 +105,8 @@ function makeDraggable($el, opts) {
 			
 			isDragging = false
 			history = null
+			
+			opts.up.call($el)
 		}
 	})
 }
