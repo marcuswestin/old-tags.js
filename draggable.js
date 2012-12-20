@@ -89,7 +89,7 @@ function makeDraggable($el, opts) {
 		}
 
 		function onEnd($e) {
-			if (isDragging) {
+			if (isDragging && history.length > 1) {
 				opts.end.call($el, posForEvent($e), history)
 			} else {
 				opts.tap.call($el)
