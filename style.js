@@ -56,3 +56,8 @@ style.translate = function(x, y, duration) {
 }
 style.translate.y = function(y, duration) { return style.translate(0, y, duration) }
 style.translate.x = function(x, duration) { return style.translate(x, 0, duration) }
+
+style.scrollable = {
+	x: { overflowX:'scroll', webkitOverflowScrolling:'touch', overflowY:'hidden' },
+	y: { overflowY:'scroll', webkitOverflowScrolling:'touch', overflowX:'hidden' }
+}
