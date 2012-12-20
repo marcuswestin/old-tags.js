@@ -22,7 +22,7 @@ function makeDraggable($el, opts) {
 		cancel:null,
 		end:function(pos, history) {},
 		tap:function() {},
-		threshold:3
+		threshold:0
 	})
 
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
