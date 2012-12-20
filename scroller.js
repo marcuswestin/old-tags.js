@@ -1,6 +1,7 @@
 var tags = require('./tags')
 var viewport = require('./viewport')
 var div = tags('div')
+var style = require('./style')
 
 module.exports = scroller
 
@@ -20,10 +21,12 @@ function scroller(opts) {
 
 var scrollerBase = {
 	headHeight:0,
-	renderHead:function(headHeight, renderHeadContent) {
-		this.renderHeadContent = renderHeadContent
+	renderHead:function(headHeight, headFn) {
 		this.headHeight = headHeight
-		return this.$head=$(div('tags-scroller-head', style({ height:headHeight, width:'100%', position:'relative', top:0, zIndex:2 })))
+		this.headFn = headFn
+		return this.$head=$(div('tags-scroller-head', style({
+			height:headHeight, width:'100%', position:'relative', top:0, zIndex:2
+		})))
 	},
 	renderBody:function(numViews, renderBodyContent) {
 		this.renderBodyContent = renderBodyContent
@@ -50,12 +53,15 @@ var scrollerBase = {
 				))
 			)
 		)
-		this.push({})
+		var self = this
+		setTimeout(function() { self.push({}) })
 		return this.body
 	},
-	renderFoot:function(renderFootContent) {
-		this.renderFootContent = renderFootContent
-		return this.$foot = $(div('tags-scroller-foot'), style({ width:'100%', position:'absolute', bottom:0, zIndex:2 }))
+	renderFoot:function(footFn) {
+		this.footFn = footFn
+		return this.$foot = $(div('tags-scroller-foot'), style({
+			width:'100%', position:'absolute', bottom:0, zIndex:2
+		}))
 	},
 	push:function scollerPush(newView, opts) {
 		opts = tags.options(opts, {
@@ -96,21 +102,24 @@ var scrollerBase = {
 			if (this.onViewChange) {
 				this.onViewChange()
 			}
-			if (this.$head) {
-				this.$head.empty().append(
-					this.renderHeadContent(opts.view, { viewBelow:this.views[opts.index - 1] })
-				)
-			}
-			if (this.$foot) {
-				this.$foot.empty().append(
-					this.renderFootContent(opts.view, { viewBelow:this.views[opts.index - 1] })
-				)
-			}
+			this._update(opts, this.$head, this.headFn)
+			this._update(opts, this.$foot, this.footFn)
+
 			var keepStaleView = (opts.useStaleView && this.views[opts.index])
 			if (!keepStaleView) {
 				this.views[opts.index].empty().append(this._renderBodyContent(opts))
 			}
+			
 			this._scroll(animate)
+		}
+	},
+	_update:function(opts, $element, updateFn) {
+		if (!updateFn) { return }
+		var fnResult = updateFn.call($element, opts.view, { viewBelow:this.views[opts.index - 1] })
+		if (fnResult) {
+			// Allow for the header and footer to return content to be displayed.
+			// Alt. they can choose not re-render, but rather update what's already rendered and avoid a flash of no content.
+			$element.empty().append(fnResult)
 		}
 	},
 	_renderBodyContent:function(opts) {
