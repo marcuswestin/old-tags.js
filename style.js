@@ -33,14 +33,18 @@ style.disableSelection = style({
 })
 
 style.transition = function(properties, duration) {
-	return {
-		// -webkit-transition-timing-function: 'linear',
-		'-webkit-transition-property': properties,
-		'-webkit-transition-duration': duration+'ms'
+	if (typeof properties == 'object') {
+		var res = []
+		for (var key in properties) {
+			res.push(key+' '+properties[key]+'ms')
+		}
+		return { '-webkit-transition':res.join(',') }
+	} else {
+		return { '-webkit-transition':properties+' '+duration+'ms' }
 	}
 }
-style.transition.none = function(properties) {
-	return style.transition(properties, 0)
+style.transition.none = function() {
+	return { '-webkit-transition':'none' }
 }
 
 style.translate = function(x, y, duration) {
