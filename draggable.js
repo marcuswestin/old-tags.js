@@ -6,6 +6,8 @@ module.exports = function draggable(opts) {
 	}
 }
 
+module.exports.makeDraggable = makeDraggable
+
 var dragEvents = {
 	start: tags.isTouch ? 'touchstart' : 'mousedown',
 	move: tags.isTouch ? 'touchmove' : 'mousemove',
