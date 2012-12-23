@@ -8,11 +8,11 @@ module.exports = scroller
 function scroller(opts) {
 	opts = tags.options(opts, {
 		duration:350,
-		onViewChange:null,
+		onViewChanging:null,
 		alwaysBounce:true
 	})
 	return $.extend(tags.create(scrollerBase), {
-		onViewChange:opts.onViewChange,
+		onViewChanging:opts.onViewChanging,
 		duration:opts.duration,
 		alwaysBounce:opts.alwaysBounce,
 		stack:[]
@@ -99,8 +99,8 @@ var scrollerBase = {
 		this.stack[opts.index] = opts.view
 		
 		if (opts.render) {
-			if (this.onViewChange) {
-				this.onViewChange()
+			if (this.onViewChanging) {
+				this.onViewChanging()
 			}
 			this._update(opts, this.$head, this.headFn)
 			this._update(opts, this.$foot, this.footFn)
