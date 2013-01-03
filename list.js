@@ -48,7 +48,7 @@ function list(className, opts) {
 	
 	function appendItem(item, addOpts, appendOrPrepend) {
 		var id = getItemId(item)
-		if ($tag.find('#'+id).length) {
+		if (data[id]) {
 			if (!addOpts.updateItems) {
 				return
 			}
