@@ -35,7 +35,10 @@ function list(className, opts) {
 		})
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
-		if (newItems.length == 0) { return }
+		if (newItems.length == 0) {
+			if (isEmpty) { renderEmpty() }
+			return
+		}
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		isEmpty = false
 		appendOrPrepend.call($tag, $.map(newItems, function(item) {
