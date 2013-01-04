@@ -37,24 +37,15 @@ function list(className, opts) {
 			updateItems:false
 		})
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
-		var count = 0
-		for (var i=0; i<newItems.length; i++) {
-			appendItem(newItems[i], addOpts, appendOrPrepend)
-			count++
-		}
 		isEmpty = false
-		return { newItems:count }
-	}
-	
-	function appendItem(item, addOpts, appendOrPrepend) {
-		var id = getItemId(item)
-		if (data[id]) {
-			if (!addOpts.updateItems) {
-				return
+		appendOrPrepend.call($tag, $.map(newItems, function(item) {
+			var id = getItemId(item)
+			if (data[id]) {
+				if (!addOpts.updateItems) { return null }
+				$tag.find('#'+id).remove()
 			}
-			$tag.find('#'+id).remove()
-		}
-		appendOrPrepend.call($tag, renderListItem(item))
+			return renderListItem(item)
+		}))
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
