@@ -30,12 +30,12 @@ function list(className, opts) {
 	}
 	
 	function addItems(newItems, addOpts, appendOrPrepend) {
-		if (typeof newItems == 'undefined') { return }
-		if (!$.isArray(newItems)) { newItems = [newItems] }
-		if (newItems.length == 0) { return renderEmpty() }
 		addOpts = tags.options(addOpts, {
 			updateItems:false
 		})
+		if (typeof newItems == 'undefined') { return }
+		if (!$.isArray(newItems)) { newItems = [newItems] }
+		if (newItems.length == 0) { return renderEmpty() }
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		isEmpty = false
 		appendOrPrepend.call($tag, $.map(newItems, function(item) {
