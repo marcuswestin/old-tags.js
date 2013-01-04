@@ -98,9 +98,9 @@ function list(className, opts) {
 
 	function selectEl(el) {
 		var id = el.getAttribute('id')
-		var result = data[id]
-		if (result == null) { return }
-		opts.onSelect.call(el, result)
+		var item = data[id]
+		if (item == null) { return }
+		opts.onSelect.call(el, item)
 	}
 	
 	return result
