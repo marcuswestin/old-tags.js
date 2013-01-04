@@ -21,7 +21,7 @@ function list(className, opts) {
 	
 	var data = {}
 	var $tag
-	var isEmpty = false
+	var isEmpty
 	
 	function renderListItem(item) {
 		var id = getItemId(item)
@@ -35,7 +35,7 @@ function list(className, opts) {
 		})
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
-		if (newItems.length == 0) { return renderEmpty() }
+		if (newItems.length == 0) { return }
 		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
 		isEmpty = false
 		appendOrPrepend.call($tag, $.map(newItems, function(item) {
@@ -54,6 +54,7 @@ function list(className, opts) {
 		list.init($tag, selectEl)
 		var items = opts.items || []
 		if (items.length) {
+			isEmpty = false
 			$tag.append($.map(items, renderListItem))
 		} else {
 			renderEmpty()
@@ -92,6 +93,7 @@ function list(className, opts) {
 		}
 		return this
 	}
+	result.isEmpty = function() { return isEmpty }
 	result.find = function(selector) { return $tag.find(selector) }
 
 	function selectEl(el) {
