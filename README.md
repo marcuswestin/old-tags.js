@@ -120,7 +120,7 @@ Tags comes with a bunch of convenient modules
 		var bold = style({ fontWeight:'bold' })
 		var floatingItalic = style({ 'float':'left', fontStyle:'italic' })
 		// numeric arguments automatically get postfixed with "px" 
-		var large = style({ 'font-size':20, height:40 })
+		var large = style({ fontSize:20, height:40 })
 		$('#tags-demo').append(
 			div('greeting', bold,
 				span('header', 'Hello', bold, style({ color:'green' })),

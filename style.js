@@ -3,7 +3,7 @@
 	var bold = style({ fontWeight:'bold' })
 	$(document.body).append(
 		div('demo', style({ height:200, widht:200, color:'#333' }),
-			span('name', style({ 'font-size':20 }), floating, bold, 'Marcus'),
+			span('name', style({ fontSize:20 }), floating, bold, 'Marcus'),
 			span(floating, 'Cool!')
 		)
 	)
