@@ -68,6 +68,7 @@ function list(className, opts) {
 	}
 	
 	result.getItemId = getItemId
+	result._getItem = function(id) { return listData.itemsById[id] }
 	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag().append) }
 	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag().prepend) }
 	result.height = function() { return $tag().height() }
