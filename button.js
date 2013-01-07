@@ -2,13 +2,11 @@ var tags = require('./tags')
 
 module.exports = button
 
-function button(el, callback) {
-	if (arguments.length == 2) {
-		makeButton($(el), callback)
-	} else {
-		callback = el
-		return function($el) { makeButton($el, callback) }
-	}
+var callbackMap = {}
+function button(callback) {
+	var id = tags.id()
+	callbackMap[id] = callback
+	return { 'button-id':id, 'class':'tags-button' }
 }
 
 function makeRect(x, y, width, height) {
@@ -34,14 +32,6 @@ var rectProto = {
 		return this.x < point.x && point.x < this.x2
 			&& this.y < point.y && point.y < this.y2
 	}
-}
-
-var callbackMap = { id:0 }
-
-function makeButton($el, callback) {
-	var id = callbackMap.id++
-	callbackMap[id] = callback
-	$el.attr('button-id', id).addClass('tags-button')
 }
 
 var onEnd = function(event, $el, supressHandler) {

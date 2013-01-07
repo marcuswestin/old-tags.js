@@ -1,11 +1,11 @@
 var tags = require('./tags')
-var div = tags('div')
 
 var defaultGetItemId = function(item) { return item.id ? item.id : defaultGetItemId.id++ }
 defaultGetItemId.id = 1
 
 module.exports = list
 
+var data = {}
 function list(className, opts) {
 	if (arguments.length == 1) {
 		opts = className
@@ -19,14 +19,16 @@ function list(className, opts) {
 		renderEmpty:null
 	})
 	
-	var data = {}
-	var $tag
-	var isEmpty
+	var listId = tags.id()
+	var listData = data[listId] = {
+		opts:opts,
+		itemsById:{}
+	}
 	
 	function renderListItem(item) {
-		var id = getItemId(item)
-		data[id] = item
-		return div('tags-list-item', { id:id }, opts.renderItem(item))
+		var itemId = getItemId(item)
+		listData.itemsById[itemId] = item
+		return div('tags-list-item', { id:itemId }, opts.renderItem(item))
 	}
 	
 	function addItems(newItems, addOpts, appendOrPrepend) {
@@ -39,46 +41,36 @@ function list(className, opts) {
 			if (isEmpty) { renderEmpty() }
 			return
 		}
-		if (isEmpty && opts.renderEmpty) { $tag.empty() } // Remove previous content from renderEmpty
+		if (isEmpty && opts.renderEmpty) { $tag().empty() } // Remove previous content from renderEmpty
 		isEmpty = false
-		appendOrPrepend.call($tag, $.map(newItems, function(item) {
-			var id = getItemId(item)
-			if (data[id]) {
-				if (!addOpts.updateItems) { return null }
-				$tag.find('#'+id).remove()
+		var div = document.createElement('div')
+		div.innerHTML = newItems.map(function(item) {
+			var itemId = getItemId(item)
+			if (listData.itemsById[itemId]) {
+				if (!addOpts.updateItems) { return '' }
+				$('#'+itemId).remove()
 			}
 			return renderListItem(item)
-		}))
+		}).join('')
+		appendOrPrepend.call($tag(), div)
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
-	var result = div(tags.classNames('tags-list', className), function(_$tag) {
-		$tag = _$tag
-		list.init($tag, selectEl)
-		var items = opts.items || []
-		if (items.length) {
-			isEmpty = false
-			$tag.append($.map(items, renderListItem))
-		} else {
-			renderEmpty()
-		}
-	})
+	var isEmpty = !opts.items || !opts.items.length
+	var result = div(tags.classNames('tags-list', className), { id:listId },
+		isEmpty ? opts.renderEmpty() : map(opts.items, renderListItem))
+	
+	var $tag = function() { return $('#'+listId) } // HACK
 	
 	var renderEmpty = function() {
 		isEmpty = true
-		if (opts.renderEmpty) { $tag.empty().append(opts.renderEmpty()) }
+		if (opts.renderEmpty) { $tag().empty().append(opts.renderEmpty()) }
 	}
 	
 	result.getItemId = getItemId
-	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag.append) }
-	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag.prepend) }
-	result.height = function() { return $tag.height() }
-	result.update = function(item) {
-		var itemId = getItemId(item)
-		var $el = $('#'+itemId)
-		data[itemId] = item
-		$el.empty().append(opts.renderItem(item))
-	}
+	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag().append) }
+	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag().prepend) }
+	result.height = function() { return $tag().height() }
 	result.select = result.selectItem = function(item) {
 		var el = $('#'+getItemId(item))[0]
 		selectEl(el)
@@ -89,82 +81,88 @@ function list(className, opts) {
 	}
 	result.empty = function() {
 		isEmpty = true
-		$tag.empty()
-		data = {}
+		$tag().empty()
+		listData.itemsById = {}
 		if (opts.renderEmpty) {
-			$tag.append(opts.renderEmpty())
+			$tag().append(opts.renderEmpty())
 		}
 		return this
 	}
 	result.isEmpty = function() { return isEmpty }
-	result.find = function(selector) { return $tag.find(selector) }
+	result.find = function(selector) { return $tag().find(selector) }
 
-	function selectEl(el) {
-		var id = el.getAttribute('id')
-		var item = data[id]
-		if (item == null) { return }
-		opts.onSelect.call(el, item)
-	}
-	
 	return result
 }
 
-list.init = function($tag, selectEl) {
-	if (!tags.isTouch) {
-		$tag.on('click', '.tags-list-item', function($e) {
-			$e.preventDefault()
-			selectEl(this)
-		})
-		var $currentHighlight
-		$tag.on('mouseover', '.tags-list-item', function($e) {
-			if ($currentHighlight) { $currentHighlight.removeClass('active') }
-			var $currentHighlight = $(this).addClass('active')
-		})
-		$tag.on('mouseout', '.tags-list-item', function($e) {
-			$(this).removeClass('active')
-		})
-		
-		return
+function selectEl(el) {
+	var listEl = el.parentNode
+	while (!$(listEl).hasClass('tags-list')) {
+		listEl = listEl.parentNode
+		if (!listEl) { return }
 	}
-	
-	var tapY = null
-	var tapElement = null
+	var listId = listEl.getAttribute('id')
+	if (!data[listId]) { return }
+	var itemId = el.getAttribute('id')
+	var item = data[listId].itemsById[itemId]
+	if (!item) { return }
+	data[listId].opts.onSelect.call(el, item)
+}
 
-	function clear() {
-		tapY = null
-		tapElement = null
-	}
-	
-	var touchStartTime
-	$tag.on('touchstart', '.tags-list-item', function onTouchStart(event) {
-		var touch = event.originalEvent.touches[0]
-		tapY = touch.pageY
-		tapElement = event.currentTarget
-		touchStartTime = new Date().getTime()
-	})
+$(function() {
+	if (tags.isTouch) {
+		var tapY = null
+		var tapElement = null
 
-	$tag.on('touchmove', function onTouchMove(event) {
-		if (!tapY) { return }
-		var touch = event.originalEvent.touches[0]
-		if (Math.abs(touch.pageY - tapY) > 10) {
-			clear()
+		function clear() {
+			tapY = null
+			tapElement = null
 		}
-	})
 
-	var waitToSeeIfScrollHappened
-	$tag.on('touchend', function(event) {
-		clearTimeout(waitToSeeIfScrollHappened)
-		if (!tapElement) { return clear() }
-		waitToSeeIfScrollHappened = setTimeout(function() {
-			var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
-			if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
-			var el = tapElement
-			clear()
-			event.preventDefault()
-			selectEl(el)
-		}, 50)
-	})
-} 
+		var touchStartTime
+		$(document).on('touchstart', '.tags-list-item', function onTouchStart(event) {
+			var touch = event.originalEvent.touches[0]
+			tapY = touch.pageY
+			tapElement = event.currentTarget
+			touchStartTime = new Date().getTime()
+		})
+
+		$(document).on('touchmove', function onTouchMove(event) {
+			if (!tapY) { return }
+			var touch = event.originalEvent.touches[0]
+			if (Math.abs(touch.pageY - tapY) > 10) {
+				clear()
+			}
+		})
+
+		var waitToSeeIfScrollHappened
+		$(document).on('touchend', function(event) {
+			clearTimeout(waitToSeeIfScrollHappened)
+			if (!tapElement) { return clear() }
+			waitToSeeIfScrollHappened = setTimeout(function() {
+				var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
+				if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
+				var el = tapElement
+				clear()
+				event.preventDefault()
+				selectEl(el)
+			}, 50)
+		})
+	} else {
+		var $currentHighlight
+		$(document)
+			.on('click', '.tags-list-item', function onClick($e) {
+				$e.preventDefault()
+				selectEl(this)
+			})
+			.on('mouseover', '.tags-list-item', function onMouseOver($e) {
+				if ($currentHighlight) { $currentHighlight.removeClass('active') }
+				var $currentHighlight = $(this).addClass('active')
+			})
+			.on('mouseout', '.tags-list-item', function onMouseOut ($e) {
+				$(this).removeClass('active')
+			})
+	}
+})
 
 function renderItemJson(item) {
 	return div('json-item', JSON.stringify(item))

@@ -3,36 +3,28 @@
 	var bold = style({ fontWeight:'bold' })
 	$(document.body).append(
 		div('demo', style({ height:200, widht:200, color:'#333' }),
-			span('name', style({ fontSize:20 }), floating, bold, 'Marcus'),
+			span('name', style({ 'font-size':20 }), floating, bold, 'Marcus'),
 			span(floating, 'Cool!')
 		)
 	)
 */
 
-var style = module.exports = function style(styles) {
-	if (arguments.length > 1) {
-		var args = [{}].concat(Array.prototype.slice.call(arguments))
-		styles = $.extend.apply($, args)
+var style = module.exports = (function(){
+	function toDashes(name) {
+		return name.replace(/([A-Z])/g, function($1) {
+			return "-" + $1.toLowerCase()
+		})
 	}
-	return function($tag) {
-		var elStyle = $tag[0].style
-		for (var name in styles) {
-			var value = styles[name]
-			if (typeof value == 'number' && name != 'opacity' && name != 'zIndex') { value += 'px' }
-			else if (name == 'float') { name = 'cssFloat' }
-			elStyle[name] = value
-		}
+	function handleStyle(value, name) {
+		if (typeof value == 'number' && name != 'opacity' && name != 'zIndex') { value += 'px' }
+		return toDashes(name)+':'+value
 	}
-}
+	return function style(styles) {
+		return { style:map(styles, handleStyle).join('; ') }
+	}
+}())
 
-style.disableSelection = style({
-	'-moz-user-select':'none',
-	webkitUserSelect:'none',
-	'user-select':'none',
-	'-ms-user-select':'none'
-})
-
-style.transition = function(properties, duration) {
+style.transition = function transition(properties, duration) {
 	if (typeof properties == 'object') {
 		var res = []
 		for (var key in properties) {
@@ -43,21 +35,28 @@ style.transition = function(properties, duration) {
 		return { '-webkit-transition':properties+' '+duration+'ms' }
 	}
 }
+
 style.transition.none = function() {
 	return { '-webkit-transition':'none' }
 }
 
-style.translate = function(x, y, duration) {
-	var res = { webkitTransform:'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
+style.translate = function translate(x, y, duration) {
+	var res = { '-webkit-transform':'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
 	if (duration != null) {
-		res.webkitTransition = '-webkit-transform '+Math.round(duration)+'ms'
+		res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms'
 	}
 	return res
 }
-style.translate.y = function(y, duration) { return style.translate(0, y, duration) }
-style.translate.x = function(x, duration) { return style.translate(x, 0, duration) }
+
+style.translate.y = function(y, duration) {
+	return style.translate(0, y, duration)
+}
+
+style.translate.x = function(x, duration) {
+	return style.translate(x, 0, duration)
+}
 
 style.scrollable = {
-	x: { overflowX:'scroll', webkitOverflowScrolling:'touch', overflowY:'hidden' },
-	y: { overflowY:'scroll', webkitOverflowScrolling:'touch', overflowX:'hidden' }
+	x: { overflowX:'scroll', '-webkit-overflow-scrolling':'touch', overflowY:'hidden' },
+	y: { overflowY:'scroll', '-webkit-overflow-scrolling':'touch', overflowX:'hidden' }
 }

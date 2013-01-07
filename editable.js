@@ -1,4 +1,5 @@
 /* Making an element editable means you can touch it to start editting its content */
+// OUT OF DATE
 
 var tags = require('./tags')
 var button = require('./button')
@@ -27,7 +28,7 @@ editable.show = function($el, opts) {
 	
 	var value = (opts.value == null ? $el.text() : opts.value)
 	var $input = $(input('tags-editable')).val(value)
-		.css({ position:'absolute', paddingLeft:paddingLeft, fontFamily:$el.css('fontFamily'), fontSize:$el.css('fontSize') })
+		.css({ position:'absolute', paddingLeft:paddingLeft, fontFamily:$el.css('fontFamily'), 'font-size':$el.css(''font-size'') })
 		.css(getLayout())
 		.on('keydown', onKeyDown).on('keypress', onKeyPress).on('blur', finish)
 		.appendTo('body')
