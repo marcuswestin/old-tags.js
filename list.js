@@ -16,7 +16,8 @@ function list(className, opts) {
 		onSelect:logOnSelect,
 		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
-		renderEmpty:null
+		renderEmpty:null,
+		onUpdated:function(){}
 	})
 	
 	var listId = tags.id()
@@ -53,6 +54,7 @@ function list(className, opts) {
 			return renderListItem(item)
 		}).join('')
 		appendOrPrepend.call($tag(), div)
+		opts.onUpdated()
 	}
 	
 	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
@@ -91,7 +93,10 @@ function list(className, opts) {
 	}
 	result.isEmpty = function() { return isEmpty }
 	result.find = function(selector) { return $tag().find(selector) }
-
+	
+	setTimeout(function() {
+		opts.onUpdated()
+	})
 	return result
 }
 
