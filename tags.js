@@ -61,7 +61,7 @@ function handleTagArg(arg, content, attributes, classes, styles) {
 var safeAttr = (function() {
 	var regex = /"/g
 	return function(str) {
-		return str.replace(regex, '\\"')
+		return str.toString().replace(regex, '\\"')
 	}
 }())
 
