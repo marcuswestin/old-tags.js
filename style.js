@@ -20,7 +20,7 @@ var style = module.exports = (function(){
 		return toDashes(name)+':'+value
 	}
 	return function style(styles) {
-		return { style:map(styles, handleStyle).join('; ') }
+		return { style:$.map(styles, handleStyle).join('; ') }
 	}
 }())
 
@@ -40,20 +40,23 @@ style.transition.none = function() {
 	return { '-webkit-transition':'none' }
 }
 
-style.translate = function translate(x, y, duration) {
+style.translate = function translate(x, y, duration, delay) {
 	var res = { '-webkit-transform':'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
 	if (duration != null) {
 		res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms'
 	}
+	if (delay != null) {
+		res['-webkit-transition-delay'] = delay+'ms'
+	}
 	return res
 }
 
-style.translate.y = function(y, duration) {
-	return style.translate(0, y, duration)
+style.translate.y = function(y, duration, delay) {
+	return style.translate(0, y, duration, delay)
 }
 
-style.translate.x = function(x, duration) {
-	return style.translate(x, 0, duration)
+style.translate.x = function(x, duration, delay) {
+	return style.translate(x, 0, duration, delay)
 }
 
 style.scrollable = {
