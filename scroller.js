@@ -54,17 +54,18 @@ var scrollerBase = {
 				div('tags-scroller-slider', slider,
 					map(new Array(numViews), function() {
 						return div('tags-scroller-view', contentSize, crop, floating, scrollable)
+					}),
+					map(new Array(numViews), function(_,i) {
+						return div('tags-scroller-foot',
+							style({ width:viewport.width(), position:'absolute', bottom:0 }),
+							style(translate.x(i * viewport.width())))
 					})
 				)
 			)
 		)
 	},
-	renderFoot:function(footFn) {
-		this.footFn = footFn
-		this.footID = tags.id()
-		return div('tags-scroller-foot', { id:this.footID }, style({
-			width:'100%', position:'absolute', bottom:0, zIndex:2
-		}))
+	renderFoot:function(renderFootFn) {
+		this.renderFootFn = renderFootFn
 	},
 	push:function scollerPush(newView, opts) {
 		opts = tags.options(opts, {
@@ -111,6 +112,7 @@ var scrollerBase = {
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
 				$(this.getView(opts.index)).empty().append(this._renderBodyContent(opts))
+				$(this.getFoot(opts.index)).empty().append(this._renderFootContent(opts))
 			}
 			
 			this._scroll(animate)
@@ -138,6 +140,10 @@ var scrollerBase = {
 			return this.renderBodyContent(opts.view, renderOpts)
 		}
 	},
+	_renderFootContent:function(opts) {
+		if (!this.renderFootFn) { return }
+		return this.renderFootFn(opts.view)
+	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
 	},
@@ -146,6 +152,9 @@ var scrollerBase = {
 	},
 	getView:function(index) {
 		return $('#'+this.bodyID+' .tags-scroller-view')[index]
+	},
+	getFoot:function(index) {
+		return $('#'+this.bodyID+' .tags-scroller-foot')[index]
 	},
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
