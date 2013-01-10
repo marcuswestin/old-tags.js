@@ -2,10 +2,18 @@ var tags = require('./tags')
 
 module.exports = button
 
-var callbackMap = {}
-function button(callback) {
+var buttons = {}
+function button(opts) {
+	if (typeof opts == 'function') {
+		opts = { tap:opts }
+	}
+	opts = tags.options(opts, {
+		start:function() {},
+		tap:function() {},
+		end:function() {}
+	})
 	var id = tags.id()
-	callbackMap[id] = callback
+	buttons[id] = opts
 	return { 'button-id':id, 'class':'tags-button' }
 }
 
@@ -43,65 +51,68 @@ var onEnd = function(event, $el, supressHandler) {
 		$el.off('mouseout').off('mouseover').off('mouseup')
 	}
 	
-	var id = $el.attr('button-id')
-	var callback = isActive($el) && !supressHandler && callbackMap[id]
-	
+	var doCallTap = isActive($el) && !supressHandler
+
 	setInactive($el)
-	
-	if (callback) {
-		callback.call($el[0], event)
-	}
-	if (button.globalHandler) {
-		button.globalHandler.call($el[0], event, id)
-	}
+
+	var button = buttons[$el.attr('button-id')]
+	if (button) { button.tap.call($el[0], event) }
+	button.end.call($el[0])
 }
 
 function setActive($el) { $el.addClass('active') }
 function setInactive($el) { $el.removeClass('active') }
 function isActive($el) { return $el.hasClass('active') }
 
-var buttons = {
-	onTouchStart: function(event) {
-		buttons.init(event, function($el) {
-			$el.on('touchmove', function(event) { buttons.onTouchMove(event, $el) })
-			$el.on('touchend', function(event) { onEnd(event, $el) })
-			$el.on('touchcancel', function(event) { buttons.onTouchCancel(event, $el) })
-		})
-	},
-	onTouchMove: function(event, $el) {
-		event.preventDefault()
-		if (touchInsideTapRect($el, event)) { setActive($el) }
-		else { setInactive($el) }
-	},
-	onTouchCancel: function(event, $el) {
-		onEnd(event, $el, true)
-	},
-	onMouseDown: function(event) {
-		buttons.init(event, function($el) {
-			$el.on('mouseout', function() { setInactive($el) })
-			$el.on('mouseover', function() { setActive($el) })
-			var handler
-			$(document).on('mouseup', handler=function(event) {
-				onEnd(event, $el)
-				$(document).off('mouseup', handler)
-			})
-		})
-	},
-	init:function(event, cb) {
-		var $el = $(event.currentTarget) //$(event.target)
-		if ($el.hasClass('disabled')) { return }
-		
-		event.preventDefault()
-		
-		var offset = $el.offset()
-		var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(20, 28, 30, 20)
-		$el.data('touchRect', touchRect)
-		
-		setActive($el)
-		cb.call(event.target, $el)
-	}
+function onTouchStart(event) {
+	initButton(event, function($el) {
+		$el.on('touchmove', function(event) { onTouchMove(event, $el) })
+		$el.on('touchend', function(event) { onEnd(event, $el) })
+		$el.on('touchcancel', function(event) { onTouchCancel(event, $el) })
+	})
 }
 
+function onTouchMove(event, $el) {
+	event.preventDefault()
+	if (touchInsideTapRect($el, event)) { setActive($el) }
+	else { setInactive($el) }
+}
+
+function onTouchCancel(event, $el) {
+	onEnd(event, $el, true)
+}
+
+function onMouseDown(event) {
+	initButton(event, function($el) {
+		$el.on('mouseout', function() { setInactive($el) })
+		$el.on('mouseover', function() { setActive($el) })
+		var handler
+		$(document).on('mouseup', handler=function(event) {
+			onEnd(event, $el)
+			$(document).off('mouseup', handler)
+		})
+	})
+}
+
+function initButton(event, cb) {
+	var $el = $(event.currentTarget) //$(event.target)
+	
+	var button = buttons[$el.attr('button-id')]
+	if (button.start) {
+		button.start.call($el[0])
+	}
+	
+	if ($el.hasClass('disabled')) { return }
+	
+	event.preventDefault()
+	
+	var offset = $el.offset()
+	var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(20, 28, 30, 20)
+	$el.data('touchRect', touchRect)
+	
+	setActive($el)
+	cb($el)
+}
 var touchInsideTapRect = function($el, event) {
 	var touch = event.originalEvent.touches[0]
 	var touchRect = $el.data('touchRect')
@@ -110,8 +121,8 @@ var touchInsideTapRect = function($el, event) {
 
 $(function() {
 	if (tags.isTouch) {
-		$(document).on('touchstart', '.tags-button', buttons.onTouchStart)
+		$(document).on('touchstart', '.tags-button', onTouchStart)
 	} else {
-		$(document).on('mousedown', '.tags-button', buttons.onMouseDown)
+		$(document).on('mousedown', '.tags-button', onMouseDown)
 	}
 })
