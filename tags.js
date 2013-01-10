@@ -46,7 +46,8 @@ function handleTagArg(arg, content, attributes, classes, styles) {
 	} else if (typeof arg == 'function') {
 		handleTagArg(arg(), content, attributes, classes, styles)
 	} else {
-		each(arg, function(val, key) {
+		for (var key in arg) {
+			var val = arg[key]
 			if (key == 'style') {
 				styles.push(val)
 			} else if (key == 'class') {
@@ -54,7 +55,7 @@ function handleTagArg(arg, content, attributes, classes, styles) {
 			} else {
 				attributes.push(key+'="'+safeAttr(val)+'"')
 			}
-		})
+		}
 	}
 }
 
