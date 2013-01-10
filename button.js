@@ -98,9 +98,7 @@ function initButton(event, cb) {
 	var $el = $(event.currentTarget) //$(event.target)
 	
 	var button = buttons[$el.attr('button-id')]
-	if (button.start) {
-		button.start.call($el[0])
-	}
+	button.start.call($el[0])
 	
 	if ($el.hasClass('disabled')) { return }
 	
