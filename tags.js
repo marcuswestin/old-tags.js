@@ -104,9 +104,16 @@ tags.options = function options(opts, defaults) {
 	return result
 }
 
+tags.makePos = function makePos(x,y) {
+	var pos = [x, y]
+	pos.x = x
+	pos.y = y
+	return pos
+}
+
 tags.eventPos = function eventPos($e, index) {
 	var obj = tags.isTouch ? $e.originalEvent.changedTouches[index || 0] : $e.originalEvent
-	return { x:obj.pageX, y:obj.pageY }
+	return tags.makePos(obj.pageX, obj.pageY)
 }
 
 tags.classNames = function classNames(c1, c2) {
@@ -121,3 +128,10 @@ tags.isTouch = (function() {
 		return false
 	}
 }())
+
+tags.events = {
+	start: tags.isTouch ? 'touchstart' : 'mousedown',
+	move: tags.isTouch ? 'touchmove' : 'mousemove',
+	cancel: tags.isTouch ? 'touchcancel' : 'mousecancel',
+	end: tags.isTouch ? 'touchend' : 'mouseup'
+}

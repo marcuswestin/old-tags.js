@@ -18,15 +18,8 @@ module.exports = function draggable(opts) {
 	return { 'tags-draggable-id':id, 'class':'tags-draggable' }
 }
 
-var dragEvents = {
-	start: tags.isTouch ? 'touchstart' : 'mousedown',
-	move: tags.isTouch ? 'touchmove' : 'mousemove',
-	cancel: tags.isTouch ? 'touchcancel' : 'mousecancel',
-	end: tags.isTouch ? 'touchend' : 'mouseup'
-}
-
 $(function() {
-	$(document).on(dragEvents.start, '.tags-draggable', onDragStart)
+	$(document).on(tags.events.start, '.tags-draggable', onDragStart)
 })
 
 var isDragging = false
@@ -37,6 +30,7 @@ function onDragStart($e) {
 	
 	var el = this
 	var $el = $(el)
+	var elOffset = $el.offset()
 	var opts = data[$el.attr('tags-draggable-id')]
 	
 	var history = []
@@ -44,25 +38,26 @@ function onDragStart($e) {
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
 	
 	$(document)
-		.on(dragEvents.move, onMove)
-		.on(dragEvents.end, onEnd)
-		.on(dragEvents.cancel, onCancel)
+		.on(tags.events.move, onMove)
+		.on(tags.events.end, onEnd)
+		.on(tags.events.cancel, onCancel)
 	
 	opts.down.call(el)
 	
 	if (!opts.threshold) {
 		onStart($e)
 	}
-
+	
 	function posForEvent($e) {
-		var pos = tags.eventPos($e)
+		var pagePos = tags.eventPos($e)
+		var pos = tags.makePos(pagePos.x - elOffset.left, pagePos.y - elOffset.top)
 		var penUltPos = history[history.length - 1]
 		if (penUltPos) {
-			pos.change = { x:pos.x - penUltPos.x, y:pos.y - penUltPos.y }
+			pos.change = tags.makePos(penUltPos.x, pos.y - penUltPos.y)
 		} else {
-			pos.change = { x:0, y:0 }
+			pos.change = tags.makePos(0,0)
 		}
-		pos.distance = { x:pos.x-pos0.x, y:pos.y-pos0.y }
+		pos.distance = tags.makePos(pos.x-pos0.x, pos.y-pos0.y)
 		history.push(pos)
 		return pos
 	}
@@ -99,16 +94,16 @@ function onDragStart($e) {
 		if (isDragging && history.length > 1) {
 			opts.end.call(el, posForEvent($e), history)
 		} else {
-			opts.tap.call(el)
+			opts.tap.call(el, posForEvent($e))
 		}
 		cleanUp()
 	}
 	
 	function cleanUp() {
 		$(document)
-			.off(dragEvents.move, onMove)
-			.off(dragEvents.end, onEnd)
-			.off(dragEvents.cancel, onCancel)
+			.off(tags.events.move, onMove)
+			.off(tags.events.end, onEnd)
+			.off(tags.events.cancel, onCancel)
 		
 		isDragging = false
 		history = null
