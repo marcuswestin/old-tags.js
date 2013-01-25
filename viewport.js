@@ -3,7 +3,13 @@ var viewport = module.exports = {
 	getSize:getSize,
 	size:getSize,
 	width:width,
-	height:height
+	height:height,
+	react:react
+}
+
+function react(callback) {
+	callback(getSize())
+	callbacks.push(callback)
 }
 
 function fit($el) {
@@ -22,7 +28,8 @@ var $win = $(window)
 var callbacks = []
 
 $win.resize(function() {
+	var size = getSize()
 	for (var i=0; i<callbacks.length; i++) {
-		callbacks[i] && callbacks[i]()
+		callbacks[i] && callbacks[i](size)
 	}
 })
