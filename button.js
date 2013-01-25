@@ -56,7 +56,7 @@ var onEnd = function(event, $el, supressHandler) {
 	setInactive($el)
 
 	var button = buttons[$el.attr('button-id')]
-	if (button) { button.tap.call($el[0], event) }
+	if (button && doCallTap) { button.tap.call($el[0], event) }
 	button.end.call($el[0])
 }
 
