@@ -8,36 +8,48 @@ function scroller(opts) {
 	opts = tags.options(opts, {
 		duration:350,
 		onViewChanging:null,
-		alwaysBounce:true
+		alwaysBounce:true,
+		headHeight:0,
+		numViews:3,
+		renderHead:function(){},
+		renderView:null,
+		renderFoot:function(){}
 	})
 	return $.extend(tags.create(scrollerBase), {
+		numViews:opts.numViews,
+		headHeight:opts.headHeight,
 		onViewChanging:opts.onViewChanging,
 		duration:opts.duration,
 		alwaysBounce:opts.alwaysBounce,
+		renderHeadFn:opts.renderHead,
+		renderViewFn:opts.renderView,
+		renderFootFn:opts.renderFoot,
 		stack:[]
 	})
 }
 
 var scrollerBase = {
-	headHeight:0,
-	renderHead:function(headHeight, headFn) {
-		this.headHeight = headHeight
-		this.headFn = headFn
+	__renderTag:function() {
+		return div('tags-scroller',
+			this.__renderHead(),
+			this.__renderViews()
+		)
+	},
+	__renderHead:function() {
 		this.headID = tags.id()
 		return div('tags-scroller-head', { id:this.headID }, style({
-			height:headHeight, width:'100%', position:'relative', top:0, zIndex:2
+			height:this.headHeight, width:'100%', position:'relative', top:0, zIndex:2
 		}))
 	},
-	renderBody:function(numViews, renderBodyContent) {
-		this.renderBodyContent = renderBodyContent
+	__renderViews:function() {
 		var viewportSize = viewport.size()
 		var contentSize = style({ height:viewport.height()-this.headHeight, width:viewport.width() })
-		var crop = style({ overflowX:'hidden' })
+		var crop = style({ overflow:'hidden' })
 		var scrollable = style({ overflowY:'scroll', '-webkit-overflow-scrolling':'touch' })
 		var floating = style({ 'float':'left' })
 		var slider = style({
 			height:viewport.height() - this.headHeight,
-			width:viewport.width() * numViews
+			width:viewport.width() * this.numViews
 		})
 		
 		this.bodyID = tags.id()
@@ -49,13 +61,13 @@ var scrollerBase = {
 			self.push({})
 		})
 		
-		return div('tags-scroller-body', { id:this.bodyID }, style({ position:'absolute', top:this.headHeight, overflowX:'hidden' }),
+		return div('tags-scroller-body', { id:this.bodyID }, style({ position:'absolute', top:this.headHeight, overflow:'hidden' }),
 			div('tags-scroller-overflow', contentSize, crop,
 				div('tags-scroller-slider', slider,
-					map(new Array(numViews), function() {
+					map(new Array(this.numViews), function() {
 						return div('tags-scroller-view', contentSize, crop, floating, scrollable)
 					}),
-					map(new Array(numViews), function(_,i) {
+					map(new Array(this.numViews), function(_,i) {
 						return div('tags-scroller-foot',
 							style({ width:viewport.width(), position:'absolute', bottom:0 }),
 							style(translate.x(i * viewport.width())))
@@ -63,9 +75,6 @@ var scrollerBase = {
 				)
 			)
 		)
-	},
-	renderFoot:function(renderFootFn) {
-		this.renderFootFn = renderFootFn
 	},
 	push:function scollerPush(newView, opts) {
 		opts = tags.options(opts, {
@@ -106,8 +115,8 @@ var scrollerBase = {
 			if (this.onViewChanging) {
 				this.onViewChanging()
 			}
-			this._update(opts, $('#'+this.headID), this.headFn)
-			this._update(opts, $('#'+this.footID), this.footFn)
+			this._update(opts, $('#'+this.headID), this.renderHeadFn)
+			this._update(opts, $('#'+this.footID), this.renderFootFn)
 
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
@@ -135,9 +144,9 @@ var scrollerBase = {
 				height:viewport.height()-this.headHeight + 1,
 				width:viewport.width()
 			})
-			return div('tags-scroller-bouncer', bounceStyle, this.renderBodyContent(opts.view, renderOpts))
+			return div('tags-scroller-bouncer', bounceStyle, this.renderViewFn(opts.view, renderOpts))
 		} else {
-			return this.renderBodyContent(opts.view, renderOpts)
+			return this.renderViewFn(opts.view, renderOpts)
 		}
 	},
 	_renderFootContent:function(opts) {
