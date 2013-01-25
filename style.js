@@ -60,6 +60,6 @@ style.translate.x = function(x, duration, delay) {
 }
 
 style.scrollable = {
-	x: { overflowX:'scroll', '-webkit-overflow-scrolling':'touch', overflowY:'hidden' },
-	y: { overflowY:'scroll', '-webkit-overflow-scrolling':'touch', overflowX:'hidden' }
+	x: { overflowX:'auto', '-webkit-overflow-scrolling':'touch', overflowY:'hidden' },
+	y: { overflowY:'auto', '-webkit-overflow-scrolling':'touch', overflowX:'hidden' }
 }
