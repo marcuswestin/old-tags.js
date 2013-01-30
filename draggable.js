@@ -34,7 +34,8 @@ function onDragStart($e) {
 	var opts = data[$el.attr('tags-draggable-id')]
 	
 	var history = []
-	var pos0 = tags.eventPos($e)
+	var pagePos0 = tags.eventPos($e)
+	var pos0 = tags.makePos(pagePos0.x - elOffset.left, pagePos0.y - elOffset.top)
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
 	
 	$(document)
