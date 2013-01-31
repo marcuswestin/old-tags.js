@@ -5,7 +5,7 @@ var style = require('./style')
 module.exports = scroller
 
 function scroller(opts) {
-	opts = tags.options(opts, {
+	return $.extend(tags.create(scrollerBase), tags.options(opts, {
 		duration:350,
 		onViewChanging:null,
 		alwaysBounce:true,
@@ -13,19 +13,9 @@ function scroller(opts) {
 		numViews:3,
 		renderHead:function(){},
 		renderView:null,
-		renderFoot:function(){}
-	})
-	return $.extend(tags.create(scrollerBase), {
-		numViews:opts.numViews,
-		headHeight:opts.headHeight,
-		onViewChanging:opts.onViewChanging,
-		duration:opts.duration,
-		alwaysBounce:opts.alwaysBounce,
-		renderHeadFn:opts.renderHead,
-		renderViewFn:opts.renderView,
-		renderFootFn:opts.renderFoot,
-		stack:[]
-	})
+		renderFoot:function(){},
+		stack:[{}]
+	}))
 }
 
 var scrollerBase = {
@@ -58,7 +48,11 @@ var scrollerBase = {
 			$('#'+self.bodyID+' .tags-scroller-view').on('scroll', function() {
 				tags.__lastScroll__ = new Date().getTime()
 			})
-			self.push({})
+			var stackCopy = self.stack.slice()
+			self.stack = []
+			for (var i=0; i<stackCopy.length; i++) {
+				self.push(stackCopy[i], { animate:false })
+			}
 		})
 		
 		return div('tags-scroller-body', { id:this.bodyID }, style({ position:'absolute', top:this.headHeight, overflow:'hidden' }),
@@ -115,8 +109,8 @@ var scrollerBase = {
 			if (this.onViewChanging) {
 				this.onViewChanging()
 			}
-			this._update(opts, $('#'+this.headID), this.renderHeadFn)
-			this._update(opts, $('#'+this.footID), this.renderFootFn)
+			this._update(opts, $('#'+this.headID), this.renderHead)
+			this._update(opts, $('#'+this.footID), this.renderFoot)
 
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
@@ -144,14 +138,14 @@ var scrollerBase = {
 				height:viewport.height()-this.headHeight + 1,
 				width:viewport.width()
 			})
-			return div('tags-scroller-bouncer', bounceStyle, this.renderViewFn(opts.view, renderOpts))
+			return div('tags-scroller-bouncer', bounceStyle, this.renderView(opts.view, renderOpts))
 		} else {
-			return this.renderViewFn(opts.view, renderOpts)
+			return this.renderView(opts.view, renderOpts)
 		}
 	},
 	_renderFootContent:function(opts) {
-		if (!this.renderFootFn) { return }
-		return this.renderFootFn(opts.view)
+		if (!this.renderFoot) { return }
+		return this.renderFoot(opts.view)
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
