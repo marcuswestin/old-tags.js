@@ -42,8 +42,8 @@ var rectProto = {
 	}
 }
 
-var onEnd = function(event, $el, supressHandler) {
-	event.preventDefault()
+var onEnd = function($event, $el, supressHandler) {
+	$event.preventDefault()
 	
 	if (tags.isTouch) {
 		$el.off('touchmove').off('touchend').off('touchcancel')
@@ -56,7 +56,7 @@ var onEnd = function(event, $el, supressHandler) {
 	setInactive($el)
 
 	var button = buttons[$el.attr('button-id')]
-	if (button && doCallTap) { button.tap.call($el[0], event) }
+	if (button && doCallTap) { button.tap.call($el[0], $event) }
 	button.end.call($el[0])
 }
 
@@ -94,15 +94,17 @@ function onMouseDown(event) {
 	})
 }
 
-function initButton(event, cb) {
-	var $el = $(event.currentTarget) //$(event.target)
+function initButton($event, cb) {
+	var $el = $($event.currentTarget) //$(event.target)
 	
 	var button = buttons[$el.attr('button-id')]
-	button.start.call($el[0])
+	button.start.call($el[0], $event)
+	
+	if ($event.isDefaultPrevented()) { return } // button.start decided to prevent it
 	
 	if ($el.hasClass('disabled')) { return }
 	
-	event.preventDefault()
+	$event.preventDefault()
 	
 	var offset = $el.offset()
 	var touchRect = makeRect(offset.left, offset.top, $el.width(), $el.height()).pad(20, 28, 30, 20)
@@ -111,8 +113,8 @@ function initButton(event, cb) {
 	setActive($el)
 	cb($el)
 }
-var touchInsideTapRect = function($el, event) {
-	var touch = event.originalEvent.touches[0]
+var touchInsideTapRect = function($el, $event) {
+	var touch = $event.originalEvent.touches[0]
 	var touchRect = $el.data('touchRect')
 	return touchRect && touchRect.containsPoint({ x:touch.pageX, y:touch.pageY })
 }
