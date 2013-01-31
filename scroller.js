@@ -124,7 +124,7 @@ var scrollerBase = {
 	_update:function(opts, element, updateFn) {
 		if (!updateFn) { return }
 		var fnResult = updateFn.call(element, opts.view, { viewBelow:this.stack[opts.index - 1] })
-		if (fnResult) {
+		if (fnResult != null) {
 			// Allow for the header and footer to return content to be displayed.
 			// Alt. they can choose not re-render, but rather update what's already rendered and avoid a flash of no content.
 			$(element).empty().append(fnResult)
