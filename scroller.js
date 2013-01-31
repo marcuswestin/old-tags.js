@@ -28,7 +28,7 @@ var scrollerBase = {
 	__renderHead:function() {
 		this.headID = tags.id()
 		return div('tags-scroller-head', { id:this.headID }, style({
-			height:this.headHeight, width:'100%', position:'relative', top:0, zIndex:2
+			height:this.headHeight, width:'100%', position:'absolute', top:0, zIndex:2
 		}))
 	},
 	__renderViews:function() {
