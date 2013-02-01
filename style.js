@@ -20,7 +20,10 @@ var style = module.exports = (function(){
 		return toDashes(name)+':'+value
 	}
 	return function style(styles) {
-		return { style:$.map(styles, handleStyle).join('; ') }
+		return styles && (arguments.length == 1
+			? { style:$.map(styles, handleStyle).join('; ') }
+			: map(arguments, style, function(arg) { return style(arg) })
+		)
 	}
 }())
 
