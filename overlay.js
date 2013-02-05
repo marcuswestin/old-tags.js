@@ -7,6 +7,7 @@ var div = tags('div')
 var transition = style.transition
 
 var overlay = module.exports = renderOverlay
+overlay.show = renderOverlay
 overlay.hide = hideOverlay
 overlay.resize = resizeOverlay
 overlay.zIndex = 10
