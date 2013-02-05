@@ -11,9 +11,10 @@ function list(className, opts) {
 		opts = className
 		className = null
 	}
+	if (opts.onSelect) { opts.selectItem = opts.onSelect } // backcompat
 	opts = tags.options(opts, {
 		items:null,
-		onSelect:logOnSelect,
+		selectItem:logOnSelect,
 		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
 		renderEmpty:null,
@@ -111,7 +112,7 @@ function selectEl(el) {
 	var itemId = el.getAttribute('id')
 	var item = data[listId].itemsById[itemId]
 	if (!item) { return }
-	data[listId].opts.onSelect.call(el, item)
+	data[listId].opts.selectItem.call(el, item)
 }
 
 $(function() {
