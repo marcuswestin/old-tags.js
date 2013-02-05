@@ -52,7 +52,7 @@ function handleTagArg(arg, content, attributes, classes, styles) {
 				styles.push(val)
 			} else if (key == 'class') {
 				classes.push(val)
-			} else {
+			} else if (val != null) {
 				attributes.push(key+'="'+safeAttr(val)+'"')
 			}
 		}
