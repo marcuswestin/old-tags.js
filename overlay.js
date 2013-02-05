@@ -13,6 +13,7 @@ overlay.resize = resizeOverlay
 overlay.zIndex = 10
 
 function hideOverlay(opts) {
+	if (typeof opts == 'function') { opts = { finish:opts } }
 	$('.tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:0 })
 	setTimeout(function() {
 		$('.tags-overlay').remove()
