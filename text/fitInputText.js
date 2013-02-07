@@ -1,6 +1,6 @@
 // useful: $(document).on('input', 'input', fitInputText)
 
-var textWidth = require('tags/util/textWidth')
+var textWidth = require('./textWidth')
 
 module.exports = function fitInputText() {
 	var $input = $(this)
