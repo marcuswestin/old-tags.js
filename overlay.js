@@ -19,6 +19,11 @@ function hideOverlay(opts) {
 		duration:250,
 		finish:function(){}
 	})
+	
+	if (!$('.tags-overlay')[0]) {
+		return opts.finish()
+	}
+	
 	$('.tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:0 })
 	setTimeout(function() {
 		$('.tags-overlay').remove()
@@ -30,8 +35,8 @@ function resizeOverlay(size) {
 	$('.tags-overlay .tags-overlay-content').css(getLayout(size))
 }
 
-function renderOverlay(opts) {
-	if (typeof opts == 'function') { opts = { content:opts } }
+function renderOverlay(opts, contentFn) {
+	if (!contentFn) { contentFn = opts; opts = {} }
 	
 	var viewportSize = viewport.size()
 	opts = tags.options(opts, {
@@ -41,7 +46,6 @@ function renderOverlay(opts) {
 		duration:250,
 		delay:0,
 		dismissable:true,
-		content:null,
 		translate:null,
 		background:'rgba(25,25,25,.45)'
 	})
@@ -50,11 +54,12 @@ function renderOverlay(opts) {
 	var sizer = $(opts.element)
 	var size = { width:opts.width || sizer.width(), height:opts.height || sizer.height() }
 	var translation = opts.translate ? style.translate(opts.translate[0], opts.translate[1]) : null
+	$('.tags-overlay').remove()
 	$(document.body).append(div('tags-overlay', style({ position:'fixed', top:offset.top, left:offset.left, opacity:0, zIndex:overlay.zIndex }),
 		div('tags-overlay-background', style(viewportSize, { position:'absolute', background:opts.background }), opts.dismissable && button(function() {
 			overlay.hide(opts)
 		})),
-		div('tags-overlay-content', opts.content, style({ position:'absolute' }, getLayout(size), translation))
+		div('tags-overlay-content', contentFn, style({ position:'absolute' }, getLayout(size), translation))
 	))
 	
 	setTimeout(function() {
