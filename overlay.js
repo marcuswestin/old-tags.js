@@ -58,7 +58,6 @@ function renderOverlay(opts) {
 	))
 	
 	setTimeout(function() {
-		console.log("HERE", $('.tags-overlay')[0])
 		$('.tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
 	}, opts.delay)
 }
