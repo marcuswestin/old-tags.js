@@ -48,8 +48,9 @@ function renderOverlay(opts, contentFn) {
 		background:'rgba(25,25,25,.45)'
 	})
 	
-	var offset = $(opts.element).offset()
-	var size = $(opts.element).size()
+	var $el = $(opts.element)
+	var offset = $el.offset()
+	var size = { width:$el.width(), height:$el.height() }
 	$('.tags-overlay').remove()
 	$(document.body).append(div('tags-overlay',
 		style(size, offset, { position:'fixed', opacity:0, zIndex:overlay.zIndex, background:opts.background, display:'table' }),
