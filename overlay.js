@@ -6,12 +6,13 @@ var button = require('./button')
 var div = tags('div')
 var transition = style.transition
 
-var overlay = module.exports = renderOverlay
-overlay.show = renderOverlay
-overlay.hide = hideOverlay
-overlay.resize = resizeOverlay
-overlay.zIndex = 10
-overlay.defaultElement = null
+var overlay = module.exports = {
+	show:renderOverlay,
+	hide:hideOverlay,
+	resize:resizeOverlay,
+	zIndex:10,
+	defaultElement:null
+}
 
 function hideOverlay(opts) {
 	if (typeof opts == 'function') { opts = { finish:opts } }
@@ -41,25 +42,19 @@ function renderOverlay(opts, contentFn) {
 	var viewportSize = viewport.size()
 	opts = tags.options(opts, {
 		element:overlay.defaultElement,
-		width:null,
-		height:null,
 		duration:250,
 		delay:0,
-		dismissable:true,
-		translate:null,
+		dismissable:false,
 		background:'rgba(25,25,25,.45)'
 	})
 	
 	var offset = $(opts.element).offset()
-	var sizer = $(opts.element)
-	var size = { width:opts.width || sizer.width(), height:opts.height || sizer.height() }
-	var translation = opts.translate ? style.translate(opts.translate[0], opts.translate[1]) : null
+	var size = $(opts.element).size()
 	$('.tags-overlay').remove()
-	$(document.body).append(div('tags-overlay', style({ position:'fixed', top:offset.top, left:offset.left, opacity:0, zIndex:overlay.zIndex }),
-		div('tags-overlay-background', style(viewportSize, { position:'absolute', background:opts.background }), opts.dismissable && button(function() {
-			overlay.hide(opts)
-		})),
-		div('tags-overlay-content', contentFn, style({ position:'absolute' }, getLayout(size), translation))
+	$(document.body).append(div('tags-overlay',
+		style(size, offset, { position:'fixed', opacity:0, zIndex:overlay.zIndex, background:opts.background, display:'table' }),
+		opts.dismissable && button(function() { overlay.hide(opts) }),
+		div('tags-overlay-content', style({ display:'table-cell', verticalAlign:'middle' }), contentFn)
 	))
 	
 	setTimeout(function() {
