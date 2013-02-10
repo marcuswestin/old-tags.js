@@ -46,7 +46,7 @@ function list(className, opts) {
 		if (isEmpty && opts.renderEmpty) { $tag().empty() } // Remove previous content from renderEmpty
 		isEmpty = false
 		var div = document.createElement('div')
-		div.innerHTML = newItems.map(function(item) {
+		div.innerHTML = newItems.map(function itemHtml(item) {
 			var itemId = getItemId(item)
 			if (listData.itemsById[itemId]) {
 				if (!addOpts.updateItems) { return '' }
