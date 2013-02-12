@@ -3,7 +3,11 @@ var tags = require('./tags')
 module.exports = button
 
 var buttons = {}
-function button(opts) {
+function button(el, opts) {
+	if (arguments.length == 1) {
+		opts = el
+		el = null
+	}
 	if (typeof opts == 'function') {
 		opts = { tap:opts }
 	}
@@ -14,7 +18,11 @@ function button(opts) {
 	})
 	var id = tags.id()
 	buttons[id] = opts
-	return { 'button-id':id, 'class':'tags-button' }
+	if (el) {
+		$(el).attr('button-id', id).addClass('tags-button')
+	} else {
+		return { 'button-id':id, 'class':'tags-button' }
+	}
 }
 
 function makeRect(x, y, width, height) {
