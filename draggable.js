@@ -71,7 +71,8 @@ function onDragStart($e) {
 	function onMove($e) {
 		var pos = posForEvent($e)
 		if (!isDragging) {
-			var dx = pos.distance.x, dy = pos.distance.y
+			var dx = pos.distance.x
+			var dy = pos.distance.y
 			var abSquared = dx*dx + dy*dy
 			if (abSquared < thresholdSquared) {
 				return // not yet dragging
