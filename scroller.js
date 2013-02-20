@@ -110,7 +110,7 @@ var scrollerBase = {
 							overflowY:'scroll', '-webkit-overflow-scrolling':'touch'
 						})))
 						.append(div('tags-scroller-foot', style(translate.x(offsetX), {
-							overflowY:'scroll', '-webkit-overflow-scrolling':'touch', width:width
+							width:width
 						})))
 					this.__numViews += 1
 				}
