@@ -52,7 +52,7 @@ var scrollerBase = {
 		
 		return div('tags-scroller-body', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:this.headHeight }),
 			div('tags-scroller-overflow', style(contentSize, { overflow:'hidden' }),
-				div('tags-scroller-slider')//, style({ height:viewport.height() - this.headHeight }))
+				div('tags-scroller-slider', style({ height:viewport.height() - this.headHeight }))
 			)
 		)
 	},
@@ -110,7 +110,7 @@ var scrollerBase = {
 							overflowY:'scroll', '-webkit-overflow-scrolling':'touch'
 						})))
 						.append(div('tags-scroller-foot', style(translate.x(offsetX), {
-							width:width
+							position:'absolute', bottom:0, width:width
 						})))
 					this.__numViews += 1
 				}
