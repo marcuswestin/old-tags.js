@@ -45,7 +45,7 @@ function renderOverlay(opts, contentFn) {
 		duration:250,
 		delay:0,
 		dismissable:false,
-		background:'rgba(25,25,25,.45)'
+		background:'rgba(25,25,25,.5)'
 	})
 	
 	var $el = $(opts.element)
