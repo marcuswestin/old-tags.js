@@ -16,7 +16,7 @@ var style = module.exports = (function(){
 		})
 	}
 	function handleStyle(value, name) {
-		if (typeof value == 'number' && name != 'opacity' && name != 'zIndex') { value += 'px' }
+		if (typeof value == 'number' && name != 'opacity' && name != 'zIndex' && name != 'fontWeight') { value += 'px' }
 		return toDashes(name)+':'+value
 	}
 	return function style(styles) {
