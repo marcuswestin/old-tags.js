@@ -21,26 +21,28 @@ function hideOverlay(opts) {
 		finish:function(){}
 	})
 	
-	if (!$('.tags-overlay')[0]) {
+	if (!$('#tags-overlay')[0]) {
 		return opts.finish()
 	}
 	
-	$('.tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:0 })
-	setTimeout(function() {
-		$('.tags-overlay').remove()
+	$('#tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:0 })
+	hidingTimeout = setTimeout(function() {
+		$('#tags-overlay').remove()
 		opts.finish()
 	}, opts.duration)
 }
 
 function resizeOverlay(size) {
-	$('.tags-overlay .tags-overlay-content').css(getLayout(size))
+	$('#tags-overlay .tags-overlay-content').css(getLayout(size))
 }
 
+var lastOpts
+var hidingTimeout
 function renderOverlay(opts, contentFn) {
 	if (!contentFn) { contentFn = opts; opts = {} }
 	
 	var viewportSize = viewport.size()
-	opts = tags.options(opts, {
+	lastOpts = opts = tags.options(opts, {
 		element:overlay.defaultElement,
 		duration:250,
 		delay:0,
@@ -49,18 +51,28 @@ function renderOverlay(opts, contentFn) {
 	})
 	
 	var $el = $(opts.element)
-	var offset = $el.offset()
+	var offset = $el.offset() || {}
 	var size = { width:$el.width(), height:$el.height() }
-	$('.tags-overlay').remove()
-	$(document.body).append(div('tags-overlay',
-		style(size, offset, { position:'fixed', opacity:0, zIndex:overlay.zIndex, background:opts.background, display:'table' }),
-		opts.dismissable && button(function() { overlay.hide(opts) }),
-		div('tags-overlay-content', style({ display:'table-cell', verticalAlign:'middle' }), contentFn)
-	))
+	if (hidingTimeout) {
+		clearTimeout(hidingTimeout)
+		$('#tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
+	}
 	
-	setTimeout(function() {
-		$('.tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
-	}, opts.delay)
+	if (!$('#tags-overlay')[0]) {
+		$(document.body).append(div(
+			{ id:'tags-overlay' },
+			style({ position:'fixed', opacity:0, display:'table', zIndex:overlay.zIndex }),
+			button(function() { lastOpts.dismissable && overlay.hide(opts) })
+		))
+		setTimeout(function() {
+			$('#tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
+		}, opts.delay)
+	}
+	
+	$('#tags-overlay')
+		.empty()
+		.css(size).css(offset).css({ background:opts.background })
+		.append(div('tags-overlay-content', style({ display:'table-cell', verticalAlign:'middle' }), contentFn))
 }
 
 function getLayout(size) {
