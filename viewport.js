@@ -5,7 +5,8 @@ var viewport = module.exports = {
 	width:width,
 	height:height,
 	react:react,
-	pos:pos
+	pos:pos,
+	element:document.body
 }
 
 function react(callback) {

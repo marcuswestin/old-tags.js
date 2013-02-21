@@ -1,7 +1,6 @@
 var tags = require('./tags')
 var style = require('./style')
 var viewport = require('./viewport')
-var overlay = require('./overlay')
 
 var div = tags('div')
 
@@ -19,15 +18,18 @@ function showTooltip(opts, contentFn) {
 	var $el = $(opts.element)
 	var offsetX = (opts.width - $el.width()) / 2
 	var elPos = tags.addPos(tags.subPos(tags.subPos(tags.screenPos($el), viewport.pos()), [offsetX, opts.height]), opts.offset)
-	ovarlay.show({ background:opts.background, dismissable:true }, function() {
-		return div(style({ left:elPos[0], top:elPos[1], position:'absolute', display:'table' }),
-			div('tags-tooltip-content', contentFn, style({
-				display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'
-			}))
-		)
-	})
+	
+	hideTooltip()
+	
+	$(viewport.element).append(div(
+		{ id:'tags-tooltip' },
+		style({ position:'fixed', left:elPos[0], top:elPos[1], display:'table' }),
+		div('tags-tooltip-content', contentFn, style({
+			display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'
+		}))
+	))
 }
 
 function hideTooltip() {
-	overlay.hide()
+	$('#tags-tooltip').remove()
 }

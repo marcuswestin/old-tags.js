@@ -10,8 +10,7 @@ var overlay = module.exports = {
 	show:renderOverlay,
 	hide:hideOverlay,
 	resize:resizeOverlay,
-	zIndex:10,
-	defaultElement:null
+	zIndex:10
 }
 
 function hideOverlay(opts) {
@@ -43,7 +42,7 @@ function renderOverlay(opts, contentFn) {
 	
 	var viewportSize = viewport.size()
 	lastOpts = opts = tags.options(opts, {
-		element:overlay.defaultElement,
+		element:viewport.element,
 		duration:250,
 		delay:0,
 		dismissable:false,
