@@ -13,11 +13,12 @@ var tooltip = module.exports = {
 function showTooltip(opts, contentFn) {
 	if (!contentFn) { contentFn = opts; opts = {} }
 	opts = tags.options(opts, {
-		width:null, height:null, content:'Hello World', element:null, background:'rgba(0,0,0,0)'
+		width:null, height:null, content:'Hello World', element:null, background:'rgba(0,0,0,0)',
+		offset:[0,0]
 	})
 	var $el = $(opts.element)
 	var offsetX = (opts.width - $el.width()) / 2
-	var elPos = tags.subPos(tags.subPos(tags.screenPos($el), viewport.pos()), [offsetX, opts.height])
+	var elPos = tags.addPos(tags.subPos(tags.subPos(tags.screenPos($el), viewport.pos()), [offsetX, opts.height]), opts.offset)
 	ovarlay.show({ background:opts.background, dismissable:true }, function() {
 		return div(style({ left:elPos[0], top:elPos[1], position:'absolute', display:'table' }),
 			div('tags-tooltip-content', contentFn, style({
