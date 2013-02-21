@@ -116,6 +116,15 @@ tags.eventPos = function eventPos($e, index) {
 	return tags.makePos(obj.pageX, obj.pageY)
 }
 
+tags.screenPos = function screenPos(el) {
+	var box = $(el)[0].getBoundingClientRect()
+	return tags.makePos(box.left, box.top)
+}
+
+tags.subPos = function subPos(p1, p2) {
+	return tags.makePos(p1[0] - p2[0], p1[1] - p2[1])
+}
+
 tags.classNames = function classNames(c1, c2) {
 	return c1 + (c2 ? ' ' + c2 : '')
 }
