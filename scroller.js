@@ -151,14 +151,14 @@ var scrollerBase = {
 	current:function() {
 		return this.stack[this.stack.length - 1]
 	},
-	getCurrentView:function() {
-		return $(this.getView(this.stack.length - 1))
-	},
+	getCurrentView:function() { return this.getView() },
 	getView:function(index) {
-		return $('#'+this.bodyID+' .tags-scroller-view')[index]
+		if (index == null) { index = this.stack.length - 1 }
+		return $($('#'+this.bodyID+' .tags-scroller-view')[index])
 	},
 	getFoot:function(index) {
-		return $('#'+this.bodyID+' .tags-scroller-foot')[index]
+		if (index == null) { index = this.stack.length - 1 }
+		return $($('#'+this.bodyID+' .tags-scroller-foot')[index])
 	},
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
