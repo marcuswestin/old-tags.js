@@ -43,23 +43,23 @@ style.transition.none = function() {
 	return { '-webkit-transition':'none' }
 }
 
-style.translate = function translate(x, y, duration, delay) {
-	var res = { '-webkit-transform':'translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)' }
-	if (duration != null) {
-		res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms'
-	}
-	if (delay != null) {
-		res['-webkit-transition-delay'] = delay+'ms'
-	}
+function _transform(translation, duration, delay) {
+	var res = { '-webkit-transform':translation }
+	if (duration != null) { res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
+	if (delay != null) { res['-webkit-transition-delay'] = delay+'ms' }
 	return res
 }
 
+style.translate = function translate(x, y, duration, delay) {
+	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)', duration, delay)
+}
+
 style.translate.y = function(y, duration, delay) {
-	return style.translate(0, y, duration, delay)
+	return _transform('translateY('+Math.round(y)+'px)', duration, delay)
 }
 
 style.translate.x = function(x, duration, delay) {
-	return style.translate(x, 0, duration, delay)
+	return _transform('translateX('+Math.round(x)+'px)', duration, delay)
 }
 
 style.scrollable = {
