@@ -21,6 +21,9 @@ var tags = module.exports = function tags(tagName) {
 	}
 }
 
+tags.br = function() { return { __tagHTML:'<br />', toString:tagToString } }
+tags.html = function(html) { return { __tagHTML:html, toString:tagToString } }
+
 function tagToString() { return this.__tagHTML }
 
 function handleTagArgs(args, i, content, attributes, classes, styles) {
