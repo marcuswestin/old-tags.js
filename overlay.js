@@ -32,7 +32,7 @@ function hideOverlay(opts) {
 }
 
 function resizeOverlay(size) {
-	$('#tags-overlay .tags-overlay-content').css(getLayout(size))
+	$('#tags-overlay .tags-overlay-content, #tags-overlay .tags-overlay-shadow').css(getLayout(size))
 }
 
 var lastOpts
@@ -58,10 +58,9 @@ function renderOverlay(opts, contentFn) {
 	}
 	
 	if (!$('#tags-overlay')[0]) {
-		$(document.body).append(div(
+		$(document.body).prepend(div(
 			{ id:'tags-overlay' },
-			style({ position:'fixed', opacity:0, display:'table', zIndex:overlay.zIndex }),
-			button(function() { lastOpts.dismissable && overlay.hide(opts) })
+			style({ position:'fixed', opacity:0, display:'table', zIndex:overlay.zIndex })
 		))
 		setTimeout(function() {
 			$('#tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
@@ -70,8 +69,11 @@ function renderOverlay(opts, contentFn) {
 	
 	$('#tags-overlay')
 		.empty()
-		.css(size).css(offset).css({ background:opts.background })
-		.append(div('tags-overlay-content', style({ display:'table-cell', verticalAlign:'middle' }), contentFn))
+		.css(size).css(offset)
+		.append(
+			div('tags-overlay-background', style({ background:opts.background }), button(function() { lastOpts.dismissable && overlay.hide(opts) })),
+			div('tags-overlay-content', style({ display:'table-cell', verticalAlign:'middle' }), contentFn)
+		)
 }
 
 function getLayout(size) {
