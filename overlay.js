@@ -60,7 +60,7 @@ function renderOverlay(opts, contentFn) {
 	if (!$('#tags-overlay')[0]) {
 		$(document.body).prepend(div(
 			{ id:'tags-overlay' },
-			style({ position:'fixed', opacity:0, display:'table', zIndex:overlay.zIndex })
+			style({ position:'fixed', opacity:0, zIndex:overlay.zIndex })
 		))
 		setTimeout(function() {
 			$('#tags-overlay').css(transition('opacity', opts.duration)).css({ opacity:1 })
@@ -72,7 +72,7 @@ function renderOverlay(opts, contentFn) {
 		.css(size).css(offset)
 		.append(
 			div('tags-overlay-background', style(size, absolute(0,0), { background:opts.background }), lastOpts.dismissable && button(function() { overlay.hide(opts) })),
-			div('tags-overlay-content', style(absolute(0,0), { display:'table-cell', verticalAlign:'middle' }), contentFn)
+			div('tags-overlay-content', style(size, absolute(0,0), { display:'table' }), div(style({ display:'table-cell', verticalAlign:'middle' }), contentFn))
 		)
 }
 
