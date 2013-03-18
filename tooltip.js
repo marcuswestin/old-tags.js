@@ -23,7 +23,7 @@ function showTooltip(opts, contentFn) {
 	
 	$(viewport.element).append(div(
 		{ id:'tags-tooltip' },
-		style({ position:'fixed', left:elPos[0], top:elPos[1], display:'table' }),
+		style({ position:'fixed', left:elPos[0], top:elPos[1], display:'table', zIndex:3 }),
 		div('tags-tooltip-content', contentFn, style({
 			display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'
 		}))
