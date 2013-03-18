@@ -1,5 +1,6 @@
 var viewport = module.exports = {
 	fit:fit,
+	fitWidth:fitWidth,
 	getSize:getSize,
 	size:getSize,
 	width:width,
@@ -15,9 +16,13 @@ function react(callback) {
 }
 
 function fit($el) {
-	var resize = function() {
-		$el.height(viewport.height()).width(viewport.width())
-	}
+	function resize() { $el.css(viewport.getSize()) }
+	$win.resize(resize)
+	resize()
+}
+
+function fitWidth($el) {
+	function resize() { $el.width(viewport.width()) }
 	$win.resize(resize)
 	resize()
 }
