@@ -66,6 +66,8 @@ var onEnd = function($event, $el, supressHandler) {
 	var button = buttons[$el.attr('button-id')]
 	if (button && doCallTap) { button.tap.call($el[0], $event) }
 	button.end.call($el[0])
+	
+	return false
 }
 
 function setActive($el) { $el.addClass('active') }
@@ -75,7 +77,7 @@ function isActive($el) { return $el.hasClass('active') }
 function onTouchStart(event) {
 	initButton(event, function($el) {
 		$el.on('touchmove', function(event) { onTouchMove(event, $el) })
-		$el.on('touchend', function(event) { onEnd(event, $el) })
+		$el.on('touchend', function(event) { return onEnd(event, $el) })
 		$el.on('touchcancel', function(event) { onTouchCancel(event, $el) })
 	})
 }
