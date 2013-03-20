@@ -5,6 +5,16 @@ var style = require('./style')
 module.exports = scroller
 
 var translate = style.translate
+var navBarHeight = 0
+var ua = window.navigator.userAgent
+var isMobileSafari = ua.match(/(iPod|iPhone)/) && ua.match(/Safari/)
+function hideNavBar() { window.scrollTo(0, 1) }
+function getHeight() { return viewport.height() + navBarHeight }
+
+if (isMobileSafari) {
+	navBarHeight = 60
+	setTimeout(hideNavBar, 10)
+}
 
 scroller.onViewChanging = null
 function scroller(opts) {
@@ -12,7 +22,6 @@ function scroller(opts) {
 		duration:350,
 		onViewChanging:scroller.onViewChanging,
 		alwaysBounce:true,
-		headHeight:40,
 		renderHead:function(){},
 		renderBody:null,
 		renderFoot:function(){},
@@ -31,18 +40,15 @@ var scrollerBase = {
 	__renderHead:function() {
 		this.headID = tags.id()
 		return div('tags-scroller-head', { id:this.headID }, style({
-			height:this.headHeight, width:'100%', position:'absolute', top:0, zIndex:2
+			height:0, width:'100%', position:'absolute', top:0, zIndex:2
 		}))
 	},
 	__renderViews:function() {
-		var contentSize = { height:viewport.height()-this.headHeight, width:viewport.width() }
+		var contentSize = { height:getHeight(), width:viewport.width() }
 		
 		this.bodyID = tags.id()
 		var self = this
 		setTimeout(function() {
-			$('#'+self.bodyID+' .tags-scroller-view').on('scroll', function() {
-				tags.__lastScroll__ = new Date().getTime()
-			})
 			var stackCopy = self.stack.slice()
 			self.stack = []
 			for (var i=0; i<stackCopy.length; i++) {
@@ -50,9 +56,9 @@ var scrollerBase = {
 			}
 		})
 		
-		return div('tags-scroller-body', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:this.headHeight }),
+		return div('tags-scroller-body', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:0 }),
 			div('tags-scroller-overflow', style(contentSize, { overflow:'hidden' }),
-				div('tags-scroller-slider', style({ height:viewport.height() - this.headHeight }))
+				div('tags-scroller-slider', style({ height:getHeight() }))
 			)
 		)
 	},
@@ -102,21 +108,29 @@ var scrollerBase = {
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
 					var width = viewport.width()
-					var height = viewport.height() - this.headHeight
+					var height = getHeight()
 					var offsetX = this.__numViews * width
 					$('#'+this.bodyID+' .tags-scroller-slider')
-						.append(div('tags-scroller-view', style(translate.x(offsetX), {
-							position:'absolute', top:this.headHeight, width:width, height:height,
-							overflowY:'scroll', '-webkit-overflow-scrolling':'touch'
+						.append(div('tags-scroller-view', style(translate.x(offsetX), style.scrollable.y, {
+							position:'absolute', top:0, width:width, height:height
 						})))
 						.append(div('tags-scroller-foot', style(translate.x(offsetX), {
 							position:'absolute', bottom:0, width:width
 						})))
 					this.__numViews += 1
+					
+					if (isMobileSafari) {
+						var scrollerViews = $('#'+this.bodyID+' .tags-scroller-slider .tags-scroller-view')
+						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
+					}
 				}
 				
-				$(this.getView(opts.index)).empty().append(this._renderBodyContent(opts))
-				$(this.getFoot(opts.index)).empty().append(this._renderFootContent(opts))
+				this.getView(opts.index).empty().append(this._renderBodyContent(opts))
+				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
+				
+				if (isMobileSafari) {
+					this.getView(opts.index)[0].scrollTop = 1
+				}
 			}
 			
 			this._scroll(animate)
@@ -136,7 +150,7 @@ var scrollerBase = {
 		var alwaysBounce = (opts.alwaysBounce === null ? this.alwaysBounce : opts.alwaysBounce)
 		if (alwaysBounce) {
 			var bounceStyle = style({ // the bouncer makes the content view always bounce-scrollable
-				height:viewport.height()-this.headHeight + 1,
+				minHeight:getHeight() + 1,
 				width:viewport.width()
 			})
 			return div('tags-scroller-bouncer', bounceStyle, this.renderBody(opts.view, renderOpts))
@@ -164,4 +178,19 @@ var scrollerBase = {
 		var offset = this.stack.length - 1
 		$('#'+this.bodyID+' .tags-scroller-slider').css(translate.x(-offset * viewport.width(), animate ? this.duration : 'none'))
 	}
+}
+
+function hideNavBarOnLetGo() {
+	$(document).on('touchend', doHide)
+	function doHide() {
+		$(document).off('touchend', doHide)
+		hideNavBar()
+	}
+}
+
+function onViewScroll() {
+	tags.__lastScroll__ = new Date().getTime()
+	
+	if (this.scrollTop < 1) { return }
+	hideNavBarOnLetGo()
 }
