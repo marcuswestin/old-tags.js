@@ -17,7 +17,7 @@ function list(className, opts) {
 		selectItem:logOnSelect,
 		getItemId:defaultGetItemId,
 		renderItem:renderItemJson,
-		renderEmpty:null,
+		renderEmpty:function(){},
 		onUpdated:function(){}
 	})
 	
