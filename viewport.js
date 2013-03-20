@@ -1,3 +1,5 @@
+var tags = require('./tags')
+
 var viewport = module.exports = {
 	fit:fit,
 	fitWidth:fitWidth,
@@ -7,12 +9,16 @@ var viewport = module.exports = {
 	height:height,
 	react:react,
 	pos:pos,
-	element:document.body
+	element:document.body,
+	onResize:onResize
 }
 
+var navBarHeight = tags.isMobileSafari ? 60 : 0
+
+function onResize(callback) { callbacks.push(callback) }
 function react(callback) {
 	callback(getSize())
-	callbacks.push(callback)
+	onResize(callback)
 }
 
 function fit($el) {
@@ -27,7 +33,7 @@ function fitWidth($el) {
 	resize()
 }
 
-function height() { return $win.height() }
+function height() { return $win.height() + navBarHeight }
 function width() { return $win.width() }
 function getSize() { return { width:viewport.width(), height:viewport.height() } }
 function pos() { return tags.makePos(0,0) }

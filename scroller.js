@@ -5,16 +5,9 @@ var style = require('./style')
 module.exports = scroller
 
 var translate = style.translate
-var navBarHeight = 0
-var ua = window.navigator.userAgent
-var isMobileSafari = ua.match(/(iPod|iPhone)/) && ua.match(/Safari/)
 function hideNavBar() { window.scrollTo(0, 1) }
-function getHeight() { return viewport.height() + navBarHeight }
 
-if (isMobileSafari) {
-	navBarHeight = 60
-	setTimeout(hideNavBar, 10)
-}
+if (tags.isMobileSafari) { setTimeout(hideNavBar, 10) }
 
 scroller.onViewChanging = null
 function scroller(opts) {
@@ -32,21 +25,28 @@ function scroller(opts) {
 var scrollerBase = {
 	__numViews:0,
 	__renderTag:function() {
+		var bodyID = this.bodyID = tags.id()
+		this.headID = tags.id()
+		viewport.onResize(function(size) {
+			$('#'+bodyID)
+				.find('.tags-scroller-overflow').css(size)
+					.find('.tags-scroller-slider').css({ height:size.height }).end()
+				.end()
+				.find('.tags-scroller-slider')
+					.find('.tags-scroller-view').css(size).end()
+					.find('.tags-scroller-foot').css({ width:size.width })
+		})
 		return div('tags-scroller',
 			this.__renderHead(),
 			this.__renderViews()
 		)
 	},
 	__renderHead:function() {
-		this.headID = tags.id()
 		return div('tags-scroller-head', { id:this.headID }, style({
 			height:0, width:'100%', position:'absolute', top:0, zIndex:2
 		}))
 	},
 	__renderViews:function() {
-		var contentSize = { height:getHeight(), width:viewport.width() }
-		
-		this.bodyID = tags.id()
 		var self = this
 		setTimeout(function() {
 			var stackCopy = self.stack.slice()
@@ -57,8 +57,8 @@ var scrollerBase = {
 		})
 		
 		return div('tags-scroller-body', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:0 }),
-			div('tags-scroller-overflow', style(contentSize, { overflow:'hidden' }),
-				div('tags-scroller-slider', style({ height:getHeight() }))
+			div('tags-scroller-overflow', style(viewport.getSize(), { overflow:'hidden' }),
+				div('tags-scroller-slider', style({ height:viewport.height() }))
 			)
 		)
 	},
@@ -107,19 +107,18 @@ var scrollerBase = {
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
-					var width = viewport.width()
-					var height = getHeight()
-					var offsetX = this.__numViews * width
+					var size = viewport.getSize()
+					var offsetX = this.__numViews * size.width
 					$('#'+this.bodyID+' .tags-scroller-slider')
-						.append(div('tags-scroller-view', style(translate.x(offsetX), style.scrollable.y, {
-							position:'absolute', top:0, width:width, height:height
+						.append(div('tags-scroller-view', style(translate.x(offsetX), style.scrollable.y, size, {
+							position:'absolute', top:0
 						})))
 						.append(div('tags-scroller-foot', style(translate.x(offsetX), {
-							position:'absolute', bottom:0, width:width
+							position:'absolute', bottom:0, width:size.width
 						})))
 					this.__numViews += 1
 					
-					if (isMobileSafari) {
+					if (tags.isMobileSafari) {
 						var scrollerViews = $('#'+this.bodyID+' .tags-scroller-slider .tags-scroller-view')
 						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
 					}
@@ -128,7 +127,7 @@ var scrollerBase = {
 				this.getView(opts.index).empty().append(this._renderBodyContent(opts))
 				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
 				
-				if (isMobileSafari) {
+				if (tags.isMobileSafari) {
 					this.getView(opts.index)[0].scrollTop = 1
 				}
 			}
@@ -150,7 +149,7 @@ var scrollerBase = {
 		var alwaysBounce = (opts.alwaysBounce === null ? this.alwaysBounce : opts.alwaysBounce)
 		if (alwaysBounce) {
 			var bounceStyle = style({ // the bouncer makes the content view always bounce-scrollable
-				minHeight:getHeight() + 1,
+				minHeight:viewport.height() + 1,
 				width:viewport.width()
 			})
 			return div('tags-scroller-bouncer', bounceStyle, this.renderBody(opts.view, renderOpts))
@@ -190,7 +189,7 @@ function hideNavBarOnLetGo() {
 
 function onViewScroll() {
 	tags.__lastScroll__ = new Date().getTime()
-	
+
 	if (this.scrollTop < 1) { return }
 	hideNavBarOnLetGo()
 }
