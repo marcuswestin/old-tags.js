@@ -12,7 +12,8 @@ function makeColumnList(opts) {
 		columnCount:2,
 		columnGap:2,
 		renderItem:null,
-		selectItem:null
+		selectItem:null,
+		toggleActive:function(){}
 	})
 	
 	var id = tags.id()
@@ -81,9 +82,9 @@ function makeColumnList(opts) {
 				var touch = event.originalEvent.touches[0]
 				x = touch.pageX
 				y = touch.pageY
-				
 				$(this).on('touchmove', onTouchMove)
 				$(this).on('touchend', onTouchEnd)
+				opts.toggleActive(this, true)
 			})
 			
 			function onTouchMove(event) {
@@ -101,6 +102,7 @@ function makeColumnList(opts) {
 			}
 			
 			function onEnd(el, doSelect) {
+				opts.toggleActive(el, false)
 				$(el).off('touchmove', onTouchMove).off('touchend', onTouchEnd)
 				if (doSelect) { selectEl(el) }
 			}
