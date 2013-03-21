@@ -7,7 +7,7 @@ module.exports = scroller
 var translate = style.translate
 function hideNavBar() { window.scrollTo(0, 1) }
 
-if (tags.isMobileSafari) { setTimeout(hideNavBar, 10) }
+if (tags.isIOSSafari) { setTimeout(hideNavBar, 10) }
 
 scroller.onViewChanging = null
 function scroller(opts) {
@@ -118,7 +118,7 @@ var scrollerBase = {
 						})))
 					this.__numViews += 1
 					
-					if (tags.isMobileSafari) {
+					if (tags.isIOSSafari) {
 						var scrollerViews = $('#'+this.bodyID+' .tags-scroller-slider .tags-scroller-view')
 						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
 					}
@@ -127,7 +127,7 @@ var scrollerBase = {
 				this.getView(opts.index).empty().append(this._renderBodyContent(opts))
 				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
 				
-				if (tags.isMobileSafari) {
+				if (tags.isIOSSafari) {
 					this.getView(opts.index)[0].scrollTop = 1
 				}
 			}

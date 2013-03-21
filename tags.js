@@ -22,7 +22,8 @@ var tags = module.exports = function tags(tagName) {
 }
 
 var ua = window.navigator.userAgent
-tags.isMobileSafari = ua.match(/(iPod|iPhone)/) && ua.match(/Safari/)
+tags.isHandheldSafari = ua.match(/(iPod|iPhone)/) && ua.match(/Safari/)
+tags.isIOSSafari = ua.match(/(iPod|iPhone|iPad)/) && ua.match(/Safari/)
 
 tags.br = function() { return { __tagHTML:'<br />', toString:tagToString } }
 tags.html = function(html) { return { __tagHTML:html, toString:tagToString } }
