@@ -1,0 +1,118 @@
+var tags = require('tags/tags')
+var style = require('tags/style')
+
+module.exports = makeColumnList
+
+var div = tags('div')
+
+function makeColumnList(opts) {
+	var opts = tags.options(opts, {
+		items:[],
+		width:300,
+		columnCount:2,
+		columnGap:2,
+		renderItem:null,
+		selectItem:null
+	})
+	
+	var id = tags.id()
+	var colCount = opts.columnCount
+	var colGap = opts.columnGap
+	var colWidth = Math.floor((opts.width - colGap*(colCount - 1)) / colCount)
+	var itemsById = {}
+	var heights = map(new Array(colCount), function() { return 0 })
+	
+	return {
+		__renderTag:renderColumnList
+	}
+	
+	function renderColumnList() {
+		nextTick(registerHandlers)
+		return div('tags-columnList', { id:id }, style({ width:opts.width }),
+			div(style({ width:opts.width, position:'absolute' }), html(renderItems(opts.items)))
+		)
+	}
+	
+	function renderItems(items) {
+		nextTick(layout)
+		return map(items, function(item) {
+			var itemId = tags.id()
+			itemsById[itemId] = item
+			return div('tags-columnList-item', { itemId:itemId }, style({ position:'absolute', top:-999999, left:-999999, width:colWidth }),
+				opts.renderItem(item)
+			)
+		}).join('')
+	}
+
+	function layoutEl(i, el) {
+		var colNum = minHeightNum()
+		el.style.top = el.style.left = 0
+		el.style['-webkit-transform'] = 'translate3d('+(colNum * (colWidth + colGap))+'px, '+(heights[colNum] + colGap)+'px, 0)'
+		heights[colNum] += el.offsetHeight
+	}
+	
+	function layout() {
+		$('#'+id+' .tags-columnList-item').each(layoutEl)
+		$('#'+id).css({ height:totalHeight() })
+	}
+	
+	function minHeightNum() {
+		for (var i=0, minNum=0; i<heights.length; i++) {
+			if (heights[i] < heights[minNum]) { minNum = i }
+		}
+		return minNum
+	}
+	
+	function totalHeight() {
+		for (var i=0, maxNum=0; i<heights.length; i++) {
+			if (heights[i] > heights[maxNum]) { maxNum = i }
+		}
+		return heights[maxNum]
+	}
+	
+	function registerHandlers() {
+		if (tags.isTouch) {
+			var x
+			var y
+			var maxDeltaSq = 10 * 10
+			
+			$('#'+id).on('touchstart', '.tags-columnList-item', function(event) {
+				if (event.originalEvent.touches.length != 1) { return }
+				var touch = event.originalEvent.touches[0]
+				x = touch.pageX
+				y = touch.pageY
+				
+				$(this).on('touchmove', onTouchMove)
+				$(this).on('touchend', onTouchEnd)
+			})
+			
+			function onTouchMove(event) {
+				if (event.originalEvent.touches.length != 1) { return }
+				var touch = event.originalEvent.touches[0]
+				var deltaX = Math.abs(x - touch.pageX)
+				var deltaY = Math.abs(y - touch.pageY)
+				if (deltaX * deltaX + deltaY * deltaY > maxDeltaSq) {
+					onEnd(this, false)
+				}
+			}
+			
+			function onTouchEnd(event) {
+				onEnd(this, true)
+			}
+			
+			function onEnd(el, doSelect) {
+				$(el).off('touchmove', onTouchMove).off('touchend', onTouchEnd)
+				if (doSelect) { selectEl(el) }
+			}
+		} else {
+			$('#'+id).on('click', '.tags-columnList-item', function() {
+				selectEl(this)
+			})
+		}
+		
+		function selectEl(el) {
+			opts.selectItem(itemsById[el.getAttribute('itemId')])
+		}
+	}
+	
+}
