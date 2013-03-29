@@ -45,8 +45,8 @@ style.transition.none = function() {
 
 function _transform(translation, duration, delay) {
 	var res = { '-webkit-transform':translation }
-	if (duration != null) { res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
-	if (delay != null) { res['-webkit-transition-delay'] = delay+'ms' }
+	if (duration != null && !isNaN(duration)) { res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
+	if (delay != null && !isNaN(delay)) { res['-webkit-transition-delay'] = delay+'ms' }
 	return res
 }
 

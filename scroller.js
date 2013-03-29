@@ -118,11 +118,12 @@ var scrollerBase = {
 				while (opts.index >= this.__numViews) {
 					var size = viewport.getSize()
 					var offsetX = this.__numViews * size.width
+					var animation = animate ? this.duration : 'none'
 					$('#'+this.bodyID+' .tags-scroller-slider')
-						.append(div('tags-scroller-view', style(translate.x(offsetX), style.scrollable.y, size, {
+						.append(div('tags-scroller-view', style(translate.x(offsetX, animation), style.scrollable.y, size, {
 							position:'absolute', top:0
 						})))
-						.append(div('tags-scroller-foot', style(translate.x(offsetX), {
+						.append(div('tags-scroller-foot', style(translate.x(offsetX, animation), {
 							position:'absolute', bottom:0, width:size.width
 						})))
 					this.__numViews += 1
