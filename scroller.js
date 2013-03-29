@@ -81,6 +81,15 @@ var scrollerBase = {
 		opts.view = this.stack[opts.index] // just set to view currently at the target index
 		this.set(opts)
 	},
+	setCurrent:function setCurrent(newView, opts) {
+		opts = tags.options(opts, {
+			render:true,
+			animate:false
+		})
+		opts.index = this.stack.length - 1
+		opts.view = newView
+		this.set(opts)
+	},
 	set:function scrollerSet(opts) {
 		opts = tags.options(opts, {
 			render:true,
