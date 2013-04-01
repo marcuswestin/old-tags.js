@@ -26,7 +26,14 @@ function makeColumnList(opts) {
 	
 	return {
 		__renderTag:renderColumnList,
-		append:append
+		append:append,
+		remove:remove
+	}
+
+	function remove(item) {
+		var itemId = opts.getItemId(item)
+		delete itemsById[itemId]
+		$('#'+id + ' .tags-columnList-item[itemId="'+itemId+'"]').remove()
 	}
 	
 	function append(items) {
