@@ -110,8 +110,12 @@ var scrollerBase = {
 			if (this.onViewChanging) {
 				this.onViewChanging()
 			}
-			this._update(opts, $('#'+this.headID), this.renderHead)
-			this._update(opts, $('#'+this.footID), this.renderFoot)
+			
+			var headContent = this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] })
+			if (headContent != null) {
+				// Allow for the head to return null to avoid re-render & flash of content.
+				$('#'+this.headID).empty().append(headContent)
+			}
 
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
@@ -143,15 +147,6 @@ var scrollerBase = {
 			}
 			
 			this._scroll(animate)
-		}
-	},
-	_update:function(opts, element, updateFn) {
-		if (!updateFn) { return }
-		var fnResult = updateFn.call(element, opts.view, { viewBelow:this.stack[opts.index - 1] })
-		if (fnResult != null) {
-			// Allow for the header and footer to return content to be displayed.
-			// Alt. they can choose not re-render, but rather update what's already rendered and avoid a flash of no content.
-			$(element).empty().append(fnResult)
 		}
 	},
 	_renderBodyContent:function(opts) {
