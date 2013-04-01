@@ -22,16 +22,24 @@ function makeColumnList(opts) {
 	var colGap = opts.columnGap
 	var colWidth = Math.floor((opts.width - colGap*(colCount - 1)) / colCount)
 	var itemsById = {}
-	var heights = map(new Array(colCount), function() { return 0 })
+	var heights
 	
 	return {
-		__renderTag:renderColumnList
+		__renderTag:renderColumnList,
+		append:append
 	}
 	
+	function append(items) {
+		if (!items) { return }
+		if (!$.isArray(items)) { items = [items] }
+		if (!items.length) { return }
+		$('#'+id+' .tags-columnList-container').append(html(renderItems(items)))
+	}
+
 	function renderColumnList() {
 		nextTick(registerHandlers)
 		return div('tags-columnList', { id:id }, style({ width:opts.width }),
-			div(style({ width:opts.width, position:'absolute' }), html(renderItems(opts.items)))
+			div('tags-columnList-container', style({ width:opts.width, position:'absolute' }), html(renderItems(opts.items)))
 		)
 	}
 	
@@ -55,6 +63,7 @@ function makeColumnList(opts) {
 	}
 	
 	function layout() {
+		heights = map(new Array(colCount), function() { return 0 })
 		$('#'+id+' .tags-columnList-item').each(layoutEl)
 		$('#'+id).css({ height:totalHeight() })
 	}
