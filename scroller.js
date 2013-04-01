@@ -19,6 +19,7 @@ function scroller(opts) {
 		renderBody:null,
 		renderFoot:function(){},
 		updateView:function(){},
+		destroyView:function(){},
 		stack:[{}]
 	}))
 }
@@ -70,9 +71,10 @@ var scrollerBase = {
 		})
 		opts.index = this.stack.length
 		opts.view = newView
-		this.set(opts)
+		this._set(opts)
 	},
 	pop:function scrollerPop(opts) {
+		this.destroyView(this.getView())
 		opts = tags.options(opts, {
 			render:true,
 			useStaleView:true,
@@ -80,19 +82,20 @@ var scrollerBase = {
 		})
 		opts.index = this.stack.length - 2
 		opts.view = this.stack[opts.index] // just set to view currently at the target index
-		this.set(opts)
+		this._set(opts)
 		this.updateView(this.stack[opts.index])
 	},
 	setCurrent:function setCurrent(newView, opts) {
+		this.destroyView(this.getView())
 		opts = tags.options(opts, {
 			render:true,
 			animate:false
 		})
 		opts.index = this.stack.length - 1
 		opts.view = newView
-		this.set(opts)
+		this._set(opts)
 	},
-	set:function scrollerSet(opts) {
+	_set:function scrollerSet(opts) {
 		opts = tags.options(opts, {
 			render:true,
 			useStaleView:false,
