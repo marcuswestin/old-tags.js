@@ -13,6 +13,7 @@ function makeColumnList(opts) {
 		columnGap:2,
 		renderItem:null,
 		selectItem:null,
+		getItemId:tags.id,
 		toggleActive:function(){}
 	})
 	
@@ -37,7 +38,8 @@ function makeColumnList(opts) {
 	function renderItems(items) {
 		nextTick(layout)
 		return map(items, function(item) {
-			var itemId = tags.id()
+			var itemId = opts.getItemId(item)
+			if (itemsById[itemId]) { return '' }
 			itemsById[itemId] = item
 			return div('tags-columnList-item', { itemId:itemId }, style({ position:'absolute', top:-999999, left:-999999, width:colWidth }),
 				opts.renderItem(item)
