@@ -28,25 +28,17 @@ var scrollerBase = {
 	__numViews:0,
 	__renderTag:function() {
 		var bodyID = this.bodyID = tags.id()
-		this.headID = tags.id()
 		viewport.onResize(function(size) {
 			$('#'+bodyID)
 				.find('.tags-scroller-overflow').css(size)
 					.find('.tags-scroller-slider').css({ height:size.height }).end()
 				.end()
 				.find('.tags-scroller-slider')
-					.find('.tags-scroller-view').css(size).end()
+					.find('.tags-scroller-body').css(size).end()
 					.find('.tags-scroller-foot').css({ width:size.width })
+					.find('.tags-scroller-head').css({ width:size.width })
 		})
-		return div('tags-scroller',
-			this.__renderHead(),
-			this.__renderViews()
-		)
-	},
-	__renderHead:function() {
-		return div('tags-scroller-head', { id:this.headID }, style({
-			height:0, width:'100%', position:'absolute', top:0, zIndex:2
-		}))
+		return div('tags-scroller', this.__renderViews())
 	},
 	__renderViews:function() {
 		var self = this
@@ -58,7 +50,7 @@ var scrollerBase = {
 			}
 		})
 		
-		return div('tags-scroller-body', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:0 }),
+		return div('tags-scroller-view', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:0 }),
 			div('tags-scroller-overflow', style(viewport.getSize(), { overflow:'hidden' }),
 				div('tags-scroller-slider', style({ height:viewport.height() }))
 			)
@@ -116,12 +108,6 @@ var scrollerBase = {
 				this.onViewChanging()
 			}
 			
-			var headContent = this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] })
-			if (headContent != null) {
-				// Allow for the head to return null to avoid re-render & flash of content.
-				$('#'+this.headID).empty().append(headContent)
-			}
-
 			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
@@ -129,8 +115,11 @@ var scrollerBase = {
 					var offsetX = this.__numViews * size.width
 					var animation = animate ? this.duration : 'none'
 					$('#'+this.bodyID+' .tags-scroller-slider')
-						.append(div('tags-scroller-view', style(translate.x(offsetX, animation), style.scrollable.y, size, {
+						.append(div('tags-scroller-body', style(translate.x(offsetX, animation), style.scrollable.y, size, {
 							position:'absolute', top:0
+						})))
+						.append(div('tags-scroller-head', style(translate.x(offsetX, animation), {
+							position:'absolute', top:0, width:size.width
 						})))
 						.append(div('tags-scroller-foot', style(translate.x(offsetX, animation), {
 							position:'absolute', bottom:0, width:size.width
@@ -145,7 +134,8 @@ var scrollerBase = {
 				
 				this.getView(opts.index).empty().append(this._renderBodyContent(opts))
 				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
-				
+				this.getHead(opts.index).empty().append(this._renderHeadContent(opts))
+
 				if (tags.isIOSSafari) {
 					this.getView(opts.index)[0].scrollTop = 1
 				}
@@ -171,17 +161,25 @@ var scrollerBase = {
 		if (!this.renderFoot) { return }
 		return this.renderFoot(opts.view)
 	},
+	_renderHeadContent:function(opts) {
+		if (!this.renderHead) { return }
+		return this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] }))
+	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
 	},
 	getCurrentView:function() { return this.getView() },
 	getView:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
-		return $($('#'+this.bodyID+' .tags-scroller-view')[index])
+		return $($('#'+this.bodyID+' .tags-scroller-body')[index])
 	},
 	getFoot:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
 		return $($('#'+this.bodyID+' .tags-scroller-foot')[index])
+	},
+	getHead:function(index) {
+		if (index == null) { index = this.stack.length - 1 }
+		return $($('#'+this.bodyID+' .tags-scroller-head')[index])
 	},
 	_scroll:function(animate) {
 		var offset = this.stack.length - 1
