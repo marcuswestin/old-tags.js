@@ -13,7 +13,7 @@ var viewport = module.exports = {
 	onResize:onResize
 }
 
-var navBarHeight = tags.isMobileSafari ? 60 : 0
+var navBarHeight = tags.isIOSSafari ? 60 : 0
 
 function onResize(callback) { callbacks.push(callback) }
 function react(callback) {
