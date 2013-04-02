@@ -163,7 +163,7 @@ var scrollerBase = {
 	},
 	_renderHeadContent:function(opts) {
 		if (!this.renderHead) { return }
-		return this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] }))
+		return this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] })
 	},
 	current:function() {
 		return this.stack[this.stack.length - 1]
