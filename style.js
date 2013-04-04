@@ -9,14 +9,17 @@
 	)
 */
 
+var nonPxStyles = { opacity:1, zIndex:1, fontWeight:1 }
+var prefixed = { 'backface-visibility':1, 'transform':1, 'perspective':1, 'transform-style':1, 'transition':1 }
 var style = module.exports = (function(){
 	function toDashes(name) {
-		return name.replace(/([A-Z])/g, function($1) {
+		name = name.replace(/([A-Z])/g, function($1) {
 			return "-" + $1.toLowerCase()
 		})
+		return (prefixed[name] ? '-webkit-'+name : name)
 	}
 	function handleStyle(value, name) {
-		if (typeof value == 'number' && name != 'opacity' && name != 'zIndex' && name != 'fontWeight') { value += 'px' }
+		if (typeof value == 'number' && !nonPxStyles[name]) { value += 'px' }
 		return toDashes(name)+':'+value
 	}
 	return function style(styles) {
