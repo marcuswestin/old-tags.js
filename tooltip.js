@@ -12,7 +12,7 @@ var tooltip = module.exports = {
 function showTooltip(opts, contentFn) {
 	if (!contentFn) { contentFn = opts; opts = {} }
 	opts = tags.options(opts, {
-		width:null, height:null, content:'Hello World', element:null, background:'rgba(0,0,0,0)',
+		width:null, height:null, content:'Hello World', element:null, background:null,
 		offset:[0,0],
 		fade:200
 	})
@@ -24,7 +24,7 @@ function showTooltip(opts, contentFn) {
 
 	$(viewport.element).append(div(
 		{ id:'tags-tooltip' },
-		style({ position:'fixed', left:elPos[0], top:elPos[1], display:'table', zIndex:3, opacity:0 }),
+		style({ position:'absolute', left:elPos[0], top:elPos[1], display:'table', zIndex:3, opacity:0 }),
 		div('tags-tooltip-content', contentFn, style({
 			display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'
 		}))
