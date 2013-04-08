@@ -19,7 +19,6 @@ function scroller(opts) {
 		renderBody:null,
 		renderFoot:function(){},
 		updateView:function(){},
-		destroyView:function(){},
 		stack:[{}]
 	}))
 }
@@ -27,9 +26,9 @@ function scroller(opts) {
 var scrollerBase = {
 	__numViews:0,
 	__renderTag:function() {
-		var bodyID = this.bodyID = tags.id()
+		var viewID = this.viewID = tags.id()
 		viewport.onResize(function(size) {
-			$('#'+bodyID)
+			$('#'+viewID)
 				.find('.tags-scroller-overflow').css(size)
 					.find('.tags-scroller-slider').css({ height:size.height }).end()
 				.end()
@@ -50,7 +49,7 @@ var scrollerBase = {
 			}
 		})
 		
-		return div('tags-scroller-view', { id:this.bodyID }, style({ overflow:'hidden', position:'absolute', top:0 }),
+		return div('tags-scroller-view', { id:this.viewID }, style({ overflow:'hidden', position:'absolute', top:0 }),
 			div('tags-scroller-overflow', style(viewport.getSize(), { overflow:'hidden' }),
 				div('tags-scroller-slider', style({ height:viewport.height() }))
 			)
@@ -66,7 +65,6 @@ var scrollerBase = {
 		this._set(opts)
 	},
 	pop:function scrollerPop(opts) {
-		this.destroyView(this.getView())
 		opts = tags.options(opts, {
 			render:true,
 			useStaleView:true,
@@ -78,7 +76,6 @@ var scrollerBase = {
 		this.updateView(this.stack[opts.index])
 	},
 	setCurrent:function setCurrent(newView, opts) {
-		this.destroyView(this.getView())
 		opts = tags.options(opts, {
 			render:true,
 			animate:false
@@ -108,40 +105,43 @@ var scrollerBase = {
 				this.onViewChanging()
 			}
 			
-			var keepStaleView = (opts.useStaleView && this.getView(opts.index))
+			var keepStaleView = (opts.useStaleView && this.stack[opts.index])
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
 					var size = viewport.getSize()
 					var offsetX = this.__numViews * size.width
 					var animation = animate ? this.duration : 'none'
-					$('#'+this.bodyID+' .tags-scroller-slider')
-						.append(div('tags-scroller-body', style(translate.x(offsetX, animation), style.scrollable.y, size, {
-							position:'absolute', top:0
-						})))
-						.append(div('tags-scroller-head', style(translate.x(offsetX, animation), {
-							position:'absolute', top:0, width:size.width
-						})))
-						.append(div('tags-scroller-foot', style(translate.x(offsetX, animation), {
-							position:'absolute', bottom:0, width:size.width
-						})))
+					$('#'+this.viewID+' .tags-scroller-slider').append(
+						div('tags-scroller-view', style({ position:'absolute' }, size, translate.x(offsetX, animation)),
+							div('tags-scroller-body', style(style.scrollable.y, size, {
+								position:'absolute', top:0
+							})),
+							div('tags-scroller-head', style({
+								position:'absolute', top:0, width:size.width
+							})),
+							div('tags-scroller-foot', style({
+								position:'absolute', bottom:0, width:size.width
+							}))
+						)
+					)
 					this.__numViews += 1
 					
 					if (tags.isIOSSafari) {
-						var scrollerViews = $('#'+this.bodyID+' .tags-scroller-slider .tags-scroller-view')
+						var scrollerViews = $('#'+this.viewID+' .tags-scroller-slider .tags-scroller-body')
 						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
 					}
 				}
 				
-				this.getView(opts.index).empty().append(this._renderBodyContent(opts))
-				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
-				this.getHead(opts.index).empty().append(this._renderHeadContent(opts))
+				$(this.getScrollingElement(opts.index)).empty().append(this._renderBodyContent(opts))
+				this._getFoot(opts.index).empty().append(this._renderFootContent(opts))
+				this._getHead(opts.index).empty().append(this._renderHeadContent(opts))
 
 				if (tags.isIOSSafari) {
-					this.getView(opts.index)[0].scrollTop = 1
+					this.getScrollingElement(opts.index).scrollTop = 1
 				}
 			}
 			
-			this._scroll(animate)
+			this._slide(animate)
 		}
 	},
 	_renderBodyContent:function(opts) {
@@ -165,25 +165,26 @@ var scrollerBase = {
 		if (!this.renderHead) { return }
 		return this.renderHead(opts.view, { viewBelow:this.stack[opts.index - 1] })
 	},
-	current:function() {
-		return this.stack[this.stack.length - 1]
-	},
-	getCurrentView:function() { return this.getView() },
-	getView:function(index) {
+	getViewElement:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
-		return $($('#'+this.bodyID+' .tags-scroller-body')[index])
+		return $('#'+this.viewID+' .tags-scroller-view')[index]
 	},
-	getFoot:function(index) {
+	getScrollingElement:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
-		return $($('#'+this.bodyID+' .tags-scroller-foot')[index])
+		return $('#'+this.viewID+' .tags-scroller-body')[index]
 	},
-	getHead:function(index) {
+	_getFoot:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
-		return $($('#'+this.bodyID+' .tags-scroller-head')[index])
+		return $($('#'+this.viewID+' .tags-scroller-foot')[index])
 	},
-	_scroll:function(animate) {
+	_getHead:function(index) {
+		if (index == null) { index = this.stack.length - 1 }
+		return $($('#'+this.viewID+' .tags-scroller-head')[index])
+	},
+
+	_slide:function(animate) {
 		var offset = this.stack.length - 1
-		$('#'+this.bodyID+' .tags-scroller-slider').css(translate.x(-offset * viewport.width(), animate ? this.duration : 'none'))
+		$('#'+this.viewID+' .tags-scroller-slider').css(translate.x(-offset * viewport.width(), animate ? this.duration : 'none'))
 	}
 }
 
