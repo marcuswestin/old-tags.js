@@ -111,6 +111,14 @@ tags.options = function options(opts, defaults) {
 	return result
 }
 
+tags.extend = function extend(target, extendWith) {
+	for (var key in extendWith) {
+		if (typeof target[key] != 'undefined') { continue }
+		target[key] = extendWith[key]
+	}
+	return target
+}
+
 tags.makePos = function makePos(x,y) {
 	var pos = [x, y]
 	pos.x = x

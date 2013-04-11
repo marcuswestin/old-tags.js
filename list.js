@@ -1,5 +1,9 @@
 var tags = require('./tags')
 
+var options = tags.options
+var extend = tags.extend
+var classNames = tags.classNames
+
 var defaultGetItemId = function(item) { return item.id ? item.id : defaultGetItemId.id++ }
 defaultGetItemId.id = 1
 
@@ -12,7 +16,7 @@ function list(className, opts) {
 		className = null
 	}
 	if (opts.onSelect) { opts.selectItem = opts.onSelect } // backcompat
-	opts = tags.options(opts, {
+	opts = options(opts, {
 		items:null,
 		selectItem:logOnSelect,
 		getItemId:defaultGetItemId,
@@ -26,15 +30,55 @@ function list(className, opts) {
 		opts:opts,
 		itemsById:{}
 	}
+
+	var isEmpty = !opts.items || !opts.items.length
+	var result = div(classNames('tags-list', className),
+		{ id:listId },
+		isEmpty ? opts.renderEmpty() : map(opts.items, renderListItem)
+	)
+	
+	setTimeout(function() {
+		opts.onUpdated()
+	})
+
+	return extend(result, {
+		getItemId: getItemId,
+		_getItem: function(id) { return listData.itemsById[id] },
+		append: listAppend,
+		prepend: listPrepend,
+		update: listUpdate,
+		getHeight: getHeight,
+		height: getHeight,
+		selectItem: selectItem,
+		select: selectItem,
+		selectIndex: selectIndex,
+		empty: empty,
+		isEmpty: isEmpty,
+		find: find
+	})
+
+	/* Functions
+	 ***********/
+	function $tag() { return $('#'+listId) } // HACK
 	
 	function renderListItem(item) {
 		var itemId = getItemId(item)
 		listData.itemsById[itemId] = item
 		return div('tags-list-item', { id:itemId }, opts.renderItem(item))
 	}
+
+	function renderEmpty() {
+		isEmpty = true
+		$tag().empty().append(opts.renderEmpty())
+	}
+
+	function getItemId(item) {
+		return 'tags-list-item-'+opts.getItemId(item)
+	}
 	
 	function addItems(newItems, addOpts, appendOrPrepend) {
-		addOpts = tags.options(addOpts, {
+		addOpts = options(addOpts, {
+			moveItems:false,
 			updateItems:false
 		})
 		if (typeof newItems == 'undefined') { return }
@@ -43,62 +87,65 @@ function list(className, opts) {
 			if (isEmpty) { renderEmpty() }
 			return
 		}
-		if (isEmpty && opts.renderEmpty) { $tag().empty() } // Remove previous content from renderEmpty
+		if (isEmpty) { $tag().empty() } // Remove previous content from renderEmpty
 		isEmpty = false
 		var div = document.createElement('div')
 		div.innerHTML = newItems.map(function itemHtml(item) {
 			var itemId = getItemId(item)
-			if (listData.itemsById[itemId]) {
-				if (!addOpts.updateItems) { return '' }
-				$('#'+itemId).remove()
+			if (!listData.itemsById[itemId]) {
+				return renderListItem(item)
 			}
-			return renderListItem(item)
+
+			if (addOpts.moveItems) {
+				$('#'+itemId).remove()
+				return renderListItem(item)
+			} else if (addOpts.updateItems) {
+				$('#'+itemId).empty().append(opts.renderItem(item))
+				return ''
+			} else {
+				return ''
+			}
+
 		}).join('')
 		appendOrPrepend.call($tag(), div)
 		opts.onUpdated()
 	}
 	
-	var getItemId = function(item) { return 'tags-list-item-'+opts.getItemId(item) }
-	var isEmpty = !opts.items || !opts.items.length
-	var result = div(tags.classNames('tags-list', className), { id:listId },
-		isEmpty ? opts.renderEmpty() : map(opts.items, renderListItem))
-	
-	var $tag = function() { return $('#'+listId) } // HACK
-	
-	var renderEmpty = function() {
-		isEmpty = true
-		if (opts.renderEmpty) { $tag().empty().append(opts.renderEmpty()) }
+	function listAppend(newItems, opts) {
+		opts = options(opts, { moveItems:true })
+		return addItems(newItems, opts, $tag().append)
 	}
+
+	function listPrepend(newItems, opts) {
+		opts = options(opts, { moveItems:true })
+		return addItems(newItems, opts, $tag().prepend)
+	}
+	function listUpdate(newItems, opts) {
+		opts = options(opts, { updateItems:true })
+		return addItems(newItems, opts)
+	}
+	function getHeight() { return $tag().height() }
 	
-	result.getItemId = getItemId
-	result._getItem = function(id) { return listData.itemsById[id] }
-	result.append = function listAppend(newItems, opts) { return addItems(newItems, opts, $tag().append) }
-	result.prepend = function listPrepend(newItems, opts) { return addItems(newItems, opts, $tag().prepend) }
-	result.height = function() { return $tag().height() }
-	result.select = result.selectItem = function(item) {
+	function selectItem(item) {
 		var el = $('#'+getItemId(item))[0]
 		selectEl(el)
 	}
-	result.selectIndex = function(index) {
+	function selectIndex(index) {
 		var el = $tag[0].children[index]
 		selectEl(el)
 	}
-	result.empty = function() {
+	function empty() {
 		isEmpty = true
-		$tag().empty()
 		listData.itemsById = {}
-		if (opts.renderEmpty) {
-			$tag().append(opts.renderEmpty())
-		}
+		$tag().empty().append(opts.renderEmpty())
 		return this
 	}
-	result.isEmpty = function() { return isEmpty }
-	result.find = function(selector) { return $tag().find(selector) }
-	
-	setTimeout(function() {
-		opts.onUpdated()
-	})
-	return result
+	function isEmpty() {
+		return isEmpty
+	}
+	function find(selector) {
+		return $tag().find(selector)
+	}
 }
 
 function selectEl(el) {
