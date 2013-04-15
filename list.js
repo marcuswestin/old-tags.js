@@ -72,8 +72,7 @@ function list(className, opts) {
 		listData.itemsById[itemId] = item
 		return div('tags-list-item', { id:itemId }, opts.renderItem(item))
 	}
-
-	function renderEmpty() {
+	function renderEmpty() {
 		isEmpty = true
 		$tag().empty().append(opts.renderEmpty())
 	}
