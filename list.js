@@ -112,18 +112,18 @@ function list(className, opts) {
 			}
 
 		}).join('')
-		appendOrPrepend.call($tag(), div)
+		appendOrPrepend && appendOrPrepend.call($tag(), div)
 		opts.onUpdated()
 	}
 	
 	function listAppend(newItems, opts) {
 		opts = options(opts, { moveItems:true })
-		return addItems(newItems, opts, $tag().append)
+		return addItems(newItems, opts, $.fn.append)
 	}
 
 	function listPrepend(newItems, opts) {
 		opts = options(opts, { moveItems:true })
-		return addItems(newItems, opts, $tag().prepend)
+		return addItems(newItems, opts, $.fn.prepend)
 	}
 	function listUpdate(newItems, opts) {
 		opts = options(opts, { updateItems:true })
