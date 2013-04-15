@@ -33,7 +33,7 @@ var scrollerBase = {
 					.find('.tags-scroller-slider').css({ height:size.height }).end()
 				.end()
 				.find('.tags-scroller-slider')
-					.find('.tags-scroller-body').css(size).end()
+					.find('.tags-scroller-bodyScroller').css(size).end()
 					.find('.tags-scroller-foot').css({ width:size.width })
 					.find('.tags-scroller-head').css({ width:size.width })
 		})
@@ -101,10 +101,6 @@ var scrollerBase = {
 		this.stack[opts.index] = opts.view
 		
 		if (opts.render) {
-			if (this.onViewChanging) {
-				this.onViewChanging()
-			}
-			
 			var keepStaleView = (opts.useStaleView && this.stack[opts.index])
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
@@ -113,7 +109,7 @@ var scrollerBase = {
 					var animation = animate ? this.duration : 'none'
 					$('#'+this.viewID+' .tags-scroller-slider').append(
 						div('tags-scroller-view', style({ position:'absolute' }, size, translate.x(offsetX, animation)),
-							div('tags-scroller-body', style(style.scrollable.y, size, {
+							div('tags-scroller-bodyScroller', style(style.scrollable.y, size, {
 								position:'absolute', top:0
 							})),
 							div('tags-scroller-head', style({
@@ -127,21 +123,25 @@ var scrollerBase = {
 					this.__numViews += 1
 					
 					if (tags.isIOSSafari) {
-						var scrollerViews = $('#'+this.viewID+' .tags-scroller-slider .tags-scroller-body')
+						var scrollerViews = $('#'+this.viewID+' .tags-scroller-slider .tags-scroller-bodyScroller')
 						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
 					}
 				}
 				
-				$(this.getScrollingElement(opts.index)).empty().append(this._renderBodyContent(opts))
+				$(this.getScrollerElement(opts.index)).empty().append(this._renderBodyContent(opts))
 				this._getFoot(opts.index).empty().append(this._renderFootContent(opts))
 				this._getHead(opts.index).empty().append(this._renderHeadContent(opts))
 
 				if (tags.isIOSSafari) {
-					this.getScrollingElement(opts.index).scrollTop = 1
+					this.getScrollerElement(opts.index).scrollTop = 1
 				}
 			}
 			
 			this._slide(animate)
+
+			if (this.onViewChanging) {
+				this.onViewChanging()
+			}
 		}
 	},
 	_renderBodyContent:function(opts) {
@@ -152,9 +152,9 @@ var scrollerBase = {
 				minHeight:viewport.height() + 1,
 				width:viewport.width()
 			})
-			return div('tags-scroller-bouncer', bounceStyle, this.renderBody(opts.view, renderOpts))
+			return div('tags-scroller-bouncer', bounceStyle, div('tags-scroller-body', this.renderBody(opts.view, renderOpts)))
 		} else {
-			return this.renderBody(opts.view, renderOpts)
+			return div('tags-scroller-body', this.renderBody(opts.view, renderOpts))
 		}
 	},
 	_renderFootContent:function(opts) {
@@ -169,7 +169,11 @@ var scrollerBase = {
 		if (index == null) { index = this.stack.length - 1 }
 		return $('#'+this.viewID+' .tags-scroller-view')[index]
 	},
-	getScrollingElement:function(index) {
+	getScrollerElement:function(index) {
+		if (index == null) { index = this.stack.length - 1 }
+		return $('#'+this.viewID+' .tags-scroller-bodyScroller')[index]
+	},
+	getBody:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
 		return $('#'+this.viewID+' .tags-scroller-body')[index]
 	},
