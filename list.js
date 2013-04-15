@@ -54,8 +54,14 @@ function list(className, opts) {
 		selectIndex: selectIndex,
 		empty: empty,
 		isEmpty: isEmpty,
-		find: find
+		find: find,
+		destroy: destroy
 	})
+
+	function destroy() {
+		$tag().remove()
+		delete data[listId]
+	}
 
 	/* Functions
 	 ***********/
