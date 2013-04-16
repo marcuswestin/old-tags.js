@@ -56,13 +56,17 @@ function _transform(translation, duration, delay) {
 style.translate = function translate(x, y, duration, delay) {
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)', duration, delay)
 }
-
 style.translate.y = function(y, duration, delay) {
 	return _transform('translateY('+Math.round(y)+'px)', duration, delay)
 }
-
 style.translate.x = function(x, duration, delay) {
 	return _transform('translateX('+Math.round(x)+'px)', duration, delay)
+}
+style.translate.z = function(z, duration, delay) {
+	return _transform('translateZ('+Math.round(z)+'px)', duration, delay)
+}
+style.translate.xyz = function(x,y,z, duration, delay) {
+	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, '+Math.round(z)+'px)', duration, delay)
 }
 
 style.scrollable = {
