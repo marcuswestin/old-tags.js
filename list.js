@@ -154,10 +154,10 @@ function list(className, opts) {
 }
 
 function selectEl(el) {
+	if (!el) { return }
 	var listEl = el.parentNode
-	while (!$(listEl).hasClass('tags-list')) {
+	while (listEl && !$(listEl).hasClass('tags-list')) {
 		listEl = listEl.parentNode
-		if (!listEl) { return }
 	}
 	var listId = listEl.getAttribute('id')
 	if (!data[listId]) { return }
