@@ -84,7 +84,8 @@ function list(className, opts) {
 	function addItems(newItems, addOpts, appendOrPrepend) {
 		addOpts = options(addOpts, {
 			moveItems:false,
-			updateItems:false
+			updateItems:false,
+			updateIf:null
 		})
 		if (typeof newItems == 'undefined') { return }
 		if (!$.isArray(newItems)) { newItems = [newItems] }
@@ -97,10 +98,15 @@ function list(className, opts) {
 		var div = document.createElement('div')
 		div.innerHTML = newItems.map(function itemHtml(item) {
 			var itemId = getItemId(item)
-			if (!listData.itemsById[itemId]) {
+			var currentItem = listData.itemsById[itemId]
+			if (!currentItem) {
 				return renderListItem(item)
 			}
 
+			if (addOpts.updateIf && !addOpts.updateIf(currentItem, item)) {
+				return ''
+			}
+			
 			if (addOpts.moveItems) {
 				$('#'+itemId).remove()
 				return renderListItem(item)
@@ -117,12 +123,12 @@ function list(className, opts) {
 	}
 	
 	function listAppend(newItems, opts) {
-		opts = options(opts, { moveItems:true })
+		opts = options(opts, { moveItems:true, updateIf:null })
 		return addItems(newItems, opts, $.fn.append)
 	}
 
 	function listPrepend(newItems, opts) {
-		opts = options(opts, { moveItems:true })
+		opts = options(opts, { moveItems:true, updateIf:null })
 		return addItems(newItems, opts, $.fn.prepend)
 	}
 	function listUpdate(newItems, opts) {
