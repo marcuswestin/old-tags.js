@@ -10,6 +10,7 @@ var tooltip = module.exports = {
 }
 
 function showTooltip(opts, contentFn) {
+	$('input:focus').blur()
 	if (!contentFn) { contentFn = opts; opts = {} }
 	opts = tags.options(opts, {
 		width:null, height:null, content:'Hello World', element:null, background:null,
