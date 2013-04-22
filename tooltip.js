@@ -6,11 +6,12 @@ var div = tags('div')
 
 var tooltip = module.exports = {
 	show:showTooltip,
-	hide:hideTooltip
+	hide:hideTooltip,
+	onShowing:function(){}
 }
 
 function showTooltip(opts, contentFn) {
-	$('input:focus').blur()
+	tooltip.onShowing()
 	if (!contentFn) { contentFn = opts; opts = {} }
 	opts = tags.options(opts, {
 		width:null, height:null, content:'Hello World', element:null, background:null,
