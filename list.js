@@ -42,7 +42,7 @@ function list(className, opts) {
 	})
 
 	return extend(result, {
-		getItemId: getItemId,
+		getElementId: getElementId,
 		_getItem: function(id) { return listData.itemsById[id] },
 		append: listAppend,
 		prepend: listPrepend,
@@ -68,7 +68,7 @@ function list(className, opts) {
 	function $tag() { return $('#'+listId) } // HACK
 	
 	function renderListItem(item) {
-		var itemId = getItemId(item)
+		var itemId = opts.getItemId(item)
 		listData.itemsById[itemId] = item
 		return div('tags-list-item', { id:itemId }, opts.renderItem(item))
 	}
@@ -77,7 +77,7 @@ function list(className, opts) {
 		$tag().empty().append(opts.renderEmpty())
 	}
 
-	function getItemId(item) {
+	function getElementId(item) {
 		return 'tags-list-item-'+opts.getItemId(item)
 	}
 	
@@ -97,12 +97,11 @@ function list(className, opts) {
 		isEmpty = false
 		var div = document.createElement('div')
 		div.innerHTML = newItems.map(function itemHtml(item) {
-			var itemId = getItemId(item)
+			var itemId = opts.getItemId(item)
 			var currentItem = listData.itemsById[itemId]
 			if (!currentItem) {
 				return renderListItem(item)
 			}
-
 			if (addOpts.updateIf && !addOpts.updateIf(currentItem, item)) {
 				return ''
 			}
@@ -138,7 +137,7 @@ function list(className, opts) {
 	function getHeight() { return $tag().height() }
 	
 	function selectItem(item) {
-		var el = $('#'+getItemId(item))[0]
+		var el = $('#'+getElementId(item))[0]
 		selectEl(el)
 	}
 	function selectIndex(index) {
