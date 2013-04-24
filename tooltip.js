@@ -7,6 +7,7 @@ var div = tags('div')
 var tooltip = module.exports = {
 	show:showTooltip,
 	hide:hideTooltip,
+	minMargin:0,
 	onShowing:function(){}
 }
 
@@ -26,14 +27,21 @@ function showTooltip(opts, contentFn) {
 
 	$(viewport.element).append(div(
 		{ id:'tags-tooltip' },
-		style({ position:'absolute', left:elPos[0], top:elPos[1], display:'table', zIndex:3, opacity:0 }),
+		style({ position:'absolute', display:'table', zIndex:3, opacity:0 }),
 		div('tags-tooltip-content', contentFn, style({
 			display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'
 		}))
 	))
 	nextTick(function() {
+		position()
 		$('#tags-tooltip').css(transition('opacity', opts.fade)).css({ opacity:1 })
 	})
+	
+	function position() {
+		var leftPos = Math.min(elPos[0], viewport.width() - $('#tags-tooltip .tags-tooltip-content').width() - tooltip.minMargin)
+		var topPos = Math.min(elPos[1], viewport.height() - $('#tags-tooltip .tags-tooltip-content').height() - tooltip.minMargin)
+		$('#tags-tooltip').css({ left:leftPos, top:topPos })
+	}
 }
 
 var removeTimeout
