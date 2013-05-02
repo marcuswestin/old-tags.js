@@ -14,6 +14,7 @@ function scroller(opts) {
 	return $.extend(tags.create(scrollerBase), tags.options(opts, {
 		duration:350,
 		onViewChanging:scroller.onViewChanging,
+		onViewScrolled:null,
 		alwaysBounce:true,
 		renderHead:function(){},
 		renderBody:null,
@@ -122,9 +123,18 @@ var scrollerBase = {
 					)
 					this.__numViews += 1
 					
-					if (tags.isIOSSafari) {
+					var onViewScrolled = this.onViewScrolled
+					if (tags.isIOSSafari || onViewScrolled) {
 						var scrollerViews = $('#'+this.viewID+' .tags-scroller-slider .tags-scroller-bodyScroller')
-						$(scrollerViews[scrollerViews.length - 1]).on('scroll', onViewScroll)
+						var scrollerView = scrollerViews[scrollerViews.length - 1]
+						$(scrollerView).on('scroll', function($e) {
+							if (tags.isIOSSafari) {
+								onIOSSafariViewScroll()
+							}
+							if (onViewScrolled) {
+								onViewScrolled(opts.view, scrollerView)
+							}
+						})
 					}
 				}
 				
@@ -200,7 +210,7 @@ function hideNavBarOnLetGo() {
 	}
 }
 
-function onViewScroll() {
+function onIOSSafariViewScroll() {
 	tags.__lastScroll__ = new Date().getTime()
 
 	if (this.scrollTop < 1) { return }
