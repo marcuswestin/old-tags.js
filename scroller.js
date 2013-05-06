@@ -138,9 +138,9 @@ var scrollerBase = {
 					}
 				}
 				
-				$(this.getScrollerElement(opts.index)).empty().append(this._renderBodyContent(opts))
-				this._getFoot(opts.index).empty().append(this._renderFootContent(opts))
 				this._getHead(opts.index).empty().append(this._renderHeadContent(opts))
+				this._getFoot(opts.index).empty().append(this._renderFootContent(opts))
+				$(this.getScrollerElement(opts.index)).empty().append(this._renderBodyContent(opts))
 
 				if (tags.isIOSSafari) {
 					this.getScrollerElement(opts.index).scrollTop = 1
