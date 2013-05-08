@@ -9,7 +9,6 @@ var transition = style.transition
 var overlay = module.exports = {
 	show:renderOverlay,
 	hide:hideOverlay,
-	resize:resizeOverlay,
 	zIndex:10
 }
 
@@ -31,16 +30,11 @@ function hideOverlay(opts) {
 	}, opts.duration)
 }
 
-function resizeOverlay(size) {
-	$('#tags-overlay .tags-overlay-content, #tags-overlay .tags-overlay-shadow').css(getLayout(size))
-}
-
 var lastOpts
 var hidingTimeout
 function renderOverlay(opts, contentFn) {
 	if (!contentFn) { contentFn = opts; opts = {} }
 	
-	var viewportSize = viewport.size()
 	lastOpts = opts = tags.options(opts, {
 		element:viewport.element,
 		duration:250,
@@ -74,13 +68,4 @@ function renderOverlay(opts, contentFn) {
 			div('tags-overlay-background', style(size, absolute(0,0), { background:opts.background }), lastOpts.dismissable && button(function() { overlay.hide(opts) })),
 			div('tags-overlay-content', style(size, absolute(0,0), { display:'table' }), div(style({ display:'table-cell', verticalAlign:'middle' }), contentFn))
 		)
-}
-
-function getLayout(size) {
-	return {
-		width:size.width,
-		height:size.height,
-		left:Math.round((viewport.width() - size.width) / 2),
-		top:Math.round((viewport.height() - size.height) / 2)
-	}
 }
