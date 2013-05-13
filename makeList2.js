@@ -17,7 +17,6 @@ function makeList2(opts) {
 	
 	var id = tags.id()
 	var isEmpty = (opts.items.length == 0)
-	var $groupById = {}
 	var itemsById = {}
 	
 	nextTick(_setupEvents)
@@ -26,11 +25,23 @@ function makeList2(opts) {
 		{
 			append:append,
 			prepend:prepend,
-			getHeight:getHeight
-			// update:update,
-			// remove:remove
+			getHeight:getHeight,
+			empty:empty,
+			destroy:destroy
 		}
 	)
+	
+	function destroy() {
+		itemsById = null
+		$('#'+id).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
+	}
+	
+	function empty() {
+		$('#'+id).empty()
+		isEmpty = true
+		itemsById = {}
+		opts.renderEmpty()
+	}
 	
 	function append(items) {
 		_addItems(items, $.fn.append)
@@ -43,20 +54,6 @@ function makeList2(opts) {
 	function getHeight() {
 		return $('#'+id).height()
 	}
-	
-	// function update(items) {
-	// 	if (!(items = _getItems(items))) { return }
-	// 	each(items, function(item) {
-	// 		opts.updateItem(item, $('#'+_getItemId(item)))
-	// 	})
-	// }
-	
-	// function remove(items) {
-	// 	if (!(items = _getItems(items))) { return }
-	// 	each(items, function(item) {
-	// 		$('#'+_getItemId(item)).remove()
-	// 	})
-	// }
 	
 	function _getItems(items) {
 		if (!items) { return null }
@@ -111,10 +108,11 @@ function makeList2(opts) {
 		}
 		
 		$list.on('touchstart', targetClass, function onTouchStart($e) {
-			var tapY = null
-			var tapElement = null
-			var touchStartTime
-			var waitToSeeIfScrollHappened
+			var touch = $e.originalEvent.touches[0]
+			var tapY = touch.pageY
+			var tapElement = $e.currentTarget
+			var touchStartTime = new Date().getTime()
+			var waitToSeeIfScrollHappened = null
 
 			function clear() {
 				tapY = null
@@ -122,11 +120,6 @@ function makeList2(opts) {
 				$list.off('touchmove').off('touchend')
 			}
 
-			var touch = $e.originalEvent.touches[0]
-			tapY = touch.pageY
-			tapElement = $e.currentTarget
-			touchStartTime = new Date().getTime()
-			
 			$list.on('touchmove', function onTouchMove($e) {
 				if (!tapY) { return }
 				var touch =$e.originalEvent.touches[0]

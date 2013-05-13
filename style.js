@@ -25,7 +25,7 @@ var style = module.exports = (function(){
 	return function style(styles) {
 		return styles && (arguments.length == 1
 			? { style:$.map(styles, handleStyle).join('; ') }
-			: map(arguments, style, function(arg) { return style(arg) })
+			: map(arguments, function(arg) { return style(arg) })
 		)
 	}
 }())
