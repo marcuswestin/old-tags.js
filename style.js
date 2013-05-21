@@ -46,8 +46,8 @@ style.transition.none = function() {
 	return { '-webkit-transition':'none' }
 }
 
-function _transform(translation, duration, delay) {
-	var res = { '-webkit-transform':translation }
+function _transform(transformation, duration, delay) {
+	var res = { '-webkit-transform':transformation }
 	if (duration != null && !isNaN(duration)) { res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
 	if (delay != null && !isNaN(delay)) { res['-webkit-transition-delay'] = delay+'ms' }
 	return res
@@ -67,6 +67,10 @@ style.translate.z = function(z, duration, delay) {
 }
 style.translate.xyz = function(x,y,z, duration, delay) {
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, '+Math.round(z)+'px)', duration, delay)
+}
+
+style.rotate = function(fraction, duration, delay) {
+	return _transform('rotate('+Math.round(fraction*360)+'deg)', duration, delay)
 }
 
 style.scrollable = {
