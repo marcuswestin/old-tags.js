@@ -5,19 +5,32 @@ var extend = tags.extend
 
 module.exports = makeList2
 
+function defaultGroupBy() { return 1 }
+function defaultRenderGroupHead() { return '' }
+function defaultUpdateGroupHead() {}
+
 function makeList2(opts) {
 	opts = options(opts, {
 		items:[],
-		renderItem:null,
-		renderEmpty:null,
 		getItemId:null,
-		updateItem:null,
-		selectItem:null
+		selectItem:null,
+		groupBy:defaultGroupBy,
+		renderGroupHead:defaultRenderGroupHead,
+		updateGroupHead:defaultUpdateGroupHead, // Called when a group's contents updated. If it returns content, that becomes the new content
+		renderItem:null,
+		updateItem:null, // Called when an item needs updating. If it returns content, that becomes the new content
+		renderEmpty:null
 	})
 	
+	if (!opts.updateItem) {
+		opts.updateItem = opts.renderItem
+	}
+
 	var id = tags.id()
 	var isEmpty = (opts.items.length == 0)
 	var itemsById = {}
+	var itemsByGroupId = {}
+	var groupsByGroupId = {}
 	
 	nextTick(_setupEvents)
 	
@@ -68,23 +81,88 @@ function makeList2(opts) {
 		if (isEmpty) { $('#'+id).empty() }
 		isEmpty = false
 		
-		var result = html(map(items, function addItem(item) {
-			itemsById[opts.getItemId(item)] = item
-			return _renderItem(item)
-		}).join(''))
-		appendOrPrependFn.call($('#'+id), result)
+		var newGroupsById = {}
+		var newGroupIds = []
+		var modifiedGroupsById = {}
+
+		each(items, function groupItem(item) {
+			var groupId = opts.groupBy(item)
+			var itemId = opts.getItemId(item)
+			
+			if (!itemsByGroupId[groupId]) {
+				itemsByGroupId[groupId] = {}
+			}
+			itemsByGroupId[groupId][itemId] = item
+		})
+		
+		each(items, function addItem(item) {
+			var itemId = opts.getItemId(item)
+			var groupId = opts.groupBy(item)
+			
+			if (itemsById[itemId]) {
+				// Item has previously been rendered
+				var itemElement = _getElement(itemId)
+				var newContent = opts.updateItem.call(itemElement, item)
+				if (newContent) {
+					$(itemElement).empty().append(newContent)
+				}
+				modifiedGroupsById[groupId] = true
+				
+			} else if (groupsByGroupId[groupId]) {
+				itemsById[itemId] = item
+				// Group has previously been rendered
+				var groupElement = _getElement(groupId)
+				appendOrPrependFn.call($('#'+_getElementId(groupId)+' .tags-list2-groupContent'), _renderItem(item))
+				modifiedGroupsById[groupId] = true
+				
+			} else {
+				itemsById[itemId] = item
+				// Group has not yet been rendered
+				if (!newGroupsById[groupId]) {
+					newGroupsById[groupId] = _renderGroupHead(groupId)
+					newGroupIds.push(groupId)
+				}
+				newGroupsById[groupId].appendContent(_renderItem(item))
+			}
+		})
+		
+		each(modifiedGroupsById, function(_, groupId) {
+			var groupHeadElement = _getElement(groupId).children[0]
+			var newContent = opts.updateGroupHead.call(groupHeadElement, itemsByGroupId[groupId])
+			if (newContent) {
+				$(groupHeadElement).empty().append(result)
+			}
+		})
+		
+		var result = []
+		var html = map(newGroupIds, function(groupId) {
+			groupsByGroupId[groupId] = true
+			return newGroupsById[groupId]
+		}).join('')
+		appendOrPrependFn.call($('#'+id), html)
 	}
 	
 	function _renderItem(item) {
-		return div('tags-list2-item', { id:_getItemId(item) }, opts.renderItem(item))
+		return div('tags-list2-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item))
 	}
 	
-	function _getItemId(item) {
-		return id+':'+opts.getItemId(item)
+	function _renderGroupHead(groupId) {
+		return div({ id:_getElementId(groupId) },
+			div('tags-list2-groupHead', opts.renderGroupHead(itemsByGroupId[groupId])),
+			div('tags-list2-groupContent')
+		)
+	}
+	
+	function _getElement(itemId) {
+		return document.getElementById(_getElementId(itemId))
+	}
+	
+	function _getElementId(itemId) {
+		return id+'-'+itemId
 	}
 	
 	function _selectEl(el) {
-		var idForItem = el.id.replace(id+':', '')
+		var idForItem = el.id.replace(id+'-', '')
 		opts.selectItem.call(el, itemsById[idForItem])
 	}
 	
