@@ -15,8 +15,11 @@ var tags = module.exports = function tags(tagName) {
 		var classesHTML = classes.length ? ' class="'+classes.join(' ')+'" ' : ''
 		var stylesHTML = styles.length ? ' style="'+styles.join('; ')+'" ' : ''
 		return {
-			__tagHTML:'<'+tagName+' '+attributes.join(' ')+classesHTML+stylesHTML+'>'+content.join('')+'</'+tagName+'>',
-			toString:tagToString
+			__renderTag:function() {
+				return '<'+tagName+' '+attributes.join(' ')+classesHTML+stylesHTML+'>'+content.join('')+'</'+tagName+'>'
+			},
+			toString:tagToString,
+			appendContent:function(newContent) { content.push(newContent) }
 		}
 	}
 }
@@ -28,7 +31,7 @@ tags.isIOSSafari = ua.match(/(iPod|iPhone|iPad)/) && ua.match(/Safari/)
 tags.br = function() { return { __tagHTML:'<br />', toString:tagToString } }
 tags.html = function(html) { return { __tagHTML:html, toString:tagToString } }
 
-function tagToString() { return this.__tagHTML }
+function tagToString() { return this.__tagHTML || this.__renderTag() }
 
 function handleTagArgs(args, i, content, attributes, classes, styles) {
 	for (; i<args.length; i++) {
