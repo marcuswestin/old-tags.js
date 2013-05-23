@@ -82,6 +82,7 @@ function makeList2(opts) {
 		isEmpty = false
 		
 		var newGroupsById = {}
+		var newGroupsContentById = {}
 		var newGroupIds = []
 		var modifiedGroupsById = {}
 
@@ -119,10 +120,13 @@ function makeList2(opts) {
 				itemsById[itemId] = item
 				// Group has not yet been rendered
 				if (!newGroupsById[groupId]) {
-					newGroupsById[groupId] = _renderGroupHead(groupId)
+					newGroupsById[groupId] = div({ id:_getElementId(groupId) },
+						div('tags-list2-groupHead', opts.renderGroupHead(itemsByGroupId[groupId]))
+					)
+					newGroupsContentById[groupId] = div('tags-list2-groupContent')
 					newGroupIds.push(groupId)
 				}
-				newGroupsById[groupId].appendContent(_renderItem(item))
+				newGroupsContentById[groupId].appendContent(_renderItem(item))
 			}
 		})
 		
@@ -137,6 +141,7 @@ function makeList2(opts) {
 		var result = []
 		var html = map(newGroupIds, function(groupId) {
 			groupsByGroupId[groupId] = true
+			newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
 			return newGroupsById[groupId]
 		}).join('')
 		appendOrPrependFn.call($('#'+id), html)
@@ -144,13 +149,6 @@ function makeList2(opts) {
 	
 	function _renderItem(item) {
 		return div('tags-list2-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item))
-	}
-	
-	function _renderGroupHead(groupId) {
-		return div({ id:_getElementId(groupId) },
-			div('tags-list2-groupHead', opts.renderGroupHead(itemsByGroupId[groupId])),
-			div('tags-list2-groupContent')
-		)
 	}
 	
 	function _getElement(itemId) {
