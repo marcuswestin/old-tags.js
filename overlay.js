@@ -33,7 +33,7 @@ function hideOverlay(opts) {
 var lastOpts
 var hidingTimeout
 function renderOverlay(opts, contentFn) {
-	if (!contentFn) { contentFn = opts; opts = {} }
+	if (contentFn == null) { contentFn = opts; opts = {} }
 	
 	lastOpts = opts = tags.options(opts, {
 		element:viewport.element,
