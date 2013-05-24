@@ -65,7 +65,12 @@ function renderOverlay(opts, contentFn) {
 		.empty()
 		.css(size).css(offset)
 		.append(
-			div('tags-overlay-background', style(size, absolute(0,0), { background:opts.background }), lastOpts.dismissable && button(function() { overlay.hide(opts) })),
-			div('tags-overlay-content', style(size, absolute(0,0), { display:'table' }), div(style({ display:'table-cell', verticalAlign:'middle' }), contentFn))
+			div('tags-overlay-background', style(size, absolute(0,0), { background:opts.background })),
+			div('tags-overlay-content', style(size, absolute(0,0), { display:'table' }),
+				div(style({ display:'table-cell', verticalAlign:'middle' }),
+					lastOpts.dismissable && button(function() { overlay.hide(opts) }),
+					contentFn
+				)
+			)
 		)
 }
