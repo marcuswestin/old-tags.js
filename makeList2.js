@@ -137,13 +137,14 @@ function makeList2(opts) {
 			}
 		})
 		
-		var result = []
-		var html = map(newGroupIds, function(groupId) {
-			groupsByGroupId[groupId] = true
-			newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
-			return newGroupsById[groupId]
-		}).join('')
-		appendOrPrependFn.call($('#'+id), html)
+		if (newGroupIds.length) {
+			var html = map(newGroupIds, function(groupId) {
+				groupsByGroupId[groupId] = true
+				newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
+				return newGroupsById[groupId]
+			}).join('')
+			appendOrPrependFn.call($('#'+id), html)
+		}
 	}
 	
 	function _renderItem(item) {
