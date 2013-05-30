@@ -50,10 +50,9 @@ function makeList2(opts) {
 	}
 	
 	function empty() {
-		$('#'+id).empty()
 		isEmpty = true
 		itemsById = {}
-		opts.renderEmpty()
+		$('#'+id).empty().append(opts.renderEmpty())
 	}
 	
 	function append(items) {
