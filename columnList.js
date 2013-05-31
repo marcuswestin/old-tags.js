@@ -70,7 +70,7 @@ function makeColumnList(opts) {
 	}
 	
 	function layout() {
-		heights = map(new Array(colCount), function() { return 0 })
+		heights = array(colCount, function() { return 0 })
 		$('#'+id+' .tags-columnList-item').each(layoutEl)
 		$('#'+id).css({ height:totalHeight() })
 	}
