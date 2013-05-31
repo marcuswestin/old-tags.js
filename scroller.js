@@ -139,7 +139,7 @@ var scrollerBase = {
 				}
 				
 				this._getHead(opts.index).empty().append(this._renderHeadContent(opts))
-				this._getFoot(opts.index).empty().append(this._renderFootContent(opts))
+				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
 				$(this.getScrollerElement(opts.index)).empty().append(this._renderBodyContent(opts))
 
 				if (tags.isIOSSafari) {
@@ -187,7 +187,7 @@ var scrollerBase = {
 		if (index == null) { index = this.stack.length - 1 }
 		return $('#'+this.viewID+' .tags-scroller-body')[index]
 	},
-	_getFoot:function(index) {
+	getFoot:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
 		return $($('#'+this.viewID+' .tags-scroller-foot')[index])
 	},
