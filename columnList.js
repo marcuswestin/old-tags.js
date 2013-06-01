@@ -25,7 +25,7 @@ function makeColumnList(opts) {
 	var heights
 	
 	return {
-		__renderTag:renderColumnList,
+		toTag:renderColumnList,
 		append:append,
 		remove:remove
 	}

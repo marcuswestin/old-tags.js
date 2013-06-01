@@ -24,11 +24,12 @@ var style = module.exports = (function(){
 	}
 	return function style(styles) {
 		return styles && (arguments.length == 1
-			? { style:$.map(styles, handleStyle).join('; ') }
-			: map(arguments, function(arg) { return style(arg) })
+			? tags.extend(tags.create(style.baseStyle), { style:$.map(styles, handleStyle).join('; ') })
+			: $.map(arguments, function(arg) { return style(arg) })
 		)
 	}
 }())
+style.baseStyle = {}
 
 style.transition = function transition(properties, duration) {
 	if (typeof properties == 'object') {

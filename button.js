@@ -19,9 +19,9 @@ function button(el, opts) {
 	var id = tags.id()
 	buttons[id] = opts
 	if (el) {
-		$(el).attr('button-id', id).addClass('tags-button')
+		$(el).attr('tags-button-id', id).addClass('tags-button')
 	} else {
-		return { 'button-id':id, 'class':'tags-button' }
+		return { 'tags-button-id':id, 'class':'tags-button' }
 	}
 }
 
@@ -63,7 +63,7 @@ var onEnd = function($event, $el, supressHandler) {
 
 	setInactive($el)
 
-	var button = buttons[$el.attr('button-id')]
+	var button = buttons[$el.attr('tags-button-id')]
 	if (button && doCallTap) { button.tap.call($el[0], $event) }
 	button.end.call($el[0])
 	
@@ -107,7 +107,7 @@ function onMouseDown(event) {
 function initButton($event, cb) {
 	var $el = $($event.currentTarget) //$(event.target)
 	
-	var button = buttons[$el.attr('button-id')]
+	var button = buttons[$el.attr('tags-button-id')]
 	button.start.call($el[0], $event)
 	
 	if ($event.isDefaultPrevented()) { return } // button.start decided to prevent it

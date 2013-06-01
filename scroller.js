@@ -26,7 +26,7 @@ function scroller(opts) {
 
 var scrollerBase = {
 	__numViews:0,
-	__renderTag:function() {
+	toTag:tags.toTag(function() {
 		var viewID = this.viewID = tags.id()
 		viewport.onResize(function(size) {
 			$('#'+viewID)
@@ -39,7 +39,7 @@ var scrollerBase = {
 					.find('.tags-scroller-head').css({ width:size.width })
 		})
 		return div('tags-scroller', this.__renderViews())
-	},
+	}),
 	__renderViews:function() {
 		var self = this
 		setTimeout(function() {
