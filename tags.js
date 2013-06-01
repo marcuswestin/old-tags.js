@@ -92,7 +92,7 @@ function handleTagArg(arg, content, attributes, classes, styles) {
 	}
 }
 
-var attributeWhitelistRegex = /^(id|type|name|src|href|frameborder|tags-\S*|data-\S*)$/i
+var attributeWhitelistRegex = /^(id|type|name|src|href|frameborder|contenteditable|tags-\S*|data-\S*)$/i
 
 var safeAttr = (function() {
 	var regex = /"/g
