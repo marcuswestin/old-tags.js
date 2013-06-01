@@ -79,6 +79,7 @@ function makeList2(opts) {
 		var newGroupsById = {}
 		var newGroupsContentById = {}
 		var newGroupIds = []
+		var seenItemIds = {}
 		var modifiedGroupsById = {}
 
 		each(items, function groupItem(item) {
@@ -94,6 +95,9 @@ function makeList2(opts) {
 		each(items, function addItem(item) {
 			var itemId = opts.getItemId(item)
 			var groupId = opts.groupBy(item)
+			
+			if (seenItemIds[itemId]) { return }
+			seenItemIds[itemId] = true
 			
 			if (itemsById[itemId]) {
 				// Item has previously been rendered
