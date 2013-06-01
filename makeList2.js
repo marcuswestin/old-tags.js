@@ -44,23 +44,19 @@ function makeList2(opts) {
 		}
 	)
 	
-	function destroy() {
-		itemsById = null
-		$('#'+id).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
-	}
-	
 	function empty() {
 		isEmpty = true
 		itemsById = {}
-		$('#'+id).empty().append(opts.renderEmpty())
+		var el = tags.byId(id)
+		tags.empty(el).append(el, opts.renderEmpty())
 	}
 	
 	function append(items) {
-		_addItems(items, $.fn.append)
+		_addItems(items, tags.append)
 	}
 	
 	function prepend(items) {
-		_addItems(items, $.fn.prepend)
+		_addItems(items, tags.prepend)
 	}
 	
 	function getHeight() {
@@ -74,10 +70,10 @@ function makeList2(opts) {
 		return items
 	}
 	
-	function _addItems(items, appendOrPrependFn) {
+	function _addItems(items, appendOrPrepend) {
 		if (!(items = _getItems(items))) { return }
 		
-		if (isEmpty) { $('#'+id).empty() }
+		if (isEmpty) { tags.empty(tags.byId(id)) }
 		isEmpty = false
 		
 		var newGroupsById = {}
@@ -104,15 +100,15 @@ function makeList2(opts) {
 				var itemElement = _getElement(itemId)
 				var newContent = opts.updateItem.call(itemElement, item)
 				if (newContent) {
-					$(itemElement).empty().append(newContent)
+					tags.empty(itemElement).append(itemElement, newContent)
 				}
 				modifiedGroupsById[groupId] = true
 				
 			} else if (groupsByGroupId[groupId]) {
 				itemsById[itemId] = item
 				// Group has previously been rendered
-				var groupElement = _getElement(groupId)
-				appendOrPrependFn.call($('#'+_getElementId(groupId)+' .tags-list2-groupContent'), _renderItem(item))
+				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list2-groupContent')
+				appendOrPrepend(groupContent, _renderItem(item))
 				modifiedGroupsById[groupId] = true
 				
 			} else {
@@ -128,22 +124,23 @@ function makeList2(opts) {
 				newGroupsContentById[groupId].appendContent(_renderItem(item))
 			}
 		})
-		
-		each(modifiedGroupsById, function(_, groupId) {
+
+		each(modifiedGroupsById, function updateModifiedGroups(_, groupId) {
 			var groupHeadElement = _getElement(groupId).children[0]
 			var newContent = opts.updateGroupHead.call(groupHeadElement, itemsByGroupId[groupId])
 			if (newContent) {
-				$(groupHeadElement).empty().append(result)
+				tags.empty(groupHeadElement).append(groupHeadElement, result)
 			}
 		})
 		
 		if (newGroupIds.length) {
-			var html = map(newGroupIds, function(groupId) {
-				groupsByGroupId[groupId] = true
-				newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
-				return newGroupsById[groupId]
-			}).join('')
-			appendOrPrependFn.call($('#'+id), html)
+			appendOrPrepend(tags.byId(id),
+				div(map(newGroupIds, function(groupId) {
+					groupsByGroupId[groupId] = true
+					newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
+					return newGroupsById[groupId]
+				}))
+			)
 		}
 	}
 	
@@ -162,6 +159,11 @@ function makeList2(opts) {
 	function _selectEl(el) {
 		var idForItem = el.id.replace(id+'-', '')
 		opts.selectItem.call(el, itemsById[idForItem])
+	}
+	
+	function destroy() {
+		itemsById = null
+		$('#'+id).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
 	}
 	
 	function _setupEvents() {

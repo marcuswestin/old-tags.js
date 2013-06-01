@@ -190,3 +190,24 @@ tags.events = {
 	cancel: tags.isTouch ? 'touchcancel' : 'mousecancel',
 	end: tags.isTouch ? 'touchend' : 'mouseup'
 }
+
+tags.append = function(el, tag) {
+	var newDiv = document.createElement('div')
+	newDiv.innerHTML = tag.toHtml()
+	el.appendChild(newDiv)
+	return tags
+}
+tags.prepend = function(el, tag) {
+	var newDiv = document.createElement('div')
+	newDiv.innerHTML = tag.toHtml()
+	if (el.children[0]) { el.insertBefore(newDiv, el.children[0]) }
+	else { el.appendChild(newDiv) }
+	return tags
+}
+tags.empty = function(el) {
+	el.innerHTML = ''
+	return tags
+}
+tags.byId = function(idSelector) {
+	return document.querySelector('#'+idSelector)
+}
