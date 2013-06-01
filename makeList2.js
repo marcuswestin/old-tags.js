@@ -169,7 +169,48 @@ function makeList2(opts) {
 	function _setupEvents() {
 		var $list = $('#'+id)
 		var targetClass = '.tags-list2-item'
-		if (!tags.isTouch) {
+		if (tags.isTouch) {
+			_setupTouchEvents()
+		} else {
+			_setupMouseEvents()
+		}
+		
+		function _setupTouchEvents() {
+			$list.on('touchstart', targetClass, function onTouchStart($e) {
+				var touch = $e.originalEvent.touches[0]
+				var tapY = touch.pageY
+				var tapElement = $e.currentTarget
+				var touchStartTime = new Date().getTime()
+				var waitToSeeIfScrollHappened = null
+
+				function clear() {
+					tapY = null
+					tapElement = null
+					$list.off('touchmove').off('touchend')
+				}
+
+				$list.on('touchmove', function onTouchMove($e) {
+					if (!tapY) { return }
+					var touch =$e.originalEvent.touches[0]
+					if (Math.abs(touch.pageY - tapY) > 10) { clear() }
+				})
+				.on('touchend', function onTouchEnd($e) {
+					clearTimeout(waitToSeeIfScrollHappened)
+					if (!tapElement) { return clear() }
+					waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
+					function _doTap() {
+						var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
+						if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
+						var el = tapElement
+						clear()
+						$e.preventDefault()
+						_selectEl(el)
+					}
+				})
+			})
+		}
+		
+		function _setupMouseEvents() {
 			var $currentHighlight
 			$list.on('click', targetClass, function onClick($e) {
 				$e.preventDefault()
@@ -182,40 +223,6 @@ function makeList2(opts) {
 			.on('mouseout', targetClass, function onMouseOut ($e) {
 				$(this).removeClass('active')
 			})
-			return
 		}
-		
-		$list.on('touchstart', targetClass, function onTouchStart($e) {
-			var touch = $e.originalEvent.touches[0]
-			var tapY = touch.pageY
-			var tapElement = $e.currentTarget
-			var touchStartTime = new Date().getTime()
-			var waitToSeeIfScrollHappened = null
-
-			function clear() {
-				tapY = null
-				tapElement = null
-				$list.off('touchmove').off('touchend')
-			}
-
-			$list.on('touchmove', function onTouchMove($e) {
-				if (!tapY) { return }
-				var touch =$e.originalEvent.touches[0]
-				if (Math.abs(touch.pageY - tapY) > 10) { clear() }
-			})
-			.on('touchend', function onTouchEnd($e) {
-				clearTimeout(waitToSeeIfScrollHappened)
-				if (!tapElement) { return clear() }
-				waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
-				function _doTap() {
-					var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
-					if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
-					var el = tapElement
-					clear()
-					$e.preventDefault()
-					_selectEl(el)
-				}
-			})
-		})
 	}
 }
