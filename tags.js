@@ -25,6 +25,37 @@ var tags = module.exports = function tags(tagName) {
 	}
 }
 
+;(function tagsTemplates() {
+	tags.holder = function(holderName) {
+		currentTemplateHolderNames.push(holderName)
+		return { toTag:tags.toTag(function() {
+			return {
+				toHtml:function() { return '{{_'+holderName+'_}}' }
+			}
+		})}
+	}
+
+	var currentTemplateHolderNames = []
+	tags.template = function(content) {
+		var html = content.toHtml()
+		var res = tags.extend(tags.create(templateBase), { html:html, holderNames:currentTemplateHolderNames })
+		currentTemplateHolderNames = []
+		return res
+	}
+
+	var templateBase = {
+		render:function(obj) {
+			var html = this.html
+			each(this.holderNames, function(holderName) {
+				var val = obj[holderName]
+				if (typeof val == 'function') { val = val() }
+				html = html.replace('{{_'+holderName+'_}}', val ? (val.toHtml ? val.toHtml() : val) : '')
+			})
+			return { __tagHTML:html, toHtml:tagsToHtml }
+		}
+	}	
+})()
+
 tags.warn = function(message) { console.warn('tags.warn:', message) }
 
 function tagsToHtml() { return this.__tagHTML || this.__renderTag() }
