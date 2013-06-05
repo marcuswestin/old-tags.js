@@ -3,13 +3,13 @@ var tags = require('./tags')
 var options = tags.options
 var extend = tags.extend
 
-module.exports = makeList2
+module.exports = makeList
 
 function defaultGroupBy() { return 1 }
 function defaultRenderGroupHead() { return '' }
 function defaultUpdateGroupHead() {}
 
-function makeList2(opts) {
+function makeList(opts) {
 	opts = options(opts, {
 		getItemId:null,
 		selectItem:null,
