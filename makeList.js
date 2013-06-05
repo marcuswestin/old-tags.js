@@ -18,160 +18,214 @@ function makeList(opts) {
 		updateGroupHead:defaultUpdateGroupHead, // Called when a group's contents updated. If it returns content, that becomes the new content
 		renderItem:null,
 		updateItem:null, // Called when an item needs updating. If it returns content, that becomes the new content
-		renderEmpty:null
+		renderEmpty:null,
+		
+		cache: opts.cache && options(opts.cache, {
+			uid:null,
+			groupShouldBeCached:null,
+			persist:null,
+			writeDelay:100
+		})
 	})
 	
+	var uid = opts.cache ? opts.cache.uid : tags.uid()
+	var isEmpty = true
+	
+	var renderedItemsById = {} // Tracks items which have been rendered
+	var renderedGroupsById = {} // Tracks groups which have been rendered
+	var groupHtmlCacheById = {} // A lookup table of per-group cached HTML
+	var itemsByGroupId = {} // Stores all items currently displayed
+
+	if (!uid) {
+		throw new Error('makeList with caching requires cache.uid to be set')
+	}
+
 	if (!opts.updateItem) {
 		opts.updateItem = opts.renderItem
 	}
-
-	var id = tags.id()
-	var isEmpty = true
-	var itemsById = {}
-	var itemsByGroupId = {}
-	var groupsByGroupId = {}
 	
 	nextTick(_setupEvents)
 	
-	return extend(div({ id:id }, opts.renderEmpty()),
+	/* List instance API
+	 *******************/
+	return extend(div({ id:uid }, opts.renderEmpty()),
 		{
+			uid:uid,
 			append:append,
 			prepend:prepend,
 			getHeight:getHeight,
 			empty:empty,
-			destroy:destroy
+			destroy:destroy,
+			setCache:setCache
 		}
 	)
 	
 	function empty() {
 		isEmpty = true
-		itemsById = {}
-		var el = tags.byId(id)
+		var el = tags.byId(uid)
 		tags.empty(el).append(el, opts.renderEmpty())
 	}
 	
 	function append(items, info) {
-		_addItems(items, info || {}, tags.append)
+		_addItemsToList(items, info || {}, tags.append)
 	}
 	
 	function prepend(items, info) {
-		_addItems(items, info || {}, tags.prepend)
+		_addItemsToList(items, info || {}, tags.prepend)
 	}
 	
 	function getHeight() {
-		return $('#'+id).height()
+		return $('#'+uid).height()
 	}
 	
-	function _getItems(items) {
-		if (!items) { return null }
+	function setCache(cache) {
+		if (!opts.cache) { return }
+		groupHtmlCacheById = cache || {}
+	}
+	
+	function destroy() {
+		$('#'+uid).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
+	}
+	
+	/* Internals
+	 ***********/
+	function _addItemsToList(items, info, appendOrPrepend) {
+		// Ensure items is a non-empty list
+		if (!items) { return }
 		if (!isArray(items)) { items = [items] }
-		if (!items.length) { return null }
-		return items
-	}
-	
-	function _addItems(items, info, appendOrPrepend) {
-		if (!(items = _getItems(items))) { return }
+		if (!items.length) { return }
 		
-		if (isEmpty) { tags.empty(tags.byId(id)) }
+		// If we are currently empty, remove the empty message
+		if (isEmpty) { tags.empty(tags.byId(uid)) }
 		isEmpty = false
 		
-		var newGroupsById = {}
-		var newGroupsContentById = {}
-		var newGroupIds = []
-		var seenItemIds = {}
-		var modifiedGroupsById = {}
+		// State for this rendering cycle:
+		var newGroupsById = {} // Tracks new groups which should be rendered
+		var newGroupsOrder = [] // Tracks order of new groups which should be rendered
+		var dirtyGroupsById = {} // Tracks old groups which require updating 
+		var dirtyItemsById = {} // Tracks old items which require updating
+		var duplicateItemsById = {} // Detects duplicate items appearing twice **in this call to _addItemsToList**
 
+		// Store new in internal map 
 		each(items, function groupItem(item) {
 			var groupId = opts.groupBy(item)
 			var itemId = opts.getItemId(item)
-			
-			if (!itemsByGroupId[groupId]) {
-				itemsByGroupId[groupId] = {}
-			}
+			if (!itemsByGroupId[groupId]) { itemsByGroupId[groupId] = {} }
 			itemsByGroupId[groupId][itemId] = item
 		})
 		
+		// Loop over new items and render them
 		each(items, function addItem(item) {
 			var itemId = opts.getItemId(item)
 			var groupId = opts.groupBy(item)
 			
-			if (seenItemIds[itemId]) { return }
-			seenItemIds[itemId] = true
+			// Is this a duplicate item? Ignore it.
+			if (duplicateItemsById[itemId]) { return }
+			duplicateItemsById[itemId] = true
 			
-			if (itemsById[itemId]) {
-				// Item has previously been rendered
-				var itemElement = _getElement(itemId)
-				var newContent = opts.updateItem.call(itemElement, item, info)
-				if (newContent) {
-					tags.empty(itemElement).append(itemElement, newContent)
+			if (groupHtmlCacheById[groupId]) {
+				// Entire group can be rendered from cache
+				if (!newGroupsById[groupId]) {
+					newGroupsOrder.push(groupId)
+					newGroupsById[groupId] = { fromCache:true }
 				}
-				modifiedGroupsById[groupId] = true
 				
-			} else if (groupsByGroupId[groupId]) {
-				itemsById[itemId] = item
-				// Group has previously been rendered
-				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list2-groupContent')
+			} else if (renderedItemsById[itemId]) {
+				// Item has previously been rendered. Item and group should both be updated
+				dirtyItemsById[itemId] = groupId
+				dirtyGroupsById[groupId] = groupId
+				
+			} else if (renderedGroupsById[groupId]) {
+				// Group has previously been rendered, but item has not. Group DOM should be updated, and item should be rendered
+				renderedItemsById[itemId] = true
+				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list-groupContent')
 				appendOrPrepend(groupContent, _renderItem(item, info))
-				modifiedGroupsById[groupId] = true
+				dirtyGroupsById[groupId] = groupId
 				
 			} else {
-				itemsById[itemId] = item
-				// Group has not yet been rendered
+				// Neither group nor item has previously been rendered. Both should be rendered.
+				renderedItemsById[itemId] = true
 				if (!newGroupsById[groupId]) {
-					newGroupsById[groupId] = div({ id:_getElementId(groupId) },
-						div('tags-list2-groupHead', opts.renderGroupHead(itemsByGroupId[groupId]))
-					)
-					newGroupsContentById[groupId] = div('tags-list2-groupContent')
-					newGroupIds.push(groupId)
+					newGroupsOrder.push(groupId)
+					newGroupsById[groupId] = _renderGroup(groupId)
 				}
-				newGroupsContentById[groupId].appendContent(_renderItem(item, info))
-			}
-		})
-
-		each(modifiedGroupsById, function updateModifiedGroups(_, groupId) {
-			var groupHeadElement = _getElement(groupId).children[0]
-			var newContent = opts.updateGroupHead.call(groupHeadElement, itemsByGroupId[groupId])
-			if (newContent) {
-				tags.empty(groupHeadElement).append(groupHeadElement, result)
+				newGroupsById[groupId].contentTag.appendContent(_renderItem(item, info))
 			}
 		})
 		
-		if (newGroupIds.length) {
-			appendOrPrepend(tags.byId(id),
-				div(map(newGroupIds, function(groupId) {
-					groupsByGroupId[groupId] = true
-					newGroupsById[groupId].appendContent(newGroupsContentById[groupId])
-					return newGroupsById[groupId]
-				}))
-			)
+		// Update dirty items
+		each(dirtyItemsById, function updateDirtyItem(groupId, itemId) {
+			var itemElement = _getElement(itemId)
+			var updatedContent = opts.updateItem.call(itemElement, itemsByGroupId[groupId][itemId])
+			if (updatedContent) { tags.empty(itemElement).append(itemElement, updatedContent) }
+		})
+		
+		// Update dirty groups
+		each(dirtyGroupsById, function updateDirtyGroup(groupId) {
+			var groupElement = _getElement(groupId)
+			var groupHeadElement = groupElement.children[0]
+			var updatedContent = opts.updateGroupHead.call(groupHeadElement, itemsByGroupId[groupId])
+			if (updatedContent) { tags.empty(groupHeadElement).append(groupHeadElement, updatedContent) }
+			// Possibly cache the updated group content
+			_onNewGroupHtml(groupId, groupElement)
+		})
+		
+		// Actually render the new groups contents
+		var newContent = array(newGroupsOrder, function(groupId) {
+			var groupInfo = newGroupsById[groupId]
+			renderedGroupsById[groupId] = true
+			if (groupInfo.fromCache) { return html(groupHtmlCacheById[groupId]) }
+			groupInfo.groupTag.appendContent(groupInfo.contentTag)
+			return groupInfo.groupTag
+		})
+		
+		if (newContent.length) {
+			// Render new content, and possibly cache the updated groups
+			appendOrPrepend(tags.byId(uid), div(newContent))
+			if (opts.cache) {
+				each(newGroupsOrder, function(groupId) {
+					if (newGroupsById[groupId].fromCache) { return } // if it was rendered from cache we don't need to update the cache
+					_onNewGroupHtml(groupId, _getElement(groupId))
+				})
+			}
 		}
 	}
 	
+	function _renderGroup(groupId) {
+		var contentTag = div('tags-list-groupContent')
+		var groupTag = div('tags-list-group', { id:_getElementId(groupId) },
+			div('tags-list-groupHead', opts.renderGroupHead(itemsByGroupId[groupId]))
+		)
+		return { groupId:groupId, groupTag:groupTag, contentTag:contentTag }
+	}
+	
 	function _renderItem(item, info) {
-		return div('tags-list2-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item, info))
+		return div('tags-list-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item, info))
 	}
 	
 	function _getElement(itemId) {
-		return document.getElementById(_getElementId(itemId))
+		return tags.byId(_getElementId(itemId))
 	}
 	
 	function _getElementId(itemId) {
-		return id+'-'+itemId
+		return uid+'-'+itemId
 	}
 	
-	function _selectEl(el) {
-		var idForItem = el.id.replace(id+'-', '')
-		opts.selectItem.call(el, itemsById[idForItem])
-	}
-	
-	function destroy() {
-		itemsById = null
-		$('#'+id).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
+	function _onNewGroupHtml(groupId, groupElement) {
+		if (!opts.cache) { return }
+		if (!opts.cache.groupShouldBeCached(groupId)) { return }
+		groupHtmlCacheById[groupId] = groupElement.outerHTML
+		if (_onNewGroupHtml.scheduled) { return }
+		_onNewGroupHtml.scheduled = true
+		setTimeout(function() {
+			_onNewGroupHtml.scheduled = false
+			opts.cache.persist(groupHtmlCacheById)
+		}, opts.cache.writeDelay)
 	}
 	
 	function _setupEvents() {
-		var $list = $('#'+id)
-		var targetClass = '.tags-list2-item'
+		var $list = $('#'+uid)
+		var targetClass = '.tags-list-item'
 		if (tags.isTouch) {
 			_setupTouchEvents()
 		} else {
@@ -226,6 +280,15 @@ function makeList(opts) {
 			.on('mouseout', targetClass, function onMouseOut ($e) {
 				$(this).removeClass('active')
 			})
+		}
+		
+		function _selectEl(el) {
+			var groupEl = el.parentNode
+			while (!$(groupEl).hasClass('tags-list-group')) { groupEl = groupEl.parentNode }
+			var idForGroup = groupEl.id.replace(uid+'-', '')
+			var idForItem = el.id.replace(uid+'-', '')
+			var item = itemsByGroupId[idForGroup][idForItem]
+			opts.selectItem.call(el, item)
 		}
 	}
 }
