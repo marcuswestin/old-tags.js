@@ -13,11 +13,11 @@ function makeColumnList(opts) {
 		columnGap:2,
 		renderItem:null,
 		selectItem:null,
-		getItemId:tags.id,
+		getItemId:tags.uid,
 		toggleActive:function(){}
 	})
 	
-	var id = tags.id()
+	var id = tags.uid()
 	var colCount = opts.columnCount
 	var colGap = opts.columnGap
 	var colWidth = Math.floor((opts.width - colGap*(colCount - 1)) / colCount)

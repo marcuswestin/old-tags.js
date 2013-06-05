@@ -27,7 +27,7 @@ function scroller(opts) {
 var scrollerBase = {
 	__numViews:0,
 	toTag:tags.toTag(function() {
-		var viewID = this.viewID = tags.id()
+		var viewID = this.viewID = tags.uid()
 		viewport.onResize(function(size) {
 			$('#'+viewID)
 				.find('.tags-scroller-overflow').css(size)

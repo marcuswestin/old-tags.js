@@ -16,7 +16,7 @@ function button(el, opts) {
 		tap:function() {},
 		end:function() {}
 	})
-	var id = tags.id()
+	var id = tags.uid()
 	buttons[id] = opts
 	if (el) {
 		$(el).attr('tags-button-id', id).addClass('tags-button')

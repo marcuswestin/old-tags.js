@@ -13,7 +13,7 @@ module.exports = function draggable(opts) {
 		threshold:0
 	})
 
-	var id = tags.id()
+	var id = tags.uid()
 	data[id] = opts
 	return { 'tags-draggable-id':id, 'class':'tags-draggable' }
 }

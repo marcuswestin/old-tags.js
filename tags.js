@@ -149,7 +149,7 @@ var safeHTML = (function() {
 	}	
 }())
 
-tags.id = (function(){
+tags.uid = (function(){
 	var unique = 1
 	return function() {
 		return '__tag'+(unique++)
