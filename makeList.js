@@ -101,7 +101,7 @@ function makeList(opts) {
 			if (itemsById[itemId]) {
 				// Item has previously been rendered
 				var itemElement = _getElement(itemId)
-				var newContent = opts.updateItem.call(itemElement, item)
+				var newContent = opts.updateItem.call(itemElement, item, info)
 				if (newContent) {
 					tags.empty(itemElement).append(itemElement, newContent)
 				}
