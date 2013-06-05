@@ -11,7 +11,6 @@ function defaultUpdateGroupHead() {}
 
 function makeList2(opts) {
 	opts = options(opts, {
-		items:[],
 		getItemId:null,
 		selectItem:null,
 		groupBy:defaultGroupBy,
@@ -27,14 +26,14 @@ function makeList2(opts) {
 	}
 
 	var id = tags.id()
-	var isEmpty = (opts.items.length == 0)
+	var isEmpty = true
 	var itemsById = {}
 	var itemsByGroupId = {}
 	var groupsByGroupId = {}
 	
 	nextTick(_setupEvents)
 	
-	return extend(div({ id:id }, (isEmpty ? opts.renderEmpty() : _renderItems(opts.items))),
+	return extend(div({ id:id }, opts.renderEmpty()),
 		{
 			append:append,
 			prepend:prepend,
@@ -51,12 +50,12 @@ function makeList2(opts) {
 		tags.empty(el).append(el, opts.renderEmpty())
 	}
 	
-	function append(items) {
-		_addItems(items, tags.append)
+	function append(items, info) {
+		_addItems(items, info || {}, tags.append)
 	}
 	
-	function prepend(items) {
-		_addItems(items, tags.prepend)
+	function prepend(items, info) {
+		_addItems(items, info || {}, tags.prepend)
 	}
 	
 	function getHeight() {
@@ -70,7 +69,7 @@ function makeList2(opts) {
 		return items
 	}
 	
-	function _addItems(items, appendOrPrepend) {
+	function _addItems(items, info, appendOrPrepend) {
 		if (!(items = _getItems(items))) { return }
 		
 		if (isEmpty) { tags.empty(tags.byId(id)) }
@@ -112,7 +111,7 @@ function makeList2(opts) {
 				itemsById[itemId] = item
 				// Group has previously been rendered
 				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list2-groupContent')
-				appendOrPrepend(groupContent, _renderItem(item))
+				appendOrPrepend(groupContent, _renderItem(item, info))
 				modifiedGroupsById[groupId] = true
 				
 			} else {
@@ -125,7 +124,7 @@ function makeList2(opts) {
 					newGroupsContentById[groupId] = div('tags-list2-groupContent')
 					newGroupIds.push(groupId)
 				}
-				newGroupsContentById[groupId].appendContent(_renderItem(item))
+				newGroupsContentById[groupId].appendContent(_renderItem(item, info))
 			}
 		})
 
@@ -148,8 +147,8 @@ function makeList2(opts) {
 		}
 	}
 	
-	function _renderItem(item) {
-		return div('tags-list2-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item))
+	function _renderItem(item, info) {
+		return div('tags-list2-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item, info))
 	}
 	
 	function _getElement(itemId) {
