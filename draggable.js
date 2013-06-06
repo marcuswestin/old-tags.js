@@ -3,6 +3,7 @@ var tags = require('./tags')
 var data = {}
 module.exports = function draggable(opts) {
 	opts = tags.options(opts, {
+		bubble:false,
 		down:function(){},
 		up:function(){},
 		start:function(pos, history) {},
@@ -19,19 +20,19 @@ module.exports = function draggable(opts) {
 }
 
 $(function() {
-	$(document).on(tags.events.start, '.tags-draggable', onDragStart)
+	$(document).on(tags.events.start, '.tags-draggable', onStartEvent)
 })
 
 var isDragging = false
-function onDragStart($e) {
-	$e.preventDefault()
-	
+function onStartEvent($e) {
 	if (isDragging) { return }
 	
 	var el = this
 	var $el = $(el)
 	var elOffset = $el.offset()
 	var opts = data[$el.attr('tags-draggable-id')]
+	
+	if (!opts.bubble) { $e.preventDefault() }
 	
 	var history = []
 	var pagePos0 = tags.eventPos($e)
