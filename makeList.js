@@ -204,7 +204,7 @@ function makeList(opts) {
 	}
 	
 	function _getElement(itemId) {
-		return tags.byId(_getElementId(itemId))
+		return document.getElementById(_getElementId(itemId))
 	}
 	
 	function _getElementId(itemId) {
