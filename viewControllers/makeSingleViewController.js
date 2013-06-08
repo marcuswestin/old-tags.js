@@ -15,7 +15,7 @@ function makeSingleViewController(opts) {
 		renderFoot:null,
 		// life cycling
 		destroyView:null,
-		shouldKeepView:null,
+		shouldKeepView:function() { return false },
 		// events
 		onScroll:null
 	})
@@ -33,8 +33,13 @@ function makeSingleViewController(opts) {
 	
 	return setProps(_render(), {
 		setView:setView,
-		getScrollingElement:getScrollingElement
+		getScrollingElement:getScrollingElement,
+		push:push
 	})
+	
+	function push(view) {
+		gScroller.setView(view, { animate:'left' })
+	}
 	
 	function setView(view, viewOpts) {
 		viewOpts = options(viewOpts, {
@@ -96,10 +101,10 @@ function makeSingleViewController(opts) {
 					opts.renderBody(view, viewOpts)
 				)
 			),
-			div('tags-viewHead', style(absolute.top(0), { width:size.width }),
+			opts.renderHead && div('tags-viewHead', style(absolute.top(0), { width:size.width }),
 				opts.renderHead(view, viewOpts)
 			),
-			div('tags-viewFoot', style(absolute.bottom(0), { width:size.width }),
+			opts.renderFoot && div('tags-viewFoot', style(absolute.bottom(0), { width:size.width }),
 				opts.renderFoot(view, viewOpts)
 			)
 		)
