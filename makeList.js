@@ -8,6 +8,8 @@ function defaultGroupBy() { return 1 }
 function defaultRenderGroupHead() { return '' }
 function defaultUpdateGroupHead() {}
 
+var Data = {}
+
 function makeList(opts) {
 	opts = options(opts, {
 		getItemId:null,
@@ -35,6 +37,8 @@ function makeList(opts) {
 	var groupHtmlCacheById = {} // A lookup table of per-group cached HTML
 	var itemsByGroupId = {} // Stores all items currently displayed
 
+	Data[uid] = { selectItem:opts.selectItem, itemsByGroupId:itemsByGroupId }
+
 	if (!uid) {
 		throw new Error('makeList with caching requires cache.uid to be set')
 	}
@@ -43,11 +47,9 @@ function makeList(opts) {
 		opts.updateItem = opts.renderItem
 	}
 	
-	nextTick(_setupEvents)
-	
 	/* List instance API
 	 *******************/
-	return extend(div(attr({ id:uid }), opts.renderEmpty()),
+	return extend(div('tags-list', attr({ id:uid }), opts.renderEmpty()),
 		{
 			uid:uid,
 			append:append,
@@ -84,7 +86,8 @@ function makeList(opts) {
 	}
 	
 	function destroy() {
-		$('#'+uid).off('touchstart').off('touchmove').off('touchend').off('click').off('mouseover').off('mouseout').empty()
+		$('#'+uid).remove().empty()
+		delete Data[uid]
 	}
 	
 	/* Internals
@@ -220,73 +223,54 @@ function makeList(opts) {
 			opts.cache.persist(groupHtmlCacheById)
 		}, opts.cache.writeDelay)
 	}
-	
-	function _setupEvents() {
-		var $list = $('#'+uid)
-		var targetClass = '.tags-list-item'
-		if (tags.isTouch) {
-			_setupTouchEvents()
-		} else {
-			_setupMouseEvents()
-		}
-		
-		function _setupTouchEvents() {
-			$list.on('touchstart', targetClass, function onTouchStart($e) {
-				var touch = $e.originalEvent.touches[0]
-				var tapY = touch.pageY
-				var tapElement = $e.currentTarget
-				var touchStartTime = new Date().getTime()
-				var waitToSeeIfScrollHappened = null
-
-				function clear() {
-					tapY = null
-					tapElement = null
-					$list.off('touchmove').off('touchend')
-				}
-
-				$list.on('touchmove', function onTouchMove($e) {
-					if (!tapY) { return }
-					var touch =$e.originalEvent.touches[0]
-					if (Math.abs(touch.pageY - tapY) > 10) { clear() }
-				})
-				.on('touchend', function onTouchEnd($e) {
-					clearTimeout(waitToSeeIfScrollHappened)
-					if (!tapElement) { return clear() }
-					waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
-					function _doTap() {
-						var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > touchStartTime - 50)
-						if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
-						var el = tapElement
-						clear()
-						$e.preventDefault()
-						_selectEl(el)
-					}
-				})
-			})
-		}
-		
-		function _setupMouseEvents() {
-			var $currentHighlight
-			$list.on('click', targetClass, function onClick($e) {
-				$e.preventDefault()
-				_selectEl(this)
-			})
-			.on('mouseover', targetClass, function onMouseOver($e) {
-				if ($currentHighlight) { $currentHighlight.removeClass('active') }
-				var $currentHighlight = $(this).addClass('active')
-			})
-			.on('mouseout', targetClass, function onMouseOut ($e) {
-				$(this).removeClass('active')
-			})
-		}
-		
-		function _selectEl(el) {
-			var groupEl = el.parentNode
-			while (!$(groupEl).hasClass('tags-list-group')) { groupEl = groupEl.parentNode }
-			var idForGroup = groupEl.id.replace(uid+'-', '')
-			var idForItem = el.id.replace(uid+'-', '')
-			var item = itemsByGroupId[idForGroup][idForItem]
-			opts.selectItem.call(el, item)
-		}
-	}
 }
+
+$(function() {
+	$(document).on(tags.events.start, '.tags-list-item', function onTouchStart($e) {
+		var itemElement = $e.currentTarget
+		var $list = $(tags.above(itemElement, 'tags-list'))
+		var pointer = tags.pointer($e)
+		var tapY = pointer.y
+		var startTime = new Date().getTime()
+		var waitToSeeIfScrollHappened = null
+
+		$list.on(tags.events.move, function onTouchMove($e) {
+			if (!tapY) { return }
+			var touch = $e.originalEvent.touches[0]
+			if (Math.abs(touch.pageY - tapY) > 10) { _clear() }
+		})
+		
+		$list.on(tags.events.end, function onTouchEnd($e) {
+			clearTimeout(waitToSeeIfScrollHappened)
+			if (!itemElement) { return _clear() }
+			waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
+			function _doTap() {
+				var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > startTime - 50)
+				if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
+				var el = itemElement
+				_clear()
+				$e.preventDefault()
+				_selectEl(el)
+			}
+		})
+		
+		function _clear() {
+			tapY = null
+			itemElement = null
+			$list.off(tags.events.move).off(tags.events.end)
+		}
+	})
+
+	function _selectEl(el) {
+		var listEl = tags.above(el, 'tags-list')
+		var uid = listEl.id
+		var data = Data[uid]
+
+		var groupEl = tags.above(el, 'tags-list-group')
+		var idForGroup = groupEl.id.replace(uid+'-', '')
+
+		var idForItem = el.id.replace(uid+'-', '')
+		var item = data.itemsByGroupId[idForGroup][idForItem]
+		data.selectItem.call(el, item)
+	}
+})

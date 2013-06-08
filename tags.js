@@ -287,6 +287,16 @@ function _safeHtml(rawHtml) {
 
 /* DOM manipulation
  ******************/
+tags.above = function(el, targetClass) {
+	while (el && el.className != targetClass) {
+		el = el.parentNode
+	}
+	return el
+}
+tags.pointer = function($e, i) {
+	var obj = tags.isTouch ? $e.originalEvent.touches[i || 0] : $e.originalEvent
+	return { x:obj.pageX, y:obj.pageY }
+}
 tags.append = function(el, tag) {
 	var newDiv = document.createElement('div')
 	newDiv.innerHTML = _htmlFromArg(tag)
