@@ -4,16 +4,19 @@ var options = tags.options = require('std/options')
 var each = tags.each = require('std/each')
 var isArray = tags.isArray = require('std/isArray')
 var array = tags.array = require('std/array')
+var setProps = require('std/setProps')
 
 /* API
  *****/
-module.exports = tags
-tags.attr = attr
-tags.style = style
-tags.classes = classes
-tags.dangerouslyInsertHtml = dangerouslyInsertHtml
-tags.isSafeHtml = isSafeHtml
-tags.warn
+module.exports = setProps(tags, {
+	attr: attrFn,
+	style: styleFn,
+	classes: classesFn,
+	dangerouslyInsertHtml: dangerouslyInsertHtmlFn,
+	isSafeHtml: isSafeHtmlFn
+})
+
+tags.warn = warn
 tags.uid = uid
 
 tags.isTouch = _isTouch()
@@ -40,7 +43,7 @@ tags.isIOSSafari = ua.match(/(iPod|iPhone|iPad)/) && ua.match(/Safari/)
  * )
  */
 function tags(tagName) {
-	return function createTag() {
+	return function createTagFn() {
 		var classList = []
 		var content = []
 		var attributes = []
@@ -55,7 +58,7 @@ function tags(tagName) {
 		
 		var classListHtml = (classList.length ? ' class="'+_safeAttr(classList.join(' '))+'" ' : '')
 		var stylesHtml = (styles.length ? ' style="'+_safeAttr(styles.join('; '))+'" ' : '')
-		return create(dangerouslyInsertHtml.base, {
+		return create(dangerouslyInsertHtmlBase, {
 			_html:'<'+tagName+' '+attributes.join(' ')+classListHtml+stylesHtml+'>'+content.join('')+'</'+tagName+'>'
 		})
 	}
@@ -69,9 +72,9 @@ function tags(tagName) {
  */
 var _attributeWhitelist = arrayToObject('id,type,name,src,href,placeholder,value,target,frameborder,contenteditable'.split(','))
 var _attributeWhitelistRegex = /^(tags-\S*|data-\S*)$/i
-attr.base = { _html:'' }
-function attr(attributes) {
-	var attribute = create(attr.base, { _html:'' })
+var attrBase = { _html:'' }
+function attrFn(attributes) {
+	var attribute = create(attrBase, { _html:'' })
 	each(attributes, function(attrValue, attrName) {
 		if (!_attributeWhitelist[attrName] && !_attributeWhitelist[attrName.toLowerCase()] && !_attributeWhitelistRegex.test(attrName)) {
 			return tags.warn('Non-whitelisted attribute', attrName, attrValue)
@@ -87,8 +90,8 @@ function attr(attributes) {
  * div(style({ width:10, height:10, background:'red' }), "Hello")   =>   <div style="width:10px; height:10px; background:red; ">Hello</div>
  * span(style({ color:'red', fontFamily:'sans-seris' }), "Hello")   =>   <span style="color:red; font-family:sans-serif; ">Hello</span>
  */
-style.base = {}
-function style() {
+var styleBase = {}
+function styleFn() {
 	var _html = ''
 	each(arguments, function(arg) {
 		each(arg, function(styleValue, styleName) {
@@ -96,7 +99,7 @@ function style() {
 			_html += _toDashes(styleName)+':'+styleValue+';'
 		})
 	})
-	return create(style.base, { _html:_safeAttr(_html) })
+	return create(styleBase, { _html:_safeAttr(_html) })
 }
 
 var _pxPostfixBlacklist = arrayToObject('opacity,zIndex,fontWeight'.split(','))
@@ -112,10 +115,10 @@ function _toDashes(name) {
  * div(style({ color:'red' }), dangerouslyInsertHtml('<span>foo bar  </span>'))   =>   '<div style="color:red;"><span>foo bar  </span></div>''
  * div(dangerouslyInsertHtml('<script>alert("XSS Fool")</script>'))               =>   '<div><script>alert("XSS Fool")</script></div>
  */
-dangerouslyInsertHtml.base = { toString:getDangerouslyInnerHtml }
-function getDangerouslyInnerHtml() { return this._html }
-function dangerouslyInsertHtml(html) {
-	return create(dangerouslyInsertHtml.base, { _html:html })
+var dangerouslyInsertHtmlBase = { toString:_getDangerousHtml }
+function _getDangerousHtml() { return this._html }
+function dangerouslyInsertHtmlFn(html) {
+	return create(dangerouslyInsertHtmlBase, { _html:html })
 }
 
 
@@ -124,17 +127,17 @@ function dangerouslyInsertHtml(html) {
  *
  * div('button', 'Hello', classes('bold underline'))   =>   <div class="button bold underline">Hello</div>
  */
-classes.base = {}
-function classes(classStr) {
-	return create(classes.base, { _html:_safeAttr(classStr) })
+var classesBase = {}
+function classesFn(classStr) {
+	return create(classesBase, { _html:_safeAttr(classStr) })
 }
 
 
 
 /* Misc
  ******/
-function isSafeHtml(obj) {
-	return dangerouslyInsertHtml.base.isPrototypeOf(obj)
+function isSafeHtmlFn(obj) {
+	return dangerouslyInsertHtmlBase.isPrototypeOf(obj)
 }
 
 function warn() {
@@ -153,35 +156,46 @@ function _isTouch() {
 uid._t = 1
 function uid() { return '_t'+(uid._t++) }
 
-tags.br = create(dangerouslyInsertHtml.base, { _html:'<br/>' })
+tags.br = create(dangerouslyInsertHtmlBase, { _html:'<br/>' })
 
 
 
 /* Style helpers
  ***************/
-style.translate = function translate(x, y, duration, delay) {
+setProps(tags.style, {
+	translate:setProps(translate, {
+		y: translateY,
+		x: translateX,
+		z: translateZ,
+		xyz: translateXYZ
+	}),
+	rotate:rotate,
+	transition:transition,
+	scrollable: {
+		x: { overflowX:'auto', overflowScrolling:'touch', overflowY:'hidden' },
+		y: { overflowY:'auto', overflowScrolling:'touch', overflowX:'hidden' }
+	}
+})
+
+function translate(x, y, duration, delay) {
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)', duration, delay)
 }
-style.translate.y = function(y, duration, delay) {
+function translateY(y, duration, delay) {
 	return _transform('translateY('+Math.round(y)+'px)', duration, delay)
 }
-style.translate.x = function(x, duration, delay) {
+function translateX(x, duration, delay) {
 	return _transform('translateX('+Math.round(x)+'px)', duration, delay)
 }
-style.translate.z = function(z, duration, delay) {
+function translateZ(z, duration, delay) {
 	return _transform('translateZ('+Math.round(z)+'px)', duration, delay)
 }
-style.translate.xyz = function(x,y,z, duration, delay) {
+function translateXYZ(x,y,z, duration, delay) {
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, '+Math.round(z)+'px)', duration, delay)
 }
-style.rotate = function(fraction, duration, delay) {
+function rotate(fraction, duration, delay) {
 	return _transform('rotate('+Math.round(fraction*360)+'deg)', duration, delay)
 }
-style.scrollable = {
-	x: { overflowX:'auto', overflowScrolling:'touch', overflowY:'hidden' },
-	y: { overflowY:'auto', overflowScrolling:'touch', overflowX:'hidden' }
-}
-style.transition = function(properties, duration) {
+function transition(properties, duration) {
 	if (typeof properties == 'object') {
 		var res = array(properties, function(val, key) {
 			return key+' '+properties[key]+'ms'
@@ -193,10 +207,10 @@ style.transition = function(properties, duration) {
 }
 
 function _transform(transformation, duration, delay) {
-	var res = { '-webkit-transform':transformation }
-	if (duration != null && !isNaN(duration)) { res['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
-	if (delay != null && !isNaN(delay)) { res['-webkit-transition-delay'] = delay+'ms' }
-	return res
+	var styles = { '-webkit-transform':transformation }
+	if (duration != null && !isNaN(duration)) { styles['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
+	if (delay != null && !isNaN(delay)) { styles['-webkit-transition-delay'] = delay+'ms' }
+	return styles
 }
 
 
@@ -213,16 +227,16 @@ function _handleTagArg(arg, content, attributes, classList, styles) {
 	if (arg == null) { return }
 	
 	if (isObject(arg)) {
-		if (dangerouslyInsertHtml.base.isPrototypeOf(arg)) {
+		if (dangerouslyInsertHtmlBase.isPrototypeOf(arg)) {
 			return content.push(arg._html)
 			
-		} else if (style.base.isPrototypeOf(arg)) {
+		} else if (styleBase.isPrototypeOf(arg)) {
 			return styles.push(arg._html)
 			
-		} else if (attr.base.isPrototypeOf(arg)) {
+		} else if (attrBase.isPrototypeOf(arg)) {
 			return attributes.push(arg._html)
 			
-		} else if (classes.base.isPrototypeOf(arg)) {
+		} else if (classesBase.isPrototypeOf(arg)) {
 			return classList.push(arg._html)
 			
 		} else if (tags.isSafeToTag(arg.toTag)) {
@@ -300,11 +314,11 @@ function _htmlFromArg(tag) {
 	if (isArray(tag)) {
 		each(tag, function(tag) {
 			if (!tag) { return }
-			if (!isSafeHtml(tag)) { return tags.warn('Unsafe tags.append', tag) }
+			if (!tags.isSafeHtml(tag)) { return tags.warn('Unsafe tags.append', tag) }
 			html += tag._html
 		})
 	} else {
-		if (!isSafeHtml(tag)) { return tags.warn('Unsafe tags.append', tag) }
+		if (!tags.isSafeHtml(tag)) { return tags.warn('Unsafe tags.append', tag) }
 		html += tag._html
 	}
 	return html
