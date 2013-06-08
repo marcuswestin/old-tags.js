@@ -140,10 +140,10 @@ var scrollerBase = {
 				
 				this._getHead(opts.index).empty().append(this._renderHeadContent(opts))
 				this.getFoot(opts.index).empty().append(this._renderFootContent(opts))
-				$(this.getScrollerElement(opts.index)).empty().append(this._renderBodyContent(opts))
+				$(this.getScrollingElement(opts.index)).empty().append(this._renderBodyContent(opts))
 
 				if (tags.isIOSSafari) {
-					this.getScrollerElement(opts.index).scrollTop = 1
+					this.getScrollingElement(opts.index).scrollTop = 1
 				}
 			}
 			
@@ -179,7 +179,7 @@ var scrollerBase = {
 		if (index == null) { index = this.stack.length - 1 }
 		return $('#'+this.viewID+' .tags-scroller-view')[index]
 	},
-	getScrollerElement:function(index) {
+	getScrollingElement:function(index) {
 		if (index == null) { index = this.stack.length - 1 }
 		return $('#'+this.viewID+' .tags-scroller-bodyScroller')[index]
 	},
