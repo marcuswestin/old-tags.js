@@ -11,7 +11,7 @@ module.exports = tags
 tags.attr = attr
 tags.style = style
 tags.classes = classes
-tags.dangerouslyInnerHtml = dangerouslyInnerHtml
+tags.dangerouslyInsertHtml = dangerouslyInsertHtml
 tags.isSafeHtml = isSafeHtml
 tags.warn
 tags.uid = uid
@@ -55,7 +55,7 @@ function tags(tagName) {
 		
 		var classListHtml = (classList.length ? ' class="'+_safeAttr(classList.join(' '))+'" ' : '')
 		var stylesHtml = (styles.length ? ' style="'+_safeAttr(styles.join('; '))+'" ' : '')
-		return create(dangerouslyInnerHtml.base, {
+		return create(dangerouslyInsertHtml.base, {
 			_html:'<'+tagName+' '+attributes.join(' ')+classListHtml+stylesHtml+'>'+content.join('')+'</'+tagName+'>'
 		})
 	}
@@ -109,13 +109,13 @@ function _toDashes(name) {
 /* Display strings of HTML
  *************************
  *
- * div(style({ color:'red' }), dangerouslyInnerHtml('<span>foo bar  </span>'))   =>   '<div style="color:red;"><span>foo bar  </span></div>''
- * div(dangerouslyInnerHtml('<script>alert("XSS Fool")</script>'))               =>   '<div><script>alert("XSS Fool")</script></div>
+ * div(style({ color:'red' }), dangerouslyInsertHtml('<span>foo bar  </span>'))   =>   '<div style="color:red;"><span>foo bar  </span></div>''
+ * div(dangerouslyInsertHtml('<script>alert("XSS Fool")</script>'))               =>   '<div><script>alert("XSS Fool")</script></div>
  */
-dangerouslyInnerHtml.base = { toString:getDangerouslyInnerHtml }
+dangerouslyInsertHtml.base = { toString:getDangerouslyInnerHtml }
 function getDangerouslyInnerHtml() { return this._html }
-function dangerouslyInnerHtml(html) {
-	return create(dangerouslyInnerHtml.base, { _html:html })
+function dangerouslyInsertHtml(html) {
+	return create(dangerouslyInsertHtml.base, { _html:html })
 }
 
 
@@ -134,7 +134,7 @@ function classes(classStr) {
 /* Misc
  ******/
 function isSafeHtml(obj) {
-	return dangerouslyInnerHtml.base.isPrototypeOf(obj)
+	return dangerouslyInsertHtml.base.isPrototypeOf(obj)
 }
 
 function warn() {
@@ -153,7 +153,7 @@ function _isTouch() {
 uid._t = 1
 function uid() { return '_t'+(uid._t++) }
 
-tags.br = create(dangerouslyInnerHtml.base, { _html:'<br/>' })
+tags.br = create(dangerouslyInsertHtml.base, { _html:'<br/>' })
 
 
 
@@ -213,7 +213,7 @@ function _handleTagArg(arg, content, attributes, classList, styles) {
 	if (arg == null) { return }
 	
 	if (isObject(arg)) {
-		if (dangerouslyInnerHtml.base.isPrototypeOf(arg)) {
+		if (dangerouslyInsertHtml.base.isPrototypeOf(arg)) {
 			return content.push(arg._html)
 			
 		} else if (style.base.isPrototypeOf(arg)) {

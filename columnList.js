@@ -39,7 +39,7 @@ function makeColumnList(opts) {
 		if (!items) { return }
 		if (!$.isArray(items)) { items = [items] }
 		if (!items.length) { return }
-		$('#'+id+' .tags-columnList-container').append(dangerouslyInnerHtml(renderItems(items)))
+		$('#'+id+' .tags-columnList-container').append(dangerouslyInsertHtml(renderItems(items)))
 	}
 
 	function renderColumnList() {
@@ -47,7 +47,7 @@ function makeColumnList(opts) {
 		return div('tags-columnList', attr({ id:id }), style({ width:opts.width }),
 			div('tags-columnList-container',
 				style({ width:opts.width, position:'absolute' }),
-				dangerouslyInnerHtml(renderItems(opts.items))
+				dangerouslyInsertHtml(renderItems(opts.items))
 			)
 		)
 	}

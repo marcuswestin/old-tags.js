@@ -174,7 +174,7 @@ function makeList(opts) {
 		var newContent = array(newGroupsOrder, function(groupId) {
 			var newGroup = newGroupsById[groupId]
 			renderedGroupsById[groupId] = true
-			if (newGroup.fromCache) { return dangerouslyInnerHtml(groupHtmlCacheById[groupId]) }
+			if (newGroup.fromCache) { return dangerouslyInsertHtml(groupHtmlCacheById[groupId]) }
 			return div('tags-list-group', attr({ id:_getElementId(groupId) }),
 				div('tags-list-groupHead', opts.renderGroupHead(itemsByGroupId[groupId])),
 				div('tags-list-groupContent', newGroup.content)
