@@ -16,7 +16,7 @@ module.exports = function draggable(opts) {
 
 	var id = tags.uid()
 	data[id] = opts
-	return { 'tags-draggable-id':id, 'class':'tags-draggable' }
+	return [attr({ 'tags-draggable-id':id }), tags.classes('tags-draggable')]
 }
 
 $(function() {

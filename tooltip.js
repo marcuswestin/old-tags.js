@@ -1,5 +1,5 @@
 var tags = require('./tags')
-var style = require('./style')
+var style = tags.style
 var viewport = require('./viewport')
 
 var div = tags('div')
@@ -26,7 +26,7 @@ function showTooltip(opts, contentFn) {
 	removeTooltip()
 
 	$(viewport.element).append(div(
-		{ id:'tags-tooltip' },
+		attr({ id:'tags-tooltip' }),
 		style({ position:'absolute', display:'table', zIndex:3, opacity:0 }),
 		div('tags-tooltip-content', contentFn, style({
 			display:'table-cell', width:opts.width, height:opts.height, verticalAlign:'middle'

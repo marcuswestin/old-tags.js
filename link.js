@@ -16,6 +16,6 @@ function link(className, title, path) {
 	if (typeof path == 'function') {
 		return div('link '+className, title, button(path))
 	} else {
-		return a('link '+className, title, { href:path, target:link.defaultTarget })
+		return a('link '+className, title, attr({ href:path, target:link.defaultTarget }))
 	}
 }

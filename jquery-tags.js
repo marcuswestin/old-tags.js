@@ -1,5 +1,6 @@
 // Make tags.js work with jQuery
 var tags = require('./tags')
+var isArray = require('std/isArray')
 
 ;(function enableJQueryTags($) {
 	var originalInit = $.fn.init
@@ -18,14 +19,17 @@ var tags = require('./tags')
 	function processJqueryArgs(args) {
 		if (!args) { return args }
 		for (var i=0; i<args.length; i++) {
-			if (!args[i]) { continue }
-			if (args[i].toHtml) {
-				if (!tags.isSafeToHtml(args[i].toHtml)) { continue }
-				args[i] = $(args[i].toHtml())
-			} else if (args[i].toTag) {
+			if (!args[i]) {
+				continue
+			
+			} else if (tags.isSafeHtml(args[i])) {
+				args[i] = $(args[i]._html)
+			
+			} else if (args[i].toTag) { // TODO Fix
 				if (!tags.isSafeToTag(args[i].toTag)) { continue }
 				args[i] = processJqueryArgs(args[i].toTag())
-			} else if ($.isArray(args[i])) {
+			
+			} else if (isArray(args[i])) {
 				args[i] = processJqueryArgs(args[i])
 			}
 		}
@@ -51,14 +55,19 @@ var tags = require('./tags')
 	function renderTagArgs(arg, originalJqFn) {
 		if (arg == undefined) {
 			return
-		} else if ($.isArray(arg)) {
-			for (var i=0; i<arg.length; i++) { renderTagArgs.call(this, arg[i], originalJqFn) }
-		} else if (arg.toHtml) {
-			if (!tags.isSafeToHtml(arg.toHtml)) { return }
-			originalJqFn.call(this, $(arg.toHtml()))
-		} else if (arg.toTag) {
+
+		} else if (isArray(arg)) {
+			for (var i=0; i<arg.length; i++) {
+				renderTagArgs.call(this, arg[i], originalJqFn)
+			}
+
+		} else if (tags.isSafeHtml(arg)) {
+			originalJqFn.call(this, $(arg._html))
+
+		} else if (arg.toTag) { // TODO
 			if (!tags.isSafeToTag(arg.toTag)) { return }
 			originalJqFn.call(this, arg.toTag())
+
 		} else {
 			originalJqFn.call(this, arg)
 		}

@@ -21,7 +21,7 @@ function button(el, opts) {
 	if (el) {
 		$(el).attr('tags-button-id', id).addClass('tags-button')
 	} else {
-		return { 'tags-button-id':id, 'class':'tags-button' }
+		return [tags.attr({ 'tags-button-id':id }), tags.classes('tags-button')]
 	}
 }
 

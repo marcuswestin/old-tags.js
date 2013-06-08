@@ -1,6 +1,5 @@
 var tags = require('tags/tags')
-var style = require('tags/style')
-
+var style = tags.style
 module.exports = makeColumnList
 
 var div = tags('div')
@@ -40,13 +39,16 @@ function makeColumnList(opts) {
 		if (!items) { return }
 		if (!$.isArray(items)) { items = [items] }
 		if (!items.length) { return }
-		$('#'+id+' .tags-columnList-container').append(html(renderItems(items)))
+		$('#'+id+' .tags-columnList-container').append(dangerouslyInnerHtml(renderItems(items)))
 	}
 
 	function renderColumnList() {
 		nextTick(registerHandlers)
-		return div('tags-columnList', { id:id }, style({ width:opts.width }),
-			div('tags-columnList-container', style({ width:opts.width, position:'absolute' }), html(renderItems(opts.items)))
+		return div('tags-columnList', attr({ id:id }), style({ width:opts.width }),
+			div('tags-columnList-container',
+				style({ width:opts.width, position:'absolute' }),
+				dangerouslyInnerHtml(renderItems(opts.items))
+			)
 		)
 	}
 	

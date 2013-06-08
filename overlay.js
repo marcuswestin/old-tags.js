@@ -1,5 +1,5 @@
 var tags = require('./tags')
-var style = require('./style')
+var style = tags.style
 var viewport = require('./viewport')
 var button = require('./button')
 
@@ -53,7 +53,7 @@ function renderOverlay(opts, contentFn) {
 	
 	if (!$('#tags-overlay')[0]) {
 		$(document.body).prepend(div(
-			{ id:'tags-overlay' },
+			attr({ id:'tags-overlay' }),
 			style({ position:'fixed', opacity:0, zIndex:overlay.zIndex })
 		))
 		setTimeout(function() {

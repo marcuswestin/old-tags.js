@@ -17,7 +17,7 @@ function field(id, labelText, opts) {
 	if (!opts) { opts = {} }
 	if (!opts.id) { opts.id = id }
 	return div('tags-forms-field',
-		label({ 'for':id }, labelText),
+		label(attr({ 'for':id }), labelText),
 		fieldOpts.input(null, opts)
 	)
 }
@@ -33,7 +33,7 @@ function checkbox(className, opts) {
 		disabled: false,
 		onChange: null
 	})
-	var $input = $(input(tags.classNames('tags-forms-checkbox', className), { type:'checkbox', id:id }, function() {
+	var $input = $(input('tags-forms-checkbox ' + (className || '')), attr({ type:'checkbox', id:id }), function() {
 		this.checked = opts.value
 	}))
 	if (opts.onChange) {
@@ -58,7 +58,7 @@ function select(className, opts) {// name, selectOptions, opts) {
 	})
 	var selectOptions = opts.options
 	var attrsHtml = (opts.id ? ' id="'+opts.id+'" name="'+opts.id+'"' : '')
-	var $select = $('<select class="'+tags.classNames('tags-forms-select', className)+'" '+attrsHtml+'>'+$.map(selectOptions, function(option) {
+	var $select = $('<select class="'+tags.classNames('tags-forms-select ' + (className || ''))+'" '+attrsHtml+'>'+$.map(selectOptions, function(option) {
 		var selected = ((opts.value && opts.value == (option.value ? option.value : option)) ? 'selected=true' : '')
 		var value = option.value ? option.value : option
 		var label = option.label ? option.label : option
@@ -117,6 +117,6 @@ function submission(text, submittingText, opts, onsubmit) {
 				})
 			})
 		}, 0)
-	}), input({ type:'submit' }, style({ visibility:'hidden', position:'absolute', top:-999999, left:-999999 }))]
+	}), input(attr({ type:'submit' }), style({ visibility:'hidden', position:'absolute', top:-999999, left:-999999 }))]
 }
 

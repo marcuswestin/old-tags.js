@@ -1,7 +1,6 @@
 var tags = require('./tags')
-
-var options = tags.options
-var extend = tags.extend
+var options = require('std/options')
+var extend = require('std/extend')
 
 module.exports = makeList
 
@@ -48,7 +47,7 @@ function makeList(opts) {
 	
 	/* List instance API
 	 *******************/
-	return extend(div({ id:uid }, opts.renderEmpty()),
+	return extend(div(attr({ id:uid }), opts.renderEmpty()),
 		{
 			uid:uid,
 			append:append,
@@ -64,6 +63,7 @@ function makeList(opts) {
 		isEmpty = true
 		var el = tags.byId(uid)
 		tags.empty(el).append(el, opts.renderEmpty())
+		return this
 	}
 	
 	function append(items, info) {
@@ -147,9 +147,9 @@ function makeList(opts) {
 				renderedItemsById[itemId] = true
 				if (!newGroupsById[groupId]) {
 					newGroupsOrder.push(groupId)
-					newGroupsById[groupId] = _renderGroup(groupId)
+					newGroupsById[groupId] = _makeNewGroup(groupId)
 				}
-				newGroupsById[groupId].contentTag.appendContent(_renderItem(item, info))
+				newGroupsById[groupId].content.push(_renderItem(item, info))
 			}
 		})
 		
@@ -172,16 +172,18 @@ function makeList(opts) {
 		
 		// Actually render the new groups contents
 		var newContent = array(newGroupsOrder, function(groupId) {
-			var groupInfo = newGroupsById[groupId]
+			var newGroup = newGroupsById[groupId]
 			renderedGroupsById[groupId] = true
-			if (groupInfo.fromCache) { return html(groupHtmlCacheById[groupId]) }
-			groupInfo.groupTag.appendContent(groupInfo.contentTag)
-			return groupInfo.groupTag
+			if (newGroup.fromCache) { return dangerouslyInnerHtml(groupHtmlCacheById[groupId]) }
+			return div('tags-list-group', attr({ id:_getElementId(groupId) }),
+				div('tags-list-groupHead', opts.renderGroupHead(itemsByGroupId[groupId])),
+				div('tags-list-groupContent', newGroup.content)
+			)
 		})
 		
 		if (newContent.length) {
 			// Render new content, and possibly cache the updated groups
-			appendOrPrepend(tags.byId(uid), div(newContent))
+			appendOrPrepend(tags.byId(uid), newContent)
 			if (opts.cache) {
 				each(newGroupsOrder, function(groupId) {
 					if (newGroupsById[groupId].fromCache) { return } // if it was rendered from cache we don't need to update the cache
@@ -191,16 +193,12 @@ function makeList(opts) {
 		}
 	}
 	
-	function _renderGroup(groupId) {
-		var contentTag = div('tags-list-groupContent')
-		var groupTag = div('tags-list-group', { id:_getElementId(groupId) },
-			div('tags-list-groupHead', opts.renderGroupHead(itemsByGroupId[groupId]))
-		)
-		return { groupId:groupId, groupTag:groupTag, contentTag:contentTag }
+	function _makeNewGroup(groupId) {
+		return { groupId:groupId, content:[] }
 	}
 	
 	function _renderItem(item, info) {
-		return div('tags-list-item', { id:_getElementId(opts.getItemId(item)) }, opts.renderItem(item, info))
+		return div('tags-list-item', attr({ id:_getElementId(opts.getItemId(item)) }), opts.renderItem(item, info))
 	}
 	
 	function _getElement(itemId) {

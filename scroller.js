@@ -1,6 +1,6 @@
 var tags = require('./tags')
 var viewport = require('./viewport')
-var style = require('./style')
+var style = tags.style
 
 module.exports = scroller
 
@@ -50,7 +50,7 @@ var scrollerBase = {
 			}
 		})
 		
-		return div('tags-scroller-view', { id:this.viewID }, style({ overflow:'hidden', position:'absolute', top:0 }),
+		return div('tags-scroller-view', attr({ id:this.viewID }), style({ overflow:'hidden', position:'absolute', top:0 }),
 			div('tags-scroller-overflow', style(viewport.getSize(), { overflow:'hidden' }),
 				div('tags-scroller-slider', style({ height:viewport.height() }))
 			)
