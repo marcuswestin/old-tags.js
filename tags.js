@@ -39,15 +39,15 @@ tags.isHandheldSafari = ua.match(/(iPod|iPhone)/) && ua.match(/Safari/)
 tags.isIOSSafari = ua.match(/(iPod|iPhone|iPad)/) && ua.match(/Safari/)
 
 /* Tag creators
- **************
- *
- * var div = tags('div')
- * var span = tags('span')
- * $('body').append(
- *     div('name', 'Marcus Westin')               =>   <div class="names">Marcus Westin</div>
- *     div('bold name', 'Ashley', ' ', 'Baker')   =>   <div class="bold name">Ashley Baker</div>
- * )
- */
+***************
+*
+* var div = tags('div')
+* var span = tags('span')
+* $('body').append(
+*     div('name', 'Marcus Westin')               =>   <div class="names">Marcus Westin</div>
+*     div('bold name', 'Ashley', ' ', 'Baker')   =>   <div class="bold name">Ashley Baker</div>
+* )
+*/
 function tags(tagName) {
 	return function createTagFn() {
 		var classList = []
@@ -181,8 +181,8 @@ function _destroyEl() {
 }
 
 /* Misc
- ******/
-function isSafeHtmlFn(obj) {
+*******/
+function isSafeHtml(obj) {
 	return dangerouslyInsertHtmlBase.isPrototypeOf(obj)
 }
 
@@ -207,7 +207,7 @@ tags.br = create(dangerouslyInsertHtmlBase, { _html:'<br/>' })
 
 
 /* Style helpers
- ***************/
+****************/
 setProps(tags.style, {
 	translate:setProps(translate, {
 		y: translateY,
@@ -262,7 +262,7 @@ function _transform(transformation, duration, delay) {
 
 
 /* Internal utils
- ****************/
+*****************/
 function _handleTagArgs(args, i, content, attributes, classList, styles) {
 	for (; i<args.length; i++) {
 		_handleTagArg(args[i], content, attributes, classList, styles)
@@ -332,7 +332,7 @@ function _safeHtml(rawHtml) {
 
 
 /* DOM manipulation
- ******************/
+*******************/
 tags.above = function(el, targetClass) {
 	while (el && !tags.hasClass(el, targetClass)) {
 		el = el.parentNode
@@ -424,7 +424,7 @@ function _htmlFromArg(tag) {
 
 
 /* Event positions
- *****************/
+******************/
 tags.makePos = function makePos(x,y) {
 	var pos = [x, y]
 	pos.x = x
@@ -452,8 +452,8 @@ tags.addPos = function addPos(p1, p2) {
 
 
 /* Templates
- * Work in progress
- ******************/
+* Work in progress
+*******************/
 var customTagBase = { __customTag:function(ctx) { return this.contentFn.call(ctx)._html } }
 tags.toTag = function(contentFn) {
 	return create(customTagBase, { contentFn:contentFn })
