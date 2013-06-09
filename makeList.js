@@ -10,6 +10,10 @@ function defaultUpdateGroupHead() {}
 
 var Data = {}
 
+function _destroyList(uid) {
+	delete Data[uid]
+}
+
 function makeList(opts) {
 	opts = options(opts, {
 		getItemId:null,
@@ -49,22 +53,21 @@ function makeList(opts) {
 	
 	/* List instance API
 	 *******************/
-	return extend(div('tags-list', attr({ id:uid }), opts.renderEmpty()),
+	return extend(
+		div('tags-list', attr({ id:uid }), opts.renderEmpty(), tags.destructible(_destroyList)),
 		{
 			uid:uid,
 			append:append,
 			prepend:prepend,
 			getHeight:getHeight,
 			empty:empty,
-			destroy:destroy,
 			setCache:setCache
 		}
 	)
 	
 	function empty() {
 		isEmpty = true
-		var el = tags.byId(uid)
-		tags.empty(el).append(el, opts.renderEmpty())
+		tags.byId(uid).empty().append(opts.renderEmpty())
 		return this
 	}
 	
@@ -77,17 +80,12 @@ function makeList(opts) {
 	}
 	
 	function getHeight() {
-		return $('#'+uid).height()
+		return tags.byId(uid).height()
 	}
 	
 	function setCache(cache) {
 		if (!opts.cache) { return }
 		groupHtmlCacheById = cache || {}
-	}
-	
-	function destroy() {
-		$('#'+uid).remove().empty()
-		delete Data[uid]
 	}
 	
 	/* Internals
@@ -99,7 +97,7 @@ function makeList(opts) {
 		if (!items.length) { return }
 		
 		// If we are currently empty, remove the empty message
-		if (isEmpty) { tags.empty(tags.byId(uid)) }
+		if (isEmpty) { tags.byId(uid).empty() }
 		isEmpty = false
 		
 		// State for this rendering cycle:
@@ -142,7 +140,7 @@ function makeList(opts) {
 				// Group has previously been rendered, but item has not. Group DOM should be updated, and item should be rendered
 				renderedItemsById[itemId] = true
 				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list-groupContent')
-				appendOrPrepend(groupContent, _renderItem(item, info))
+				appendOrPrepend(groupContent.el, _renderItem(item, info))
 				dirtyGroupsById[groupId] = groupId
 				
 			} else {
@@ -186,7 +184,7 @@ function makeList(opts) {
 		
 		if (newContent.length) {
 			// Render new content, and possibly cache the updated groups
-			appendOrPrepend(tags.byId(uid), newContent)
+			appendOrPrepend(tags.byId(uid).el, newContent)
 			if (opts.cache) {
 				each(newGroupsOrder, function(groupId) {
 					if (newGroupsById[groupId].fromCache) { return } // if it was rendered from cache we don't need to update the cache
@@ -228,36 +226,40 @@ function makeList(opts) {
 $(function() {
 	$(document).on(tags.events.start, '.tags-list-item', function onTouchStart($e) {
 		var itemElement = $e.currentTarget
-		var $list = $(tags.above(itemElement, 'tags-list'))
+		var list = tags.above(itemElement, 'tags-list')
+		if (!list) { throw new Error('Could not find list') }
 		var pointer = tags.pointer($e)
 		var tapY = pointer.y
 		var startTime = new Date().getTime()
 		var waitToSeeIfScrollHappened = null
 
-		$list.on(tags.events.move, function onTouchMove($e) {
-			if (!tapY) { return }
-			var touch = $e.originalEvent.touches[0]
-			if (Math.abs(touch.pageY - tapY) > 10) { _clear() }
-		})
-		
-		$list.on(tags.events.end, function onTouchEnd($e) {
-			clearTimeout(waitToSeeIfScrollHappened)
-			if (!itemElement) { return _clear() }
-			waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
-			function _doTap() {
-				var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > startTime - 50)
-				if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
-				var el = itemElement
+		$(list)
+			.on(tags.events.move, function onTouchMove($e) {
+				if (!tapY) { return }
+				var pointer = tags.pointer($e)
+				if (Math.abs(pointer.y - tapY) > 10) { _clear() }
+			})
+			.on(tags.events.end, function onTouchEnd($e) {
+				clearTimeout(waitToSeeIfScrollHappened)
+				if (!itemElement) { return _clear() }
+				waitToSeeIfScrollHappened = setTimeout(_doTap, 50)
+				function _doTap() {
+					var lastScrollEventHappenedSinceRightAroundTouchStart = (tags.__lastScroll__ > startTime - 50)
+					if (lastScrollEventHappenedSinceRightAroundTouchStart) { return } // in this case we want to just stop the scrolling, and not cause an item tap
+					var el = itemElement
+					_clear()
+					$e.preventDefault()
+					_selectEl(el)
+				}
+			})
+			.on(tags.events.cancel, function onCancel($e) {
 				_clear()
-				$e.preventDefault()
-				_selectEl(el)
-			}
-		})
+			})
 		
 		function _clear() {
 			tapY = null
 			itemElement = null
-			$list.off(tags.events.move).off(tags.events.end)
+			$(list).off(tags.events.move).off(tags.events.end)
 		}
 	})
 

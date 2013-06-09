@@ -2,7 +2,8 @@ var tags = require('./tags')
 
 module.exports = button
 
-var buttons = {}
+var Data = {}
+
 function button(el, opts) {
 	if (arguments.length == 1) {
 		opts = el
@@ -11,18 +12,25 @@ function button(el, opts) {
 	if (typeof opts == 'function') {
 		opts = { tap:opts }
 	}
+	
 	opts = tags.options(opts, {
 		start:function() {},
 		tap:function() {},
 		end:function() {}
 	})
-	var id = tags.uid()
-	buttons[id] = opts
+	
+	var uid = tags.uid()
+	Data[uid] = opts
+	
 	if (el) {
-		$(el).attr('tags-button-id', id).addClass('tags-button')
+		$(el).addClass('tags-button '+tags.destructible.class).attr(tags.destructible.attrs(uid, destroyButton))
 	} else {
-		return [tags.attr({ 'tags-button-id':id }), tags.classes('tags-button')]
+		return [tags.classes('tags-button'), tags.destructible(uid, destroyButton)]
 	}
+}
+
+function destroyButton(uid) {
+	delete Data[uid]
 }
 
 function makeRect(x, y, width, height) {
@@ -63,7 +71,7 @@ var onEnd = function($event, $el, supressHandler) {
 
 	setInactive($el)
 
-	var button = buttons[$el.attr('tags-button-id')]
+	var button = Data[$el.attr('tags-uid')]
 	if (button && doCallTap) { button.tap.call($el[0], $event) }
 	button.end.call($el[0])
 	
@@ -107,7 +115,7 @@ function onMouseDown(event) {
 function initButton($event, cb) {
 	var $el = $($event.currentTarget) //$(event.target)
 	
-	var button = buttons[$el.attr('tags-button-id')]
+	var button = Data[$el.attr('tags-uid')]
 	button.start.call($el[0], $event)
 	
 	if ($event.isDefaultPrevented()) { return } // button.start decided to prevent it

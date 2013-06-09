@@ -5,15 +5,21 @@ var each = tags.each = require('std/each')
 var isArray = tags.isArray = require('std/isArray')
 var array = tags.array = require('std/array')
 var setProps = require('std/setProps')
+var isElement = require('std/isElement')
 
 /* API
- *****/
+******/
 module.exports = setProps(tags, {
-	attr: attrFn,
-	style: styleFn,
-	classes: classesFn,
-	dangerouslyInsertHtml: dangerouslyInsertHtmlFn,
-	isSafeHtml: isSafeHtmlFn
+	attr: attr,
+	style: style,
+	classes: classes,
+	dangerouslyInsertHtml: dangerouslyInsertHtml,
+	isSafeHtml: isSafeHtml,
+	destroy:destroy,
+	destructible: setProps(destructible, {
+		attrs: destructibleAttrs,
+		class: 'tags-destructible'
+	})
 })
 
 tags.warn = warn
@@ -73,7 +79,7 @@ function tags(tagName) {
 var _attributeWhitelist = arrayToObject('id,type,name,src,href,placeholder,value,target,frameborder,contenteditable'.split(','))
 var _attributeWhitelistRegex = /^(tags-\S*|data-\S*)$/i
 var attrBase = { _html:'' }
-function attrFn(attributes) {
+function attr(attributes) {
 	var attribute = create(attrBase, { _html:'' })
 	each(attributes, function(attrValue, attrName) {
 		if (!_attributeWhitelist[attrName] && !_attributeWhitelist[attrName.toLowerCase()] && !_attributeWhitelistRegex.test(attrName)) {
@@ -91,7 +97,7 @@ function attrFn(attributes) {
  * span(style({ color:'red', fontFamily:'sans-seris' }), "Hello")   =>   <span style="color:red; font-family:sans-serif; ">Hello</span>
  */
 var styleBase = {}
-function styleFn() {
+function style() {
 	var _html = ''
 	each(arguments, function(arg) {
 		each(arg, function(styleValue, styleName) {
@@ -117,7 +123,7 @@ function _toDashes(name) {
  */
 var dangerouslyInsertHtmlBase = { toString:_getDangerousHtml }
 function _getDangerousHtml() { return this._html }
-function dangerouslyInsertHtmlFn(html) {
+function dangerouslyInsertHtml(html) {
 	return create(dangerouslyInsertHtmlBase, { _html:html })
 }
 
@@ -128,11 +134,51 @@ function dangerouslyInsertHtmlFn(html) {
  * div('button', 'Hello', classes('bold underline'))   =>   <div class="button bold underline">Hello</div>
  */
 var classesBase = {}
-function classesFn(classStr) {
+function classes(classStr) {
 	return create(classesBase, { _html:_safeAttr(classStr) })
 }
 
 
+/* Destroy views to clean up state
+ *********************************
+ *
+ * return div('myView', div('myList', tags.destructible(_destroyMyList)))
+ * function _destroyMyList() { this == $('div.myList')[0] }
+ * ...
+ * tags.destroy($('.myView')) // calls _destroyMyList
+ */
+function destructible(uid, destructorFn) {
+	return [tags.classes(tags.destructible.class), tags.attr(tags.destructible.attrs(uid, destructorFn))]
+}
+
+function destroy(el) {
+	var $el = $(el)
+	$el.find('.'+tags.destructible.class).each(_destroyEl)
+	if ($el.hasClass(tags.destructible.class)) { _destroyEl.call(el) }
+}
+
+var Destructors = {}
+function destructibleAttrs(uid, destructorFn) {
+	if (!destructorFn && typeof uid == 'function') {
+		destructorFn = uid
+		uid = null
+	}
+	if (!destructorFn._destructorUid) {
+		destructorFn._destructorUid = tags.uid()
+		Destructors[destructorFn._destructorUid] = destructorFn
+	}
+	if (uid) {
+		return { 'tags-destructorUid':destructorFn._destructorUid, 'tags-uid':uid }
+	} else {
+		return { 'tags-destructorUid':destructorFn._destructorUid }
+	}
+}
+
+function _destroyEl() {
+	var destructorUid = this.getAttribute('tags-destructorUid')
+	var uidIfSet = this.getAttribute('tags-uid')
+	Destructors[destructorUid].call(this, uidIfSet)
+}
 
 /* Misc
  ******/
@@ -288,7 +334,7 @@ function _safeHtml(rawHtml) {
 /* DOM manipulation
  ******************/
 tags.above = function(el, targetClass) {
-	while (el && el.className != targetClass) {
+	while (el && !tags.hasClass(el, targetClass)) {
 		el = el.parentNode
 	}
 	return el
@@ -298,9 +344,17 @@ tags.pointer = function($e, i) {
 	return { x:obj.pageX, y:obj.pageY }
 }
 tags.append = function(el, tag) {
-	var newDiv = document.createElement('div')
-	newDiv.innerHTML = _htmlFromArg(tag)
-	el.appendChild(newDiv)
+	if (isElement(tag)) {
+		var appendEl = tag
+	} else {
+		var appendEl = document.createElement('div')
+		appendEl.innerHTML = _htmlFromArg(tag)
+	}
+	el.appendChild(appendEl)
+	return tags
+}
+tags.remove = function(el) {
+	el.parentNode.removeChild(el)
 	return tags
 }
 tags.prepend = function(el, tag) {
@@ -317,6 +371,39 @@ tags.empty = function(el) {
 tags.byId = function(idSelector) {
 	return document.querySelector('#'+idSelector)
 }
+tags.hasClass = function(el, className) {
+	return (' ' + el.className + ' ').match(' ' + className + ' ')
+}
+tags.select = function() {
+	var selector = slice(arguments).join(' ')
+	return _select(selector)
+}
+tags.byId = function(id) {
+	var selector = '#'+id+' '+slice(arguments, 1).join(' ')
+	return _select(selector)
+}
+tags.css = function(el, values) {
+	$.fn.css.call($(this.el), values)
+}
+function _select(selector) {
+	return tags.create(selectionBase, { el:document.querySelector(selector) })
+}
+var selectionBase = (function() {
+	return {
+		height: function() { return this.el.offsetHeight },
+		css: _selectionFn(tags.css),
+		append: _selectionFn(tags.append),
+		prepend: _selectionFn(tags.prepend),
+		empty: _selectionFn(tags.empty)
+	}
+	function _selectionFn(domFn) {
+		return function() {
+			var args = [this.el].concat(slice(arguments))
+			domFn.apply(this, args)
+			return this
+		}
+	}
+}());
 
 function _htmlFromArg(tag) {
 	if (!tag) { return '' }
@@ -373,7 +460,6 @@ tags.toTag = function(contentFn) {
 }
 tags.isSafeToTag = function(toTag) {
 	if (customTagBase.isPrototypeOf(toTag)) { return true };
-	debuggerOnce()
 	tags.warn('Tags encountered a dangerous .toTag()')
 	return false
 }

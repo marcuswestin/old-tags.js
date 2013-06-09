@@ -1,6 +1,7 @@
 var tags = require('./tags')
 
-var data = {}
+var Data = {}
+
 module.exports = function draggable(opts) {
 	opts = tags.options(opts, {
 		bubble:false,
@@ -15,7 +16,7 @@ module.exports = function draggable(opts) {
 	})
 
 	var id = tags.uid()
-	data[id] = opts
+	Data[id] = opts
 	return [attr({ 'tags-draggable-id':id }), tags.classes('tags-draggable')]
 }
 
@@ -30,7 +31,7 @@ function onStartEvent($e) {
 	var el = this
 	var $el = $(el)
 	var elOffset = $el.offset()
-	var opts = data[$el.attr('tags-draggable-id')]
+	var opts = Data[$el.attr('tags-draggable-id')]
 	
 	if (!opts.bubble) { $e.preventDefault() }
 	

@@ -26,6 +26,7 @@ function makeSingleViewController(opts) {
 	var currentView
 	var keptViews = {}
 	var slidingPos = { x:0, y:0 }
+	var zIndex = 0
 	
 	nextTick(function() {
 		if (opts.view) { setView(opts.view) }
@@ -50,52 +51,42 @@ function makeSingleViewController(opts) {
 		slidingPos.x += posDelta.dx * size.width
 		slidingPos.y += posDelta.dy * size.height
 
-		var $currentRecycler = $('#'+uid+' .tags-viewRecycler'+currentIndex)
-		if (currentView) {
-			var currentViewId = opts.getViewId(currentView)
-			if (!keptViews[currentViewId] && opts.shouldKeepView(currentView)) {
-				keptViews[currentViewId] = $currentRecycler[0].children[0]
-			}
-		}
+		var oldView = currentView
+		var oldIndex = currentIndex
 		
-		currentView = view
-		var viewId = opts.getViewId(view)
-		$('#'+uid+' .tags-viewRecycler'+_alternateIndex())
-			.append(keptViews[viewId] || _renderView(view, viewOpts))
-			.css(translate(-slidingPos.x, -slidingPos.y))
+		_setCurrentView(view, viewOpts)
 		
 		nextTick(function() {
-			$('#'+uid+' .tags-slider').css(translate(slidingPos.x, slidingPos.y, opts.duration))
+			tags.byId(uid, '.tags-slider').css(translate(slidingPos.x, slidingPos.y, opts.duration))
+			
+			if (!oldView) { return }
 			after(opts.duration, function() {
-				if (!keptViews[currentViewId]) {
-					// TODO opts.destroyView()
-				}
-				$currentRecycler.empty()
+				_removeOldView(oldView, oldIndex)
 			})
 		})
 	}
 	
 	function getScrollingElement() {
-		return $('#'+uid+' .tags-viewRecycler'+currentIndex+' .tags-viewBody')
+		return tags.byId(uid, '.tags-viewRecycler'+currentIndex, '.tags-viewBody').el
 	}
 	
 	/* Internals
-	 ***********/
-	 function _render() {
-	 	return div(attr({ id:uid }),
-	 		div('tags-clip', style(size, absolute, { overflow:'hidden' }),
- 				div('tags-slider', style(absolute, translate(0,0)),
- 					div('tags-viewRecycler0', style(absolute(0,0), translate(0,0), size)),
- 					div('tags-viewRecycler1', style(absolute(0,0), translate(0,0), size))
- 				)
-	 		)
-	 	)
-	 }
-	 
-	 function _renderView(view, viewOpts) {
-	 	var alwaysBounce = (viewOpts.alwaysBounce === null ? opts.alwaysBounce : viewOpts.alwaysBounce)
-	 	var bounceStyles = (alwaysBounce ? style({ minHeight:size.height+1 }) : null)
-	 	return div('tags-view',
+	************/
+	function _render() {
+		return div(attr({ id:uid }),
+			div('tags-clip', style(size, absolute, { overflow:'hidden' }),
+				div('tags-slider', style(absolute, translate(0,0)),
+					div('tags-viewRecycler0', style(absolute(0,0), translate(0,0), size)),
+					div('tags-viewRecycler1', style(absolute(0,0), translate(0,0), size))
+				)
+			)
+		)
+	}
+	
+	function _renderView(view, viewOpts) {
+		var alwaysBounce = (viewOpts.alwaysBounce === null ? opts.alwaysBounce : viewOpts.alwaysBounce)
+		var bounceStyles = (alwaysBounce ? style({ minHeight:size.height+1 }) : null)
+		return div('tags-view',
 			div('tags-viewBody', style(absolute(0,0), size, style.scrollable.y),
 				div('tags-viewBouncer', bounceStyles,
 					opts.renderBody(view, viewOpts)
@@ -108,11 +99,30 @@ function makeSingleViewController(opts) {
 				opts.renderFoot(view, viewOpts)
 			)
 		)
-	 }
-	 
-	 function _alternateIndex() {
-	 	return (currentIndex = ((currentIndex + 1) % 2))
-	 }
+	}
+	
+	function _setCurrentView(view, viewOpts) {
+		currentView = view
+		var viewId = opts.getViewId(view)
+		tags.byId(uid, '.tags-viewRecycler'+_alternateIndex())
+			.append(keptViews[viewId] || _renderView(view, viewOpts))
+			.css(translate(-slidingPos.x, -slidingPos.y)).css({ zIndex:zIndex++ })
+	}
+	
+	function _removeOldView(oldView, oldIndex) {
+		var oldViewId = opts.getViewId(oldView)
+		var oldViewEl = tags.byId(uid, '.tags-viewRecycler'+oldIndex).el.children[0]
+		if (opts.shouldKeepView(oldView)) {
+			keptViews[oldViewId] = oldViewEl
+		} else {
+			tags.destroy(oldViewEl)
+		}
+		tags.remove(oldViewEl)
+	}
+	
+	function _alternateIndex() {
+		return (currentIndex = ((currentIndex + 1) % 2))
+	}
 }
 
 var posDeltas = {
