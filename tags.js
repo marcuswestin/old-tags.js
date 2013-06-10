@@ -109,7 +109,7 @@ function style() {
 }
 
 var _pxPostfixBlacklist = arrayToObject('opacity,zIndex,fontWeight'.split(','))
-var _vendorPrefixed = arrayToObject('backface-visibility,transform,perspective,transform-style,transition,overflow-scrolling'.split(','))
+var _vendorPrefixed = arrayToObject('backface-visibility,transform,perspective,transform-style,transition,overflow-scrolling,filter'.split(','))
 function _toDashes(name) {
 	name = name.replace(/([A-Z])/g, function($1) { return "-" + $1.toLowerCase() })
 	return (_vendorPrefixed[name] ? '-webkit-'+name : name)
@@ -224,6 +224,13 @@ setProps(tags.style, {
 })
 
 function translate(x, y, duration, delay) {
+	if (isObject(x)) {
+		// translate({ x:10, y:20 }, 100, 200)
+		delay = duration
+		duration = y
+		y = x.y
+		x = x.x
+	}
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)', duration, delay)
 }
 function translateY(y, duration, delay) {
