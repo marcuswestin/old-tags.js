@@ -385,17 +385,18 @@ tags.hasClass = function(el, className) {
 }
 tags.select = function() {
 	var selector = slice(arguments).join(' ')
-	return _select(selector)
+	return tags.wrap(document.querySelector(selector))
 }
 tags.byId = function(id) {
 	var selector = '#'+id+' '+slice(arguments, 1).join(' ')
-	return _select(selector)
+	return tags.wrap(document.querySelector(selector))
 }
 tags.css = function(el, values) {
-	$.fn.css.call($(this.el), values)
+	$.fn.css.call($(el), values)
 }
-function _select(selector) {
-	return tags.create(selectionBase, { el:document.querySelector(selector) })
+tags.wrap = function(el) {
+	if (!el) debugger
+	return tags.create(selectionBase, { el:el })
 }
 var selectionBase = (function() {
 	return {
@@ -403,7 +404,16 @@ var selectionBase = (function() {
 		css: _selectionFn(tags.css),
 		append: _selectionFn(tags.append),
 		prepend: _selectionFn(tags.prepend),
-		empty: _selectionFn(tags.empty)
+		empty: _selectionFn(tags.empty),
+		destroy: _selectionFn(tags.destroy),
+		remove: _selectionFn(tags.remove),
+		attr: _selectionFn(function(el, values) {
+			$.fn.attr.call($(el), values)
+		}),
+		select: function() {
+			var selector = slice(arguments).join(' ')
+			return tags.wrap(this.el.querySelector(selector))
+		}
 	}
 	function _selectionFn(domFn) {
 		return function() {
