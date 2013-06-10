@@ -353,6 +353,8 @@ tags.pointer = function($e, i) {
 tags.append = function(el, tag) {
 	if (isElement(tag)) {
 		var appendEl = tag
+	} else if (selectionBase.isPrototypeOf(tag)) {
+		var appendEl = tag.el
 	} else {
 		var appendEl = document.createElement('div')
 		appendEl.innerHTML = _htmlFromArg(tag)
