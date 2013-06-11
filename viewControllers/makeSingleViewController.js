@@ -58,7 +58,7 @@ function makeSingleViewController(opts) {
 		_setCurrentView(view, viewOpts)
 		
 		if (oldView) {
-			after(opts.duration, function() {
+			after(opts.duration * 1.2, function() {
 				_removeOldView(oldView)
 			})
 		}
@@ -69,7 +69,7 @@ function makeSingleViewController(opts) {
 	}
 	
 	function getFoot() {
-		return currentView.tag.select('.tags-viewFoot').el
+		return currentView.tag.select('.tags-viewFoot')
 	}
 	
 	/* Internals
@@ -110,7 +110,7 @@ function makeSingleViewController(opts) {
 				opts.renderHead && div('tags-viewHead', style(absolute.top(0), { width:size.width }),
 					opts.renderHead(view, viewOpts)
 				),
-				opts.renderFoot && div('tags-viewFoot', style(absolute.bottom(0), { width:size.width }),
+				opts.renderFoot && div('tags-viewFoot', style(absolute.bottom(-size.height), { width:size.width }),
 					opts.renderFoot(view, viewOpts)
 				)
 			))
