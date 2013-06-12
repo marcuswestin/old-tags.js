@@ -15,9 +15,9 @@ function makeSingleViewController(opts) {
 		renderFoot:null,
 		// life cycling
 		destroyView:null,
-		shouldKeepView:function() { return false },
 		// events
-		onScroll:null
+		onScroll:null,
+		onPop:null
 	})
 	
 	var size = opts.size
@@ -41,12 +41,13 @@ function makeSingleViewController(opts) {
 	})
 	
 	function push(view) {
-		gScroller.setView(view, { animate:'left' })
+		gScroller.setView(view, { animate:'left', keepCurrentView:true })
 	}
 	
 	function setView(view, viewOpts) {
 		viewOpts = options(viewOpts, {
-			animate:'none'
+			animate:'none',
+			keepCurrentView:false
 		})
 		
 		var posDelta = posDeltas[viewOpts.animate || 'none']
@@ -59,7 +60,7 @@ function makeSingleViewController(opts) {
 		
 		if (oldView) {
 			after(opts.duration * 1.2, function() {
-				_removeOldView(oldView)
+				_removeOldView(oldView, viewOpts)
 			})
 		}
 	}
@@ -102,6 +103,7 @@ function makeSingleViewController(opts) {
 			.attr({ class:'tags-view' })
 			.css(absolute(0,0)).css(translate(slidingPos))
 			.append(div(
+				_makeViewPopper(viewOpts),
 				div('tags-viewBody', style(absolute(0,0), size, style.scrollable.y),
 					div('tags-viewBouncer', bounceStyles,
 						opts.renderBody(view, viewOpts)
@@ -116,11 +118,27 @@ function makeSingleViewController(opts) {
 			))
 	}
 	
-	function _removeOldView(oldView) {
-		var oldViewId = opts.getViewId(oldView)
-		if (opts.shouldKeepView(oldView)) {
+	function _makeViewPopper(viewOpts) {
+		if (!viewOpts.keepCurrentView || viewOpts.animate != 'left') { return }
+		return div(style(absolute(0,0), { zIndex:9, width:6, height:size.height }), draggable({
+			move:function(pos) {
+				var dx = clip(pos.distance.x, 0)
+				slider.css(translate(-slidingPos.x + dx, -slidingPos.y, 0))
+			},
+			end:function(pos, history) {
+				if (pos.change.x > 0) {
+					opts.onPop()
+				} else {
+					slider.css(translate(-slidingPos.x, -slidingPos.y, 250))
+				}
+			}
+		}))
+	}
+	
+	function _removeOldView(oldView, viewOpts) {
+		var oldViewId = opts.getViewId(oldView.view)
+		if (viewOpts.keepCurrentView) {
 			keptViews[oldViewId] = oldView
-			oldView.tag.css(translate(offscreen))
 		} else {
 			oldView.tag.destroy().remove()
 		}

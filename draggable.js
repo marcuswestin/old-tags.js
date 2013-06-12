@@ -51,12 +51,12 @@ function onStartEvent($e) {
 		onStart($e)
 	}
 	
-	function posForEvent($e) {
+	function posForEvent($e, changeDelta) {
 		var pagePos = tags.eventPos($e)
 		var pos = tags.makePos(pagePos.x - elOffset.left, pagePos.y - elOffset.top)
-		var penUltPos = history[history.length - 1]
+		var penUltPos = history[history.length - (changeDelta || 2)]
 		if (penUltPos) {
-			pos.change = tags.makePos(penUltPos.x, pos.y - penUltPos.y)
+			pos.change = tags.makePos(pos.x - penUltPos.x, pos.y - penUltPos.y)
 		} else {
 			pos.change = tags.makePos(0,0)
 		}
@@ -87,16 +87,16 @@ function onStartEvent($e) {
 	function onCancel($e) {
 		if (!isDragging) { return }
 		if (opts.cancel) {
-			opts.cancel.call(el, posForEvent($e), history)
+			opts.cancel.call(el, posForEvent($e, 2), history)
 		} else {
-			opts.end.call(el, posForEvent($e), history)
+			opts.end.call(el, posForEvent($e, 2), history)
 		}
 		cleanUp()
 	}
 
 	function onEnd($e) {
-		if (isDragging && history.length > 1) {
-			opts.end.call(el, posForEvent($e), history)
+		if (isDragging && history.length > 2) {
+			opts.end.call(el, posForEvent($e, 2), history)
 		} else {
 			opts.tap.call(el, posForEvent($e))
 		}
