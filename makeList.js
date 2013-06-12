@@ -1,7 +1,6 @@
 var tags = require('./tags')
 var options = require('std/options')
 var setProps = require('std/setProps')
-var addProps = require('std/addProps')
 
 module.exports = makeList
 
@@ -40,6 +39,9 @@ function makeList(opts) {
 	var renderedGroupsById = {} // Tracks groups which have been rendered
 	var groupHtmlCacheById = {} // A lookup table of per-group cached HTML
 	var itemsByGroupId = {} // Stores all items currently displayed
+	var renderItemCount
+	var updateItemCount
+	var totalItemCount
 
 	Data[uid] = { selectItem:opts.selectItem, itemsByGroupId:itemsByGroupId }
 
@@ -106,8 +108,9 @@ function makeList(opts) {
 		var dirtyGroupsById = {} // Tracks old groups which require updating 
 		var dirtyItemsById = {} // Tracks old items which require updating
 		var duplicateItemsById = {} // Detects duplicate items appearing twice **in this call to _addItemsToList**
-		var renderItemCount = 0
-		var updateItemCount = 0
+		renderItemCount = 0
+		updateItemCount = 0
+		totalItemCount = items.length
 
 		// Loop over new items and render them
 		each(items, function addItem(item) {
@@ -135,8 +138,7 @@ function makeList(opts) {
 			} else if (renderedGroupsById[groupId]) {
 				// Group has previously been rendered, but item has not. Group DOM should be updated, and item should be rendered
 				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list-groupContent')
-				appendOrPrepend(groupContent.el, _renderItem(item, info, renderItemCount))
-				renderItemCount += 1
+				appendOrPrepend(groupContent.el, _renderItem(item, info))
 				dirtyGroupsById[groupId] = groupId
 				
 			} else {
@@ -145,15 +147,13 @@ function makeList(opts) {
 					newGroupsOrder.push(groupId)
 					newGroupsById[groupId] = _makeNewGroup(groupId)
 				}
-				newGroupsById[groupId].content.push(_renderItem(item, info, renderItemCount))
-				renderItemCount += 1
+				newGroupsById[groupId].content.push(_renderItem(item, info))
 			}
 		})
 		
 		// Update dirty items
 		each(dirtyItemsById, function updateDirtyItem(item, itemId) {
-			_updateItem(item, itemId, info, updateItemCount)
-			updateItemCount += 1
+			_updateItem(item, itemId, info)
 		})
 		
 		// Store items internal map
@@ -210,16 +210,18 @@ function makeList(opts) {
 		return { groupId:groupId, content:[] }
 	}
 	
-	function _renderItem(item, info, renderItemCount) {
-		info = addProps(info, { renderItemCount:renderItemCount })
+	function _renderItem(item, info) {
+		info = copy(info, { renderItemCount:renderItemCount, totalItemCount:totalItemCount })
+		renderItemCount += 1
 		return div('tags-list-item', attr({ id:_getElementId(opts.getItemId(item)) }), opts.renderItem(item, info))
 	}
 	
-	function _updateItem(item, itemId, info, updateItemCount) {
+	function _updateItem(item, itemId, info) {
 		var groupId = opts.groupBy(item)
 		var itemElement = _getElement(itemId)
 		var itemBefore = itemsByGroupId[groupId][itemId]
-		info = addProps(info || {}, { itemBefore:itemBefore, updateItemCount:updateItemCount })
+		info = copy(info, { itemBefore:itemBefore, updateItemCount:updateItemCount, totalItemCount:totalItemCount })
+		updateItemCount += 1
 		var updatedContent = opts.updateItem.call(itemElement, item, info)
 		if (updatedContent) { tags.empty(itemElement).append(itemElement, updatedContent) }
 	}
