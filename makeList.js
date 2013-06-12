@@ -1,6 +1,7 @@
 var tags = require('./tags')
 var options = require('std/options')
-var extend = require('std/extend')
+var setProps = require('std/setProps')
+var addProps = require('std/addProps')
 
 module.exports = makeList
 
@@ -52,7 +53,7 @@ function makeList(opts) {
 	
 	/* List instance API
 	 *******************/
-	return extend(
+	return setProps(
 		div('tags-list', attr({ id:uid }), opts.renderEmpty(), tags.destructible(_destroyList)),
 		{
 			uid:uid,
