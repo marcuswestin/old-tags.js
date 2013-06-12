@@ -36,14 +36,14 @@ function renderOverlay(opts, contentFn) {
 	if (contentFn == null) { contentFn = opts; opts = {} }
 	
 	lastOpts = opts = tags.options(opts, {
-		element:viewport.element,
+		el:viewport.el,
 		duration:250,
 		delay:0,
 		dismissable:false,
-		background:'rgba(25,25,25,.65)'
+		background:'rgba(25,25,25,.7)'
 	})
 	
-	var $el = $(opts.element)
+	var $el = $(opts.el)
 	var offset = $el.offset() || {}
 	var size = { width:$el.width(), height:$el.height() }
 	if (hidingTimeout) {

@@ -36,7 +36,6 @@ function makeList(opts) {
 	var uid = opts.cache ? opts.cache.uid : tags.uid()
 	var isEmpty = true
 	
-	var renderedItemsById = {} // Tracks items which have been rendered
 	var renderedGroupsById = {} // Tracks groups which have been rendered
 	var groupHtmlCacheById = {} // A lookup table of per-group cached HTML
 	var itemsByGroupId = {} // Stores all items currently displayed
@@ -72,11 +71,11 @@ function makeList(opts) {
 	}
 	
 	function append(items, info) {
-		_addItemsToList(items, info || {}, tags.append)
+		_addItemsToList(items, info, tags.append)
 	}
 	
 	function prepend(items, info) {
-		_addItemsToList(items, info || {}, tags.prepend)
+		_addItemsToList(items, info, tags.prepend)
 	}
 	
 	function getHeight() {
@@ -106,19 +105,15 @@ function makeList(opts) {
 		var dirtyGroupsById = {} // Tracks old groups which require updating 
 		var dirtyItemsById = {} // Tracks old items which require updating
 		var duplicateItemsById = {} // Detects duplicate items appearing twice **in this call to _addItemsToList**
+		var renderItemCount = 0
+		var updateItemCount = 0
 
-		// Store new in internal map 
-		each(items, function groupItem(item) {
-			var groupId = opts.groupBy(item)
-			var itemId = opts.getItemId(item)
-			if (!itemsByGroupId[groupId]) { itemsByGroupId[groupId] = {} }
-			itemsByGroupId[groupId][itemId] = item
-		})
-		
 		// Loop over new items and render them
 		each(items, function addItem(item) {
 			var itemId = opts.getItemId(item)
 			var groupId = opts.groupBy(item)
+			
+			if (!itemsByGroupId[groupId]) { itemsByGroupId[groupId] = {} }
 			
 			// Is this a duplicate item? Ignore it.
 			if (duplicateItemsById[itemId]) { return }
@@ -131,34 +126,41 @@ function makeList(opts) {
 					newGroupsById[groupId] = { fromCache:true }
 				}
 				
-			} else if (renderedItemsById[itemId]) {
+			} else if (itemsByGroupId[groupId][itemId]) {
 				// Item has previously been rendered. Item and group should both be updated
-				dirtyItemsById[itemId] = groupId
+				dirtyItemsById[itemId] = item
 				dirtyGroupsById[groupId] = groupId
 				
 			} else if (renderedGroupsById[groupId]) {
 				// Group has previously been rendered, but item has not. Group DOM should be updated, and item should be rendered
-				renderedItemsById[itemId] = true
 				var groupContent = tags.byId(_getElementId(groupId)+' .tags-list-groupContent')
-				appendOrPrepend(groupContent.el, _renderItem(item, info))
+				appendOrPrepend(groupContent.el, _renderItem(item, info, renderItemCount))
+				renderItemCount += 1
 				dirtyGroupsById[groupId] = groupId
 				
 			} else {
 				// Neither group nor item has previously been rendered. Both should be rendered.
-				renderedItemsById[itemId] = true
 				if (!newGroupsById[groupId]) {
 					newGroupsOrder.push(groupId)
 					newGroupsById[groupId] = _makeNewGroup(groupId)
 				}
-				newGroupsById[groupId].content.push(_renderItem(item, info))
+				newGroupsById[groupId].content.push(_renderItem(item, info, renderItemCount))
+				renderItemCount += 1
 			}
 		})
 		
 		// Update dirty items
-		each(dirtyItemsById, function updateDirtyItem(groupId, itemId) {
-			var itemElement = _getElement(itemId)
-			var updatedContent = opts.updateItem.call(itemElement, itemsByGroupId[groupId][itemId])
-			if (updatedContent) { tags.empty(itemElement).append(itemElement, updatedContent) }
+		each(dirtyItemsById, function updateDirtyItem(item, itemId) {
+			_updateItem(item, itemId, info, updateItemCount)
+			updateItemCount += 1
+		})
+		
+		// Store items internal map
+		each(items, function groupItem(item) {
+			var groupId = opts.groupBy(item)
+			var itemId = opts.getItemId(item)
+			if (!itemsByGroupId[groupId]) { itemsByGroupId[groupId] = {} }
+			itemsByGroupId[groupId][itemId] = item
 		})
 		
 		// Update dirty groups
@@ -194,12 +196,31 @@ function makeList(opts) {
 		}
 	}
 	
+	function _setInfo(info, moreInfo) {
+		if (!info) { info = {} }
+		each(moreInfo, function(val, key) {
+			if (info[key] != null) { throw new Error('Overriding info property: '+key) }
+			info[key] = val
+		})
+		return info
+	}
+	
 	function _makeNewGroup(groupId) {
 		return { groupId:groupId, content:[] }
 	}
 	
-	function _renderItem(item, info) {
+	function _renderItem(item, info, renderItemCount) {
+		info = addProps(info, { renderItemCount:renderItemCount })
 		return div('tags-list-item', attr({ id:_getElementId(opts.getItemId(item)) }), opts.renderItem(item, info))
+	}
+	
+	function _updateItem(item, itemId, info, updateItemCount) {
+		var groupId = opts.groupBy(item)
+		var itemElement = _getElement(itemId)
+		var itemBefore = itemsByGroupId[groupId][itemId]
+		info = addProps(info || {}, { itemBefore:itemBefore, updateItemCount:updateItemCount })
+		var updatedContent = opts.updateItem.call(itemElement, item, info)
+		if (updatedContent) { tags.empty(itemElement).append(itemElement, updatedContent) }
 	}
 	
 	function _getElement(itemId) {

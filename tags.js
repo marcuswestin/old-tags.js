@@ -251,11 +251,11 @@ function rotate(fraction, duration, delay) {
 function transition(properties, duration) {
 	if (typeof properties == 'object') {
 		var res = array(properties, function(val, key) {
-			return key+' '+properties[key]+'ms'
+			return _toDashes(key)+' '+properties[key]+'ms'
 		})
 		return { '-webkit-transition':res.join(',') }
 	} else {
-		return { '-webkit-transition':properties+' '+duration+'ms' }
+		return { '-webkit-transition':_toDashes(properties)+' '+duration+'ms' }
 	}
 }
 
@@ -362,6 +362,9 @@ tags.append = function(el, tag) {
 	el.appendChild(appendEl)
 	return tags
 }
+tags.appendTo = function(el, appendToEl) {
+	return tags.append(appendToEl, el)
+}
 tags.remove = function(el) {
 	el.parentNode.removeChild(el)
 	return tags
@@ -376,9 +379,6 @@ tags.prepend = function(el, tag) {
 tags.empty = function(el) {
 	el.innerHTML = ''
 	return tags
-}
-tags.byId = function(idSelector) {
-	return document.querySelector('#'+idSelector)
 }
 tags.hasClass = function(el, className) {
 	return (' ' + el.className + ' ').match(' ' + className + ' ')
@@ -395,8 +395,16 @@ tags.css = function(el, values) {
 	$.fn.css.call($(el), values)
 }
 tags.wrap = function(el) {
-	if (!el) debugger
 	return tags.create(selectionBase, { el:el })
+}
+tags.clone = function(el) {
+	return tags.wrap(el.cloneNode(true))
+}
+tags.offset = function(el) {
+	return $.fn.offset.call($(el))
+}
+tags.frame = function(el) {
+	return setProps(tags.offset(el), { width:el.offsetWidth, height:el.offsetHeight })
 }
 var selectionBase = (function() {
 	return {
@@ -404,9 +412,13 @@ var selectionBase = (function() {
 		css: _selectionFn(tags.css),
 		append: _selectionFn(tags.append),
 		prepend: _selectionFn(tags.prepend),
+		appendTo: _selectionFn(tags.appendTo),
 		empty: _selectionFn(tags.empty),
 		destroy: _selectionFn(tags.destroy),
 		remove: _selectionFn(tags.remove),
+		clone: _selectionFn(tags.clone),
+		offset: _selectionFn(tags.offset),
+		frame: _selectionFn(tags.frame),
 		attr: _selectionFn(function(el, values) {
 			$.fn.attr.call($(el), values)
 		}),
@@ -418,8 +430,8 @@ var selectionBase = (function() {
 	function _selectionFn(domFn) {
 		return function() {
 			var args = [this.el].concat(slice(arguments))
-			domFn.apply(this, args)
-			return this
+			var result = domFn.apply(this, args)
+			return ((result != null && result != tags) ? result : this)
 		}
 	}
 }());

@@ -9,7 +9,7 @@ var viewport = module.exports = {
 	height:height,
 	react:react,
 	pos:pos,
-	element:document.body,
+	el:document.body,
 	onResize:onResize
 }
 

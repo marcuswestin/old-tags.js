@@ -15,17 +15,17 @@ function showTooltip(opts, contentFn) {
 	tooltip.onShowing()
 	if (!contentFn) { contentFn = opts; opts = {} }
 	opts = tags.options(opts, {
-		width:null, height:null, content:'Hello World', element:null, background:null,
+		width:null, height:null, content:'Hello World', el:null, background:null,
 		offset:[0,0],
 		fade:200
 	})
-	var $el = $(opts.element)
+	var $el = $(opts.el)
 	var offsetX = (opts.width - $el.width()) / 2
 	var elPos = tags.addPos(tags.subPos(tags.subPos(tags.screenPos($el), viewport.pos()), [offsetX, opts.height]), opts.offset)
 	
 	removeTooltip()
 
-	$(viewport.element).append(div(
+	$(viewport.el).append(div(
 		attr({ id:'tags-tooltip' }),
 		style({ position:'absolute', display:'table', zIndex:3, opacity:0 }),
 		div('tags-tooltip-content', contentFn, style({
