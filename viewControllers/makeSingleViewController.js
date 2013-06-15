@@ -15,6 +15,7 @@ function makeSingleViewController(opts) {
 		renderFoot:null,
 		// life cycling
 		destroyView:null,
+		updateView:null,
 		// events
 		onScroll:null,
 		onPop:null
@@ -45,6 +46,9 @@ function makeSingleViewController(opts) {
 	}
 	
 	function setView(view, viewOpts) {
+		if (setView.setting) { return }
+		setView.setting = true
+	
 		viewOpts = options(viewOpts, {
 			animate:'none',
 			keepCurrentView:false
@@ -63,6 +67,8 @@ function makeSingleViewController(opts) {
 				_removeOldView(oldView, viewOpts)
 			})
 		}
+		
+		setView.setting = false
 	}
 	
 	function getScrollingElement() {
@@ -89,11 +95,21 @@ function makeSingleViewController(opts) {
 		if (keptView) {
 			currentView = keptView
 			keptView.tag.css(translate(slidingPos))
+			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable.y)
+			opts.updateView(keptView.view)
 		} else {
 			currentView = { tag:_renderView(view, viewOpts), view:view }
 			slider.append(currentView.tag)
 		}
 		slider.css(translate(-slidingPos.x, -slidingPos.y, opts.duration))
+		
+		nextTick(function() {
+			var scroller = getScrollingElement()
+			$(scroller).on('scroll', function() {
+				tags.__lastScroll__ = new Date().getTime()
+				opts.onScroll && opts.onScroll.call(scroller)
+			})
+		})
 	}
 	
 	function _renderView(view, viewOpts) {
@@ -139,6 +155,7 @@ function makeSingleViewController(opts) {
 		var oldViewId = opts.getViewId(oldView.view)
 		if (viewOpts.keepCurrentView) {
 			keptViews[oldViewId] = oldView
+			oldView.tag.select('.tags-viewBody').css(tags.style.scrollable.none)
 		} else {
 			oldView.tag.destroy().remove()
 		}
