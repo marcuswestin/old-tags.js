@@ -15,14 +15,19 @@ module.exports = function draggable(opts) {
 		threshold:0
 	})
 
-	var id = tags.uid()
-	Data[id] = opts
-	return [attr({ 'tags-draggable-id':id }), tags.classes('tags-draggable')]
+	var uid = tags.uid()
+	Data[uid] = opts
+	return [attr({ 'tags-draggable-uid':uid }), tags.classes('tags-draggable'), tags.destructible(destroyDraggable)]
 }
 
 $(function() {
 	$(document).on(tags.events.start, '.tags-draggable', onStartEvent)
 })
+
+function destroyDraggable() {
+	var uid = this.getAttribute('tags-draggable-uid')
+	delete Data[uid]
+}
 
 var isDragging = false
 function onStartEvent($e) {
@@ -31,7 +36,7 @@ function onStartEvent($e) {
 	var el = this
 	var $el = $(el)
 	var elOffset = $el.offset()
-	var opts = Data[$el.attr('tags-draggable-id')]
+	var opts = Data[$el.attr('tags-draggable-uid')]
 	
 	if (!opts.bubble) { $e.preventDefault() }
 	
