@@ -75,6 +75,8 @@ var onEnd = function($event, $el, supressHandler) {
 	if (button && doCallTap) { button.tap.call($el[0], $event) }
 	button.end.call($el[0])
 	
+	$el.removeClass('touching')
+
 	return false
 }
 
@@ -129,7 +131,12 @@ function initButton($event, cb) {
 	$el.data('touchRect', touchRect)
 	
 	setActive($el)
+	
 	cb($el)
+
+	nextTick(function() {
+		$el.addClass('touching')		
+	})
 }
 var touchInsideTapRect = function($el, $event) {
 	var touch = $event.originalEvent.touches[0]
