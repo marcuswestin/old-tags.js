@@ -6,6 +6,7 @@ var isArray = tags.isArray = require('std/isArray')
 var array = tags.array = require('std/array')
 var setProps = require('std/setProps')
 var isElement = require('std/isElement')
+var map = require('std/map')
 
 /* API
 ******/
@@ -15,7 +16,6 @@ module.exports = setProps(tags, {
 	classes: classes,
 	dangerouslyInsertHtml: dangerouslyInsertHtml,
 	isSafeHtml: isSafeHtml,
-	destroy:destroy,
 	destructible: setProps(destructible, {
 		attrs: destructibleAttrs,
 		class: 'tags-destructible'
@@ -151,12 +151,6 @@ function destructible(uid, destructorFn) {
 	return [tags.classes(tags.destructible.class), tags.attr(tags.destructible.attrs(uid, destructorFn))]
 }
 
-function destroy(el) {
-	var $el = $(el)
-	$el.find('.'+tags.destructible.class).each(_destroyEl)
-	if ($el.hasClass(tags.destructible.class)) { _destroyEl.call(el) }
-}
-
 var Destructors = {}
 function destructibleAttrs(uid, destructorFn) {
 	if (!destructorFn && typeof uid == 'function') {
@@ -219,7 +213,8 @@ setProps(tags.style, {
 	transition:transition,
 	scrollable: {
 		x: { overflowX:'auto', overflowScrolling:'touch', overflowY:'hidden' },
-		y: { overflowY:'auto', overflowScrolling:'touch', overflowX:'hidden' }
+		y: { overflowY:'auto', overflowScrolling:'touch', overflowX:'hidden' },
+		none: { overflow:'hidden', overflowScrolling:'none' }
 	}
 })
 
@@ -340,93 +335,108 @@ function _safeHtml(rawHtml) {
 
 /* DOM manipulation
 *******************/
-tags.above = function(el, targetClass) {
-	while (el && !tags.hasClass(el, targetClass)) {
-		el = el.parentNode
-	}
-	return el
+tags.byId = function(id) {
+	var selector = '#'+id+' '+slice(arguments, 1).join(' ')
+	return tags.wrap(document.querySelector(selector))
+}
+tags.select = function() {
+	var selector = slice(arguments).join(' ')
+	return tags.wrap(this.el.querySelector(selector))
+}
+tags.wrap = function(el) {
+	return tags.create(selectionBase, { el:el })
 }
 tags.pointer = function($e, i) {
 	var obj = tags.isTouch ? $e.originalEvent.touches[i || 0] : $e.originalEvent
 	return { x:obj.pageX, y:obj.pageY }
 }
-tags.append = function(el, tag) {
-	if (isElement(tag)) {
-		var appendEl = tag
-	} else if (selectionBase.isPrototypeOf(tag)) {
-		var appendEl = tag.el
-	} else {
-		var appendEl = document.createElement('div')
-		appendEl.innerHTML = _htmlFromArg(tag)
+
+tags.dom = {
+	destroy: function(el) {
+		var $el = $(el)
+		$el.find('.'+tags.destructible.class).each(_destroyEl)
+		if ($el.hasClass(tags.destructible.class)) { _destroyEl.call(el) }
+	},
+	above: function(el, targetClass) {
+		while (el && !tags.dom.hasClass(el, targetClass)) {
+			el = el.parentNode
+		}
+		return el
+	},
+	append: function(el, tag) {
+		if (isElement(tag)) {
+			var appendEl = tag
+		} else if (selectionBase.isPrototypeOf(tag)) {
+			var appendEl = tag.el
+		} else {
+			var appendEl = document.createElement('div')
+			appendEl.innerHTML = _htmlFromArg(tag)
+		}
+		el.appendChild(appendEl)
+		return tags
+	},
+	appendTo: function(el, appendToEl) {
+		return tags.append(appendToEl, el)
+	},
+	remove: function(el) {
+		el.parentNode.removeChild(el)
+		return tags
+	},
+	prepend: function(el, tag) {
+		var newDiv = document.createElement('div')
+		newDiv.innerHTML = _htmlFromArg(tag)
+		if (el.children[0]) { el.insertBefore(newDiv, el.children[0]) }
+		else { el.appendChild(newDiv) }
+		return tags
+	},
+	empty: function(el) {
+		el.innerHTML = ''
+		return tags
+	},
+	select: function() {
+		var selector = slice(arguments, 1).join(' ')
+		return tags.wrap(this.el.querySelector(selector))
+	},
+	css: function(el, values) {
+		$.fn.css.call($(el), values)
+	},
+	clone: function(el) {
+		return tags.wrap(el.cloneNode(true))
+	},
+	offset: function(el) {
+		return $.fn.offset.call($(el))
+	},
+	frame: function(el) {
+		return setProps(tags.offset(el), { width:el.offsetWidth, height:el.offsetHeight })
+	},
+	addClass: function(el, className) {
+		el.classList.add(className)
+	},
+	removeClass: function(el, className) {
+		el.classList.remove(className)
+	},
+	toggleClass: function(el, className) {
+		el.classList.toggle(className)	
+	},
+	hasClass: function(el, className) {
+		return el.classList.contains(className)
+	},
+	height: function(el) {
+		return el.offsetHeight
+	},
+	attr: function(el, values) {
+		$.fn.attr.call($(el), values)
+	},
+	text: function(el, text) {
+		el.textContent = text
 	}
-	el.appendChild(appendEl)
-	return tags
-}
-tags.appendTo = function(el, appendToEl) {
-	return tags.append(appendToEl, el)
-}
-tags.remove = function(el) {
-	el.parentNode.removeChild(el)
-	return tags
-}
-tags.prepend = function(el, tag) {
-	var newDiv = document.createElement('div')
-	newDiv.innerHTML = _htmlFromArg(tag)
-	if (el.children[0]) { el.insertBefore(newDiv, el.children[0]) }
-	else { el.appendChild(newDiv) }
-	return tags
-}
-tags.empty = function(el) {
-	el.innerHTML = ''
-	return tags
-}
-tags.hasClass = function(el, className) {
-	return (' ' + el.className + ' ').match(' ' + className + ' ')
-}
-tags.select = function() {
-	var selector = slice(arguments).join(' ')
-	return tags.wrap(document.querySelector(selector))
-}
-tags.byId = function(id) {
-	var selector = '#'+id+' '+slice(arguments, 1).join(' ')
-	return tags.wrap(document.querySelector(selector))
-}
-tags.css = function(el, values) {
-	$.fn.css.call($(el), values)
-}
-tags.wrap = function(el) {
-	return tags.create(selectionBase, { el:el })
-}
-tags.clone = function(el) {
-	return tags.wrap(el.cloneNode(true))
-}
-tags.offset = function(el) {
-	return $.fn.offset.call($(el))
-}
-tags.frame = function(el) {
-	return setProps(tags.offset(el), { width:el.offsetWidth, height:el.offsetHeight })
 }
 var selectionBase = (function() {
-	return {
-		height: function() { return this.el.offsetHeight },
-		css: _selectionFn(tags.css),
-		append: _selectionFn(tags.append),
-		prepend: _selectionFn(tags.prepend),
-		appendTo: _selectionFn(tags.appendTo),
-		empty: _selectionFn(tags.empty),
-		destroy: _selectionFn(tags.destroy),
-		remove: _selectionFn(tags.remove),
-		clone: _selectionFn(tags.clone),
-		offset: _selectionFn(tags.offset),
-		frame: _selectionFn(tags.frame),
-		attr: _selectionFn(function(el, values) {
-			$.fn.attr.call($(el), values)
-		}),
-		select: function() {
-			var selector = slice(arguments).join(' ')
-			return tags.wrap(this.el.querySelector(selector))
-		}
-	}
+	var selectionBase = {}
+	return map(tags.dom, function(fn, name) {
+		return _selectionFn(fn)
+	})
+	
 	function _selectionFn(domFn) {
 		return function() {
 			var args = [this.el].concat(slice(arguments))
