@@ -9,6 +9,7 @@ function makeSingleViewController(opts) {
 		duration: 350,
 		getViewId:null,
 		view:null,
+		alwaysBounce:true,
 		// rendering
 		renderHead:null,
 		renderBody:null,
@@ -97,6 +98,7 @@ function makeSingleViewController(opts) {
 			keptView.tag.css(translate(slidingPos))
 			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable.y)
 			opts.updateView(keptView.view)
+			delete keptViews[viewId]
 		} else {
 			currentView = { tag:_renderView(view, viewOpts), view:view }
 			slider.append(currentView.tag)
@@ -107,13 +109,13 @@ function makeSingleViewController(opts) {
 			var scroller = getScrollingElement()
 			$(scroller).on('scroll', function() {
 				tags.__lastScroll__ = new Date().getTime()
-				opts.onScroll && opts.onScroll.call(scroller)
+				opts.onScroll && opts.onScroll.call(scroller, currentView.view)
 			})
 		})
 	}
 	
 	function _renderView(view, viewOpts) {
-		var alwaysBounce = (viewOpts.alwaysBounce === null ? opts.alwaysBounce : viewOpts.alwaysBounce)
+		var alwaysBounce = (viewOpts.alwaysBounce == null ? opts.alwaysBounce : viewOpts.alwaysBounce)
 		var bounceStyles = (alwaysBounce ? style({ minHeight:size.height+1 }) : null)
 		return tags.wrap(document.createElement('div'))
 			.attr({ class:'tags-view' })
