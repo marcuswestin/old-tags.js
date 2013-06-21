@@ -6,6 +6,7 @@ var isArray = tags.isArray = require('std/isArray')
 var array = tags.array = require('std/array')
 var setProps = require('std/setProps')
 var isElement = require('std/isElement')
+var isFragment = require('std/isFragment')
 var map = require('std/map')
 
 /* API
@@ -371,16 +372,16 @@ tags.dom = {
 		}
 		return el
 	},
+	toElement: function(tag) {
+		if (isElement(tag) || isFragment(tag)) { return tag }
+		if (selectionBase.isPrototypeOf(tag)) { return tag.el }
+		var el = document.createElement('div')
+		el.innerHTML = _htmlFromArg(tag)
+		return el
+	},
 	append: function(el, tag) {
-		if (isElement(tag)) {
-			var appendEl = tag
-		} else if (selectionBase.isPrototypeOf(tag)) {
-			var appendEl = tag.el
-		} else {
-			var appendEl = document.createElement('div')
-			appendEl.innerHTML = _htmlFromArg(tag)
-		}
-		el.appendChild(appendEl)
+		var newElement = tags.dom.toElement(tag)
+		el.appendChild(newElement)
 		return tags
 	},
 	appendTo: function(el, appendToEl) {
@@ -391,10 +392,9 @@ tags.dom = {
 		return tags
 	},
 	prepend: function(el, tag) {
-		var newDiv = document.createElement('div')
-		newDiv.innerHTML = _htmlFromArg(tag)
-		if (el.children[0]) { el.insertBefore(newDiv, el.children[0]) }
-		else { el.appendChild(newDiv) }
+		var newElement = tags.dom.toElement(tag)
+		if (el.children[0]) { el.insertBefore(newElement, el.children[0]) }
+		else { el.appendChild(newElement) }
 		return tags
 	},
 	empty: function(el) {
