@@ -81,7 +81,7 @@ function makeScrollView(opts) {
 	}
 	
 	function _destroy() {
-		delete scrollView
+		scrollView = null
 		
 		tags.byId(uid)
 			.off(tags.events.start, _onTouchStart)
