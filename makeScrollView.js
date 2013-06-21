@@ -12,7 +12,7 @@ function makeScrollView(opts) {
 		contentSize:null,
 		render:null,
 		onScroll:null,
-		useTranslationScroll: true //tags.isTouch
+		useTranslationScroll: tags.isTouch
 	})
 	
 	var uid = tags.uid()
