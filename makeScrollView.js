@@ -20,7 +20,7 @@ function makeScrollView(opts) {
 		left:0, right:opts.size.width
 	}
 	var velocity = { x:0, y:0 }
-	var velocityDivison = 140
+	var velocityDivison = 180
 	var visibleDelta = 1/window.devicePixelRatio
 	
 	var overflowStyle = (opts.useTranslationScroll
@@ -204,7 +204,7 @@ function makeScrollView(opts) {
 		}
 		
 		if (!touch.isActive || touch.isAccellerating) {
-			velocity.y *= 0.97
+			velocity.y *= clip(60 / dt, 0, 1) * 0.975
 		} 
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
