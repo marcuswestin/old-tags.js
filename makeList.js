@@ -254,7 +254,7 @@ $(function() {
 		var list = tags.dom.above(el, 'tags-list')
 		if (!list) { throw new Error('Could not find list') }
 		var pos = tags.events.clientPosition(e.originalEvent)
-		var tapY = pos.y
+		var tapY = pos[1]
 		var startTime = new Date().getTime()
 		var waitToSeeIfScrollHappened = null
 		
@@ -263,7 +263,7 @@ $(function() {
 			.on(tags.events.move, function onTouchMove($e) {
 				if (!tapY) { return }
 				var pos = tags.events.clientPosition(e.originalEvent)
-				if (Math.abs(pos.y - tapY) > 10) { _clear() }
+				if (Math.abs(pos[1] - tapY) > 10) { _clear() }
 			})
 			.on(tags.events.end, function onTouchEnd($e) {
 				clearTimeout(waitToSeeIfScrollHappened)

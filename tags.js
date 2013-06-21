@@ -25,6 +25,9 @@ module.exports = setProps(tags, {
 	})
 })
 
+var X = tags.X = 0
+var Y = tags.Y = 1
+
 tags.warn = warn
 tags.uid = uid
 
@@ -228,6 +231,12 @@ function translate(x, y, duration, delay) {
 		duration = y
 		y = x.y
 		x = x.x
+	} else if (isArray(x)) {
+		// translate([10,20], 100, 200)
+		delay = duration
+		duration = y
+		y = x[Y]
+		x = x[X]
 	}
 	return _transform('translate3d('+Math.round(x)+'px, '+Math.round(y)+'px, 0px)', duration, delay)
 }
@@ -359,7 +368,7 @@ tags.events.numPointers = (tags.isTouch
 )
 tags.events.clientPosition = function(e, i) {
 	var pointer = tags.events.pointer(e, i)
-	return { x:pointer.clientX, y:pointer.clientY }
+	return [pointer.clientX, pointer.clientY]
 }
 
 tags.dom = {
@@ -488,12 +497,7 @@ function _htmlFromArg(tag) {
 
 /* Event positions
 ******************/
-tags.makePos = function makePos(x,y) {
-	var pos = [x, y]
-	pos.x = x
-	pos.y = y
-	return pos
-}
+tags.makePos = function makePos(x,y) { return [x,y] }
 
 tags.eventPos = function eventPos($e, index) {
 	var obj = tags.isTouch ? $e.originalEvent.changedTouches[index || 0] : $e.originalEvent
@@ -506,10 +510,10 @@ tags.screenPos = function screenPos(el) {
 }
 
 tags.subPos = function subPos(p1, p2) {
-	return tags.makePos(p1[0] - p2[0], p1[1] - p2[1])
+	return tags.makePos(p1[X] - p2[X], p1[Y] - p2[Y])
 }
 tags.addPos = function addPos(p1, p2) {
-	return tags.makePos(p1[0] + p2[0], p1[1] + p2[1])
+	return tags.makePos(p1[X] + p2[X], p1[Y] + p2[Y])
 }
 
 

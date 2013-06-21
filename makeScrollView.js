@@ -2,24 +2,24 @@ var requestAnimationFrame = require('std/requestAnimationFrame')
 
 module.exports = makeScrollView
 
+var tags = require('./tags')
+var X = tags.X
+var Y = tags.Y
+
 function makeScrollView(opts) {
 	opts = options(opts, {
 		size:viewport.size(),
 		contentSize:null,
 		render:null,
 		onScroll:null,
-		useTranslationScroll: tags.isTouch
+		useTranslationScroll: true //tags.isTouch
 	})
 	
 	var uid = tags.uid()
-	var touch = _makeTouch({ x:0, y:0 }, false)
-	var translationScrollOffset = { x:0, y:0 }
-	var scroll = { x:0, y:0 }
-	var contentBounds = {
-		top:0, bottom:opts.size.height,
-		left:0, right:opts.size.width
-	}
-	var velocity = { x:0, y:0 }
+	var touch = _makeTouch([0,0], false)
+	var translationScrollOffset = [0,0]
+	var scroll = [0,0]
+	var velocity = [0,0]
 	var velocityDivison = 180
 	var visibleDelta = 1/window.devicePixelRatio
 	
@@ -66,8 +66,8 @@ function makeScrollView(opts) {
 	
 	function _setupNativeScroll() {
 		tags.byId(uid).on('scroll', function(e) {
-			scroll.x = this.scrollLeft
-			scroll.y = this.scrollTop
+			scroll[X] = this.scrollLeft
+			scroll[Y] = this.scrollTop
 			_onScroll()
 		})
 	}
@@ -94,11 +94,11 @@ function makeScrollView(opts) {
 		if (tags.events.numPointers(e) > 1) { return }
 		touch = _makeTouch(tags.events.clientPosition(e), true)
 		
-		if (velocity.y) {
+		if (velocity[Y]) {
 			touch.isAccellerating = true
 			touch.accellerateTimeout = after(20, function() {
 				touch.isAccellerating = false
-				velocity.y = 0
+				velocity[Y] = 0
 			})
 		}
 		
@@ -113,10 +113,10 @@ function makeScrollView(opts) {
 			previous: pos,
 			current: pos,
 			isAccellerating:false,
-			offset: { x:0, y:0 },
-			direction: { x:0, y:0 },
+			offset: [0,0],
+			direction: [0,0],
 			startDirection: pos,
-			incorporatedOffset: { x:0, y:0 }
+			incorporatedOffset: [0,0]
 		}
 	}
 	
@@ -129,26 +129,26 @@ function makeScrollView(opts) {
 		touch.lastMove = Date.now()
 		
 		var accellerateSameDirection = (
-			(touch.current.y > touch.previous.y && velocity.y < 0)
-			|| (touch.current.y < touch.previous.y && velocity.y > 0)
+			(touch.current[Y] > touch.previous[Y] && velocity[Y] < 0)
+			|| (touch.current[Y] < touch.previous[Y] && velocity[Y] > 0)
 		)
 		
-		var moveNewDirection = (touch.direction.y > 0
-			? touch.current.y < touch.previous.y
-			: touch.current.y > touch.previous.y
+		var moveNewDirection = (touch.direction[Y] > 0
+			? touch.current[Y] < touch.previous[Y]
+			: touch.current[Y] > touch.previous[Y]
 		)
 		if (moveNewDirection) {
-			touch.direction.y = (touch.current.y > touch.previous.y ? 1 : -1)
-			touch.startDirection = { y:pos.y }
+			touch.direction[Y] = (touch.current[Y] > touch.previous[Y] ? 1 : -1)
+			touch.startDirection = [pos[X],pos[Y]]
 		}
 		
 		if (touch.isAccellerating && accellerateSameDirection) {
 			clearTimeout(touch.accellerateTimeout)
-			velocity.y += (touch.previous.y - touch.current.y) / velocityDivison
+			velocity[Y] += (touch.previous[Y] - touch.current[Y]) / velocityDivison
 		} else {
-			velocity.y = 0
+			velocity[Y] = 0
 			touch.isAccellerating = false
-			touch.offset.y = touch.start.y - touch.current.y
+			touch.offset[Y] = touch.start[Y] - touch.current[Y]
 		}
 		
 		touch.previous = nextPrevious
@@ -160,13 +160,13 @@ function makeScrollView(opts) {
 	
 	function _onTouchEnd(e) {
 		if (!touch.isAccellerating) {
-			velocity.y = (touch.startDirection.y - touch.current.y) / velocityDivison
+			velocity[Y] = (touch.startDirection[Y] - touch.current[Y]) / velocityDivison
 		}
 		
 		// If the finger was still at the end then stop scrolling
 		var dt = Date.now() - touch.lastMove
-		if (dt > 200 || Math.abs(touch.previous.y - touch.current.y) < 5) {
-			velocity.y = 0
+		if (dt > 200 || Math.abs(touch.previous[Y] - touch.current[Y]) < 5) {
+			velocity[Y] = 0
 		}
 		
 		touch.isActive = false
@@ -184,35 +184,35 @@ function makeScrollView(opts) {
 		_tickUpdateTranslation.lastTimestamp = timestamp
 		// if (dt >= 20) { log("SLOW FRAME") }
 		
-		var touchOffsetDelta = (touch.offset.y - touch.incorporatedOffset.y)
-		if (velocity.y || touchOffsetDelta) {
-			translationScrollOffset.x += 0
-			translationScrollOffset.y += (velocity.y * dt + touchOffsetDelta)
-			touch.incorporatedOffset.y = touch.offset.y
+		var touchOffsetDelta = (touch.offset[Y] - touch.incorporatedOffset[Y])
+		if (velocity[Y] || touchOffsetDelta) {
+			translationScrollOffset[X] += 0
+			translationScrollOffset[Y] += (velocity[Y] * dt + touchOffsetDelta)
+			touch.incorporatedOffset[Y] = touch.offset[Y]
 			
-			var delta = {
-				x: (scroll.x - translationScrollOffset.x),
-				y: (scroll.y - translationScrollOffset.y),
-			}
+			var delta = [
+				scroll[X] - translationScrollOffset[X],
+				scroll[Y] - translationScrollOffset[Y],
+			]
 			
-			if (Math.abs(delta.x) >= visibleDelta || Math.abs(delta.y) >= visibleDelta) {
-				scroll.x = translationScrollOffset.x
-				scroll.y = translationScrollOffset.y
+			if (Math.abs(delta[X]) >= visibleDelta || Math.abs(delta[Y]) >= visibleDelta) {
+				scroll[X] = translationScrollOffset[X]
+				scroll[Y] = translationScrollOffset[Y]
 				_onScroll()
-				scrollView.content.el.style.webkitTransform = 'translate3d('+(-scroll.x)+'px,'+(-scroll.y)+'px,0)'
+				scrollView.content.el.style.webkitTransform = 'translate3d('+(-scroll[X])+'px,'+(-scroll[Y])+'px,0)'
 			}
 		}
 		
 		if (!touch.isActive || touch.isAccellerating) {
-			velocity.y *= clip(60 / dt, 0, 1) * 0.975
+			velocity[Y] *= clip(60 / dt, 0, 1) * 0.975
 		} 
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
-		if (Math.abs(velocity.y) < 0.005) {
-			velocity.y = 0
+		if (Math.abs(velocity[Y]) < 0.005) {
+			velocity[Y] = 0
 		}
 		
-		if (velocity.y || touch.isActive) {
+		if (velocity[Y] || touch.isActive) {
 			requestAnimationFrame(_tickUpdateTranslation)
 		} else {
 			_tickUpdateTranslation.lastTimestamp = null

@@ -1,5 +1,8 @@
 var tags = require('./tags')
 
+var X = tags.X
+var Y = tags.Y
+
 var Data = {}
 
 module.exports = function draggable(opts) {
@@ -42,7 +45,7 @@ function onStartEvent($e) {
 	
 	var history = []
 	var pagePos0 = tags.eventPos($e)
-	var pos0 = tags.makePos(pagePos0.x - elOffset.left, pagePos0.y - elOffset.top)
+	var pos0 = tags.makePos(pagePos0[X] - elOffset.left, pagePos0[Y] - elOffset.top)
 	var thresholdSquared = opts.threshold * opts.threshold // removes need for the Math.sqrt to calculate distance
 	
 	$(document)
@@ -58,14 +61,14 @@ function onStartEvent($e) {
 	
 	function posForEvent($e, changeDelta) {
 		var pagePos = tags.eventPos($e)
-		var pos = tags.makePos(pagePos.x - elOffset.left, pagePos.y - elOffset.top)
+		var pos = tags.makePos(pagePos[X] - elOffset.left, pagePos[Y] - elOffset.top)
 		var penUltPos = history[history.length - (changeDelta || 2)]
 		if (penUltPos) {
-			pos.change = tags.makePos(pos.x - penUltPos.x, pos.y - penUltPos.y)
+			pos.change = tags.makePos(pos[X] - penUltPos[X], pos[Y] - penUltPos[Y])
 		} else {
 			pos.change = tags.makePos(0,0)
 		}
-		pos.distance = tags.makePos(pos.x-pos0.x, pos.y-pos0.y)
+		pos.distance = tags.makePos(pos[X]-pos0[X], pos[Y]-pos0[Y])
 		history.push(pos)
 		return pos
 	}
@@ -78,8 +81,8 @@ function onStartEvent($e) {
 	function onMove($e) {
 		var pos = posForEvent($e)
 		if (!isDragging) {
-			var dx = pos.distance.x
-			var dy = pos.distance.y
+			var dx = pos.distance[X]
+			var dy = pos.distance[Y]
 			var abSquared = dx*dx + dy*dy
 			if (abSquared < thresholdSquared) {
 				return // not yet dragging

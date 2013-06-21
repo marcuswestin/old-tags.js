@@ -1,5 +1,10 @@
 var viewport = require('tags/viewport')
 
+var tags = require('tags')
+
+var X = tags.X
+var Y = tags.Y
+
 module.exports = makeSingleViewController
 
 function makeSingleViewController(opts) {
@@ -26,9 +31,8 @@ function makeSingleViewController(opts) {
 	var uid = tags.uid()
 	var currentView
 	var keptViews = {}
-	var slidingPos = { x:0, y:0 }
+	var slidingPos = [0,0]
 	var slider
-	var offscreen = { x:-99999, y:-99999 }
 	
 	nextTick(function() {
 		slider = tags.byId(uid, '.tags-slider')
@@ -56,8 +60,8 @@ function makeSingleViewController(opts) {
 		})
 		
 		var posDelta = posDeltas[viewOpts.animate || 'none']
-		slidingPos.x -= posDelta.dx * size.width
-		slidingPos.y -= posDelta.dy * size.height
+		slidingPos[X] -= posDelta.dx * size.width
+		slidingPos[Y] -= posDelta.dy * size.height
 
 		var oldView = currentView
 		
@@ -96,14 +100,14 @@ function makeSingleViewController(opts) {
 		if (keptView) {
 			currentView = keptView
 			keptView.tag.css(translate(slidingPos))
-			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable.y)
+			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable[Y])
 			opts.updateView(keptView.view)
 			delete keptViews[viewId]
 		} else {
 			currentView = { tag:_renderView(view, viewOpts), view:view }
 			slider.append(currentView.tag)
 		}
-		slider.css(translate(-slidingPos.x, -slidingPos.y, opts.duration))
+		slider.css(translate(-slidingPos[X], -slidingPos[Y], opts.duration))
 		
 		nextTick(function() {
 			var scroller = getScrollingElement()
@@ -122,7 +126,7 @@ function makeSingleViewController(opts) {
 			.css(absolute(0,0)).css(translate(slidingPos))
 			.append(div(
 				_makeViewPopper(viewOpts),
-				div('tags-viewBody', style(absolute(0,0), size, style.scrollable.y),
+				div('tags-viewBody', style(absolute(0,0), size, style.scrollable[Y]),
 					div('tags-viewBouncer', bounceStyles,
 						opts.renderBody(view, viewOpts)
 					)
@@ -140,14 +144,14 @@ function makeSingleViewController(opts) {
 		if (!viewOpts.keepCurrentView || viewOpts.animate != 'left') { return }
 		return div(style(absolute(0,0), { zIndex:9, width:6, height:size.height }), draggable({
 			move:function(pos) {
-				var dx = clip(pos.distance.x, 0)
-				slider.css(translate(-slidingPos.x + dx, -slidingPos.y, 0))
+				var dx = clip(pos.distance[X], 0)
+				slider.css(translate(-slidingPos[X] + dx, -slidingPos[Y], 0))
 			},
 			end:function(pos, history) {
-				if (pos.change.x > 0) {
+				if (pos.change[X] > 0) {
 					opts.onPop()
 				} else {
-					slider.css(translate(-slidingPos.x, -slidingPos.y, 250))
+					slider.css(translate(-slidingPos[X], -slidingPos[Y], 250))
 				}
 			}
 		}))
