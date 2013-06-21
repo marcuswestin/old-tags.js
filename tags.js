@@ -346,9 +346,17 @@ tags.select = function() {
 tags.wrap = function(el) {
 	return tags.create(selectionBase, { el:el })
 }
-tags.pointer = function($e, i) {
-	var obj = tags.isTouch ? $e.originalEvent.touches[i || 0] : $e.originalEvent
-	return { x:obj.pageX, y:obj.pageY }
+tags.events.pointer = (tags.isTouch
+	? function(e, i) { return e.touches[i || 0] }
+	: function(e, i) { return e }
+)
+tags.events.numPointers = (tags.isTouch
+	? function(e) { return e.touches.length }
+	: function(e) { return 1 }
+)
+tags.events.clientPosition = function(e, i) {
+	var pointer = tags.events.pointer(e, i)
+	return { x:pointer.clientX, y:pointer.clientY }
 }
 
 tags.dom = {
@@ -376,7 +384,7 @@ tags.dom = {
 		return tags
 	},
 	appendTo: function(el, appendToEl) {
-		return tags.append(appendToEl, el)
+		return tags.dom.append(appendToEl, el)
 	},
 	remove: function(el) {
 		el.parentNode.removeChild(el)
@@ -407,7 +415,7 @@ tags.dom = {
 		return $.fn.offset.call($(el))
 	},
 	frame: function(el) {
-		return setProps(tags.offset(el), { width:el.offsetWidth, height:el.offsetHeight })
+		return setProps(tags.dom.offset(el), { width:el.offsetWidth, height:el.offsetHeight })
 	},
 	addClass: function(el, className) {
 		el.classList.add(className)
@@ -415,8 +423,8 @@ tags.dom = {
 	removeClass: function(el, className) {
 		el.classList.remove(className)
 	},
-	toggleClass: function(el, className) {
-		el.classList.toggle(className)	
+	toggleClass: function(el, className, force) {
+		el.classList.toggle(className, force)
 	},
 	hasClass: function(el, className) {
 		return el.classList.contains(className)
@@ -429,6 +437,18 @@ tags.dom = {
 	},
 	text: function(el, text) {
 		el.textContent = text
+	},
+	on: function(el, event, fn) {
+		el.addEventListener(event, fn, false)
+	},
+	off: function(el, event, fn) {
+		el.removeEventListener(event, fn, false)
+	},
+	onCapture: function(el, event, fn) {
+		el.addEventListener(event, fn, true)
+	},
+	offCapture: function(el, event, fn) {
+		el.removeEventListener(event, fn, true)
 	}
 }
 var selectionBase = (function() {

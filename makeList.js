@@ -253,8 +253,8 @@ $(function() {
 		var el = $e.currentTarget
 		var list = tags.dom.above(el, 'tags-list')
 		if (!list) { throw new Error('Could not find list') }
-		var pointer = tags.pointer($e)
-		var tapY = pointer.y
+		var pos = tags.events.clientPosition(e.originalEvent)
+		var tapY = pos.y
 		var startTime = new Date().getTime()
 		var waitToSeeIfScrollHappened = null
 		
@@ -262,8 +262,8 @@ $(function() {
 		$(list)
 			.on(tags.events.move, function onTouchMove($e) {
 				if (!tapY) { return }
-				var pointer = tags.pointer($e)
-				if (Math.abs(pointer.y - tapY) > 10) { _clear() }
+				var pos = tags.events.clientPosition(e.originalEvent)
+				if (Math.abs(pos.y - tapY) > 10) { _clear() }
 			})
 			.on(tags.events.end, function onTouchEnd($e) {
 				clearTimeout(waitToSeeIfScrollHappened)
