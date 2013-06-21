@@ -20,6 +20,10 @@ function makeScrollView(opts) {
 	var translationScrollOffset = [0,0]
 	var scroll = [0,0]
 	var velocity = [0,0]
+	var bounds = [
+		{ left:0, right:opts.contentSize.width },
+		{ top:0, bottom:opts.contentSize.height }
+	]
 	var velocityDivison = 180
 	var visibleDelta = 1/window.devicePixelRatio
 	
@@ -184,10 +188,19 @@ function makeScrollView(opts) {
 		_tickUpdateTranslation.lastTimestamp = timestamp
 		// if (dt >= 20) { log("SLOW FRAME") }
 		
-		var touchOffsetDelta = (touch.offset[Y] - touch.incorporatedOffset[Y])
+		var touchOffsetDelta = [
+			touch.offset[X] - touch.incorporatedOffset[X],
+			touch.offset[Y] - touch.incorporatedOffset[Y]
+		]
 		if (velocity[Y] || touchOffsetDelta) {
-			translationScrollOffset[X] += 0
-			translationScrollOffset[Y] += (velocity[Y] * dt + touchOffsetDelta)
+			var moveBy = [
+				velocity[X] * dt + touchOffsetDelta[X],
+				velocity[Y] * dt + touchOffsetDelta[Y]
+			]
+			translationScrollOffset[X] = clip(translationScrollOffset[X] + moveBy[X], bounds[X].left, bounds[X].right)
+			translationScrollOffset[Y] = clip(translationScrollOffset[Y] + moveBy[Y], bounds[Y].top, bounds[Y].bottom)
+			
+			touch.incorporatedOffset[X] = touch.offset[X]
 			touch.incorporatedOffset[Y] = touch.offset[Y]
 			
 			var delta = [
@@ -204,7 +217,9 @@ function makeScrollView(opts) {
 		}
 		
 		if (!touch.isActive || touch.isAccellerating) {
-			velocity[Y] *= clip(60 / dt, 0, 1) * 0.975
+			var decceleration = clip(60 / dt, 0, 1) * 0.975
+			velocity[X] *= decceleration
+			velocity[Y] *= decceleration
 		} 
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
@@ -212,6 +227,14 @@ function makeScrollView(opts) {
 			velocity[Y] = 0
 		}
 		
+		if (translationScrollOffset[X] == bounds[X].left || translationScrollOffset[X] == bounds[X].right) {
+			velocity[X] = 0
+		}
+
+		if (translationScrollOffset[Y] == bounds[Y].top || translationScrollOffset[Y] == bounds[Y].bottom) {
+			velocity[Y] = 0
+		}
+
 		if (velocity[Y] || touch.isActive) {
 			requestAnimationFrame(_tickUpdateTranslation)
 		} else {
