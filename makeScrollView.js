@@ -8,20 +8,24 @@ function makeScrollView(opts) {
 		contentSize:null,
 		render:null,
 		onScroll:null,
-		useNativeScroll: (!tags.isTouch),
-		useTranslation: true
+		useTranslationScroll: tags.isTouch
 	})
 	
 	var uid = tags.uid()
 	var touch = _makeTouch({ x:0, y:0 }, false)
-	var nativeScrollOffset = { x:0, y:0 }
-	var translationOffset = { x:0, y:0 }
-	var totalContentOffset = { x:0, y:0 }
+	var translationScrollOffset = { x:0, y:0 }
+	var scroll = { x:0, y:0 }
+	var contentBounds = {
+		top:0, bottom:opts.size.height,
+		left:0, right:opts.size.width
+	}
 	var velocity = { x:0, y:0 }
-
-	var overflowStyle = (opts.useNativeScroll
-		? (tags.isTouch ? { '-webkit-overflow-scrolling':'touch' } : { overflow:'auto' })
-		: { overflow:'hidden' }
+	var velocityDivison = 140
+	var visibleDelta = 1/window.devicePixelRatio
+	
+	var overflowStyle = (opts.useTranslationScroll
+		? { overflow:'hidden' }
+		: (tags.isTouch ? { '-webkit-overflow-scrolling':'touch' } : { overflow:'auto' })
 	)
 	var scrollView = div('tags-scrollView',
 		attr({ id:uid }), tags.destructible(_destroy),
@@ -34,7 +38,7 @@ function makeScrollView(opts) {
 	
 	nextTick(_init)
 	return setProps(scrollView, {
-		contentOffset: totalContentOffset,
+		scroll: scroll,
 		velocity: velocity,
 		select: _select
 	})
@@ -47,22 +51,23 @@ function makeScrollView(opts) {
 	function _init() {
 		scrollView.content = tags.byId(uid, '.tags-content')
 		
-		if (opts.useNativeScroll) { _setupNativeScroll() }
-		if (opts.useTranslation) { _setupTranslationScroll() }
+		if (opts.useTranslationScroll) {
+			_setupTranslationScroll()
+		} else {
+			_setupNativeScroll()
+		}
 		
 		_onScroll()
 	}
 	
 	function _onScroll() {
-		totalContentOffset.x = translationOffset.x + nativeScrollOffset.x
-		totalContentOffset.y = translationOffset.y + nativeScrollOffset.y
 		opts.onScroll(scrollView)
 	}
 	
 	function _setupNativeScroll() {
 		tags.byId(uid).on('scroll', function(e) {
-			nativeScrollOffset.x = this.scrollLeft
-			nativeScrollOffset.y = this.scrollTop
+			scroll.x = this.scrollLeft
+			scroll.y = this.scrollTop
 			_onScroll()
 		})
 	}
@@ -97,7 +102,7 @@ function makeScrollView(opts) {
 			})
 		}
 		
-		requestAnimationFrame(_tickUpdateTranslation)
+		_startRequestingAnimationFrames()
 	}
 	
 	function _makeTouch(pos, active) {
@@ -139,11 +144,11 @@ function makeScrollView(opts) {
 		
 		if (touch.isAccellerating && accellerateSameDirection) {
 			clearTimeout(touch.accellerateTimeout)
-			velocity.y += (touch.previous.y - touch.current.y) / 10
+			velocity.y += (touch.previous.y - touch.current.y) / velocityDivison
 		} else {
 			velocity.y = 0
 			touch.isAccellerating = false
-			touch.offset.y = Math.round(touch.start.y - touch.current.y)
+			touch.offset.y = touch.start.y - touch.current.y
 		}
 		
 		touch.previous = nextPrevious
@@ -155,7 +160,7 @@ function makeScrollView(opts) {
 	
 	function _onTouchEnd(e) {
 		if (!touch.isAccellerating) {
-			velocity.y = (touch.startDirection.y - touch.current.y) / 10
+			velocity.y = (touch.startDirection.y - touch.current.y) / velocityDivison
 		}
 		
 		// If the finger was still at the end then stop scrolling
@@ -166,21 +171,36 @@ function makeScrollView(opts) {
 		
 		touch.isActive = false
 	}
+
+	function _startRequestingAnimationFrames() {
+		if (_tickUpdateTranslation.lastTimestamp) { return }
+		requestAnimationFrame(_tickUpdateTranslation)
+	}
 	
-	function _tickUpdateTranslation() {
+	function _tickUpdateTranslation(timestamp) {
 		if (!scrollView) { return }
+
+		var dt = (timestamp - (_tickUpdateTranslation.lastTimestamp || timestamp))
+		_tickUpdateTranslation.lastTimestamp = timestamp
+		// if (dt >= 20) { log("SLOW FRAME") }
 		
 		var touchOffsetDelta = (touch.offset.y - touch.incorporatedOffset.y)
 		if (velocity.y || touchOffsetDelta) {
-			translationOffset.x += 0
-			translationOffset.y += (velocity.y + touchOffsetDelta)
+			translationScrollOffset.x += 0
+			translationScrollOffset.y += (velocity.y * dt + touchOffsetDelta)
 			touch.incorporatedOffset.y = touch.offset.y
-			_onScroll()
-
-			scrollView.content.el.style.webkitTransform = ('translate3d('
-				+ Math.round(-translationOffset.x)+'px,'
-				+ Math.round(-translationOffset.y)+'px,0)'
-			)
+			
+			var delta = {
+				x: (scroll.x - translationScrollOffset.x),
+				y: (scroll.y - translationScrollOffset.y),
+			}
+			
+			if (Math.abs(delta.x) >= visibleDelta || Math.abs(delta.y) >= visibleDelta) {
+				scroll.x = translationScrollOffset.x
+				scroll.y = translationScrollOffset.y
+				_onScroll()
+				scrollView.content.el.style.webkitTransform = 'translate3d('+(-scroll.x)+'px,'+(-scroll.y)+'px,0)'
+			}
 		}
 		
 		if (!touch.isActive || touch.isAccellerating) {
@@ -188,12 +208,14 @@ function makeScrollView(opts) {
 		} 
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
-		if (Math.abs(velocity.y) < 0.2) {
+		if (Math.abs(velocity.y) < 0.005) {
 			velocity.y = 0
 		}
 		
 		if (velocity.y || touch.isActive) {
 			requestAnimationFrame(_tickUpdateTranslation)
+		} else {
+			_tickUpdateTranslation.lastTimestamp = null
 		}
 	}
 }

@@ -1,3 +1,5 @@
+require('std/performance')
+
 var arrayToObject = require('std/arrayToObject')
 var create = tags.create = require('std/create')
 var options = tags.options = require('std/options')
