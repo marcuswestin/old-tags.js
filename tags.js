@@ -520,6 +520,17 @@ tags.addPos = function addPos(p1, p2) {
 	return tags.makePos(p1[X] + p2[X], p1[Y] + p2[Y])
 }
 
+tags.pos = {
+	abs: function(pos) {
+		return [Math.abs(pos[X]), Math.abs(pos[Y])]
+	},
+	isZero: function(pos) {
+		return pos[X] === 0 && pos[Y] === 0
+	},
+	add: function(pos1, pos2) {
+		return [pos1[X] + pos2[X], pos1[Y] + pos2[Y]]
+	}
+}
 
 
 /* Templates

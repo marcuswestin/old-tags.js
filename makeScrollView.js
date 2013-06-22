@@ -7,6 +7,7 @@ var X = tags.X
 var Y = tags.Y
 var A = tags.A
 var B = tags.B
+var isZero = tags.pos.isZero
 
 function makeScrollView(opts) {
 	opts = options(opts, {
@@ -18,16 +19,16 @@ function makeScrollView(opts) {
 	})
 	
 	var uid = tags.uid()
-	var touch = _makeTouch([0,0], false)
 	var translationOffset = [0,0] // internal representation of offset
 	var lastIndependentOffset = [0,0]
-	var naturalIndependentOffset = [0,0]
+	var naturalOffset = [0,0]
 	var scroll = [0,0] // externally visible amount scrolled
 	var velocity = [0,0]
 	var bounds = [
 		[0, opts.contentSize.width],
 		[0, opts.contentSize.height - opts.size.height]
 	]
+	var touch = _makeTouch([0,0], false)
 	var velocityDivison = 180
 	var visibleChange = 1/window.devicePixelRatio
 	
@@ -102,7 +103,7 @@ function makeScrollView(opts) {
 		if (tags.events.numPointers(e) > 1) { return }
 		touch = _makeTouch(tags.events.clientPosition(e), true)
 		
-		if (velocity[Y]) {
+		if (!isZero(velocity)) {
 			touch.isAccellerating = true
 			touch.accellerateTimeout = after(20, function() {
 				touch.isAccellerating = false
@@ -111,20 +112,6 @@ function makeScrollView(opts) {
 		}
 		
 		_startRequestingAnimationFrames()
-	}
-	
-	function _makeTouch(pos, active) {
-		return {
-			lastMove: 0,
-			isActive: active,
-			start: pos,
-			previous: pos,
-			current: pos,
-			isAccellerating:false,
-			offset: [0,0],
-			direction: [0,0],
-			startDirection: pos
-		}
 	}
 	
 	function _onTouchMove(e) {
@@ -181,8 +168,7 @@ function makeScrollView(opts) {
 	
 	function _onTouchFinished() {
 		touch.isActive = false
-		lastIndependentOffset[Y] = naturalIndependentOffset[Y]
-		_setTranslation(naturalIndependentOffset[X], naturalIndependentOffset[Y])
+		_setTranslation(naturalOffset[X], naturalOffset[Y])
 	}
 
 	function _startRequestingAnimationFrames() {
@@ -197,79 +183,75 @@ function makeScrollView(opts) {
 		_tickUpdateTranslation.lastTimestamp = timestamp
 		// if (dt >= 20) { log("SLOW FRAME") }
 		
-		if (velocity[Y]) {
-			_addTranslation(
-				velocity[X] * dt,
-				velocity[Y] * dt
-			)
-			lastIndependentOffset[X] = clip(translationOffset[X], bounds[X][A], bounds[X][B])
-			lastIndependentOffset[Y] = clip(translationOffset[Y], bounds[Y][A], bounds[Y][B])
+		if (!isZero(velocity)) {
+			var deceleration = clip(60 / dt, 0, 1) * 0.975
+			velocity[X] *= deceleration
+			velocity[Y] *= deceleration
+
+			var positionByVelocity = [
+				translationOffset[X] + velocity[X] * dt,
+				translationOffset[Y] + velocity[Y] * dt,
+			]
+			var excess = _boundsExcess(positionByVelocity)
 			
-			// TODO: if excess, rebound
-			naturalIndependentOffset[X] = lastIndependentOffset[X]
-			naturalIndependentOffset[Y] = lastIndependentOffset[Y]
+			naturalOffset[X] = positionByVelocity[X] - excess[X]
+			naturalOffset[Y] = positionByVelocity[Y] - excess[Y]
+			
+			if (isZero(excess)) {
+				_setTranslation(positionByVelocity[X], positionByVelocity[Y])
+			} else {
+				var resistance = _excessResistence(excess)
+				_setTranslation(
+					naturalOffset[X] + excess[X] / resistance[X],
+					naturalOffset[Y] + excess[Y] / resistance[Y]
+				)
+			}
 		} else if (touch.isActive) {
-			
 			var positionByDrag = [
-				lastIndependentOffset[X] + touch.offset[X],
-				lastIndependentOffset[Y] + touch.offset[Y]
+				touch.naturalOffsetAtStart[X] + touch.offset[X],
+				touch.naturalOffsetAtStart[Y] + touch.offset[Y]
 			]
+			var excess = _boundsExcess(positionByDrag)
+			naturalOffset[X] = positionByDrag[X] - excess[X]
+			naturalOffset[Y] = positionByDrag[Y] - excess[Y]	
 			
-			var excess = [
-				_displacementFromRange(positionByDrag[X], bounds[X]),
-				_displacementFromRange(positionByDrag[Y], bounds[Y]),
-			]
-			
-			var distance = [
-				Math.abs(excess[X]),
-				Math.abs(excess[Y])
-			]
-			
-			var resistance = [
-				distance[X] <= 1 ? 1 : Math.log(excess[X] * excess[X]),
-				distance[Y] <= 1 ? 1 : 1 + Math.log(1 + distance[Y] / 100)
-			]
-			
-			naturalIndependentOffset[X] = positionByDrag[X] - excess[X]
-			naturalIndependentOffset[Y] = positionByDrag[Y] - excess[Y]	
-			
-			
-			_setTranslation(
-				0,
-				naturalIndependentOffset[Y] + excess[Y] / resistance[Y]
-			)
+			if (isZero(excess)) {
+				_setTranslation(positionByDrag[X], positionByDrag[Y])
+			} else {
+				var resistance = _excessResistence(excess)
+				_setTranslation(
+					naturalOffset[X] + excess[X] / resistance[X],
+					naturalOffset[Y] + excess[Y] / resistance[Y]
+				)
+			}
 		}
-		
-		if (!touch.isActive || touch.isAccellerating) {
-			var decceleration = clip(60 / dt, 0, 1) * 0.975
-			velocity[X] *= decceleration
-			velocity[Y] *= decceleration
-		} 
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
 		if (velocity[Y] && Math.abs(velocity[Y]) < 0.005) {
 			stop(Y)
 		}
 		
-		// if (_displacementFromRange(translationOffset[X], bounds[X])) {
-		// 	stop(X)
-		// }
-
-		// if (_displacementFromRange(translationOffset[Y], bounds[Y])) {
-		// 	stop(Y)
-		// }
-		
-		if (velocity[Y] || touch.isActive) {
+		if (touch.isActive || !isZero(velocity)) {
+			// keep animating as long as user is actively touching or the view has a velocity
 			requestAnimationFrame(_tickUpdateTranslation)
 		} else {
 			_tickUpdateTranslation.lastTimestamp = null
 		}
 	}
 	
-	function _addTranslation(dx,dy) {
-		translationOffset[X] += dx
-		translationOffset[Y] += dy
-		_onTranslationChange()
+	function _excessResistence(excess) {
+		var distance = tags.pos.abs(excess)
+		return [ // resistence grows with distance
+			distance[X] <= 1 ? 1 : 1 + Math.log(1 + distance[X] / 100),
+			distance[Y] <= 1 ? 1 : 1 + Math.log(1 + distance[Y] / 100)
+		]
+	}
+	
+	function _boundsExcess(position) {
+		return [
+			_displacementFromRange(position[X], bounds[X]),
+			_displacementFromRange(position[Y], bounds[Y]),
+		]
 	}
 	
 	function _setTranslation(x,y) {
@@ -292,7 +274,6 @@ function makeScrollView(opts) {
 	
 	function stop(XorY) {
 		velocity[XorY] = 0
-		translationOffset[XorY] = lastIndependentOffset[XorY]
 		_onTranslationChange()
 		touch.isAccellerating = false
 	}
@@ -307,6 +288,21 @@ function makeScrollView(opts) {
 			: value > range[B] ? value - range[B]
 			: 0
 		)
+	}
+
+	function _makeTouch(pos, active) {
+		return {
+			lastMove: 0,
+			isActive: active,
+			start: pos,
+			previous: pos,
+			current: pos,
+			isAccellerating:false,
+			offset: [0,0],
+			direction: [0,0],
+			startDirection: pos,
+			naturalOffsetAtStart: [naturalOffset[X], naturalOffset[Y]]
+		}
 	}
 
 }
