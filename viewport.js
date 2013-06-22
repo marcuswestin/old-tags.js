@@ -47,3 +47,10 @@ $win.resize(function() {
 		callbacks[i] && callbacks[i](size)
 	}
 })
+
+viewport.fakeIPhone = function() { viewport.fake(320, 480) }
+viewport.fakeIPad = function() { viewport.fake(786, 1024) }
+viewport.fake = function(width, height) {
+	viewport.width = function() { return width }
+	viewport.height = function() { return height }
+}
