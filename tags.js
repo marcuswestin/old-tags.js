@@ -25,8 +25,12 @@ module.exports = setProps(tags, {
 	})
 })
 
+// positions
 var X = tags.X = 0
 var Y = tags.Y = 1
+// ranges
+var A = tags.A = 0
+var B = tags.B = 1
 
 tags.warn = warn
 tags.uid = uid
