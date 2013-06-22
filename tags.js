@@ -37,6 +37,8 @@ tags.uid = uid
 
 tags.isTouch = _isTouch()
 
+tags.pixelRatio = window.devicePixelRatio || 1
+
 tags.events = {
 	start: tags.isTouch ? 'touchstart' : 'mousedown',
 	move: tags.isTouch ? 'touchmove' : 'mousemove',
@@ -529,6 +531,9 @@ tags.pos = {
 	},
 	add: function(pos1, pos2) {
 		return [pos1[X] + pos2[X], pos1[Y] + pos2[Y]]
+	},
+	sub: function(pos1, pos2) {
+		return [pos1[X] - pos2[X], pos1[Y] - pos2[Y]]
 	}
 }
 
