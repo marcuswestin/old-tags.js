@@ -112,7 +112,7 @@ function makeScrollView(opts) {
 	}
 	
 	function _onTouchMove(e) {
-		if (!touch.isActive) { return }
+		if (!touch.isTouching) { return }
 		
 		var nextPrevious = touch.current
 		var pos = tags.events.clientPosition(e)
@@ -145,7 +145,7 @@ function makeScrollView(opts) {
 	}
 	
 	function _onTouchFinished(e) {
-		touch.isActive = false
+		touch.isTouching = false
 
 		var dt = Date.now() - touch.lastMove
 
@@ -179,8 +179,28 @@ function makeScrollView(opts) {
 		_tickUpdateTranslation.lastTimestamp = timestamp
 		// if (dt >= 20) { log("SLOW FRAME") }
 		
-		if (_isFloating()) {
-			var excess = _boundsExcess(contentOffset)
+		var excess = _boundsExcess(contentOffset)
+		
+		if (touch.isTouching) {
+			var positionByDrag = [
+				touch.contentOffsetAtStart[X] + touch.offset[X],
+				touch.contentOffsetAtStart[Y] + touch.offset[Y]
+			]
+			var excess = _boundsExcess(positionByDrag)
+			naturalOffset[X] = positionByDrag[X] - excess[X]
+			naturalOffset[Y] = positionByDrag[Y] - excess[Y]	
+			
+			if (_isOutOfBounds(excess)) {
+				// While dragging out of bounds, the excess drag has a halved effect on contentOffset
+				_updateTranslation(
+					naturalOffset[X] + excess[X] / OUT_OF_BOUNDS_DRAG_DIVIDER,
+					naturalOffset[Y] + excess[Y] / OUT_OF_BOUNDS_DRAG_DIVIDER
+				)
+			} else {
+				_updateTranslation(positionByDrag[X], positionByDrag[Y])
+			}
+			
+		} else if (_isFloating() || _isOutOfBounds(excess)) {
 			var distance = tags.pos.abs(excess)
 			var deceleration = clip(60 / dt, 0, 1) * DECELERATION_RATE
 			
@@ -213,25 +233,6 @@ function makeScrollView(opts) {
 			var excess = _boundsExcess(positionByVelocity)
 			naturalOffset[X] = positionByVelocity[X] - excess[X]
 			naturalOffset[Y] = positionByVelocity[Y] - excess[Y]
-			
-		} else if (touch.isActive) {
-			var positionByDrag = [
-				touch.contentOffsetAtStart[X] + touch.offset[X],
-				touch.contentOffsetAtStart[Y] + touch.offset[Y]
-			]
-			var excess = _boundsExcess(positionByDrag)
-			naturalOffset[X] = positionByDrag[X] - excess[X]
-			naturalOffset[Y] = positionByDrag[Y] - excess[Y]	
-			
-			if (_isOutOfBounds(excess)) {
-				// While dragging out of bounds, the excess drag has a halved effect on contentOffset
-				_updateTranslation(
-					naturalOffset[X] + excess[X] / OUT_OF_BOUNDS_DRAG_DIVIDER,
-					naturalOffset[Y] + excess[Y] / OUT_OF_BOUNDS_DRAG_DIVIDER
-				)
-			} else {
-				_updateTranslation(positionByDrag[X], positionByDrag[Y])
-			}
 		}
 		
 		// Cut off early, the last fraction of velocity doesn't have much impact on movement
@@ -240,7 +241,7 @@ function makeScrollView(opts) {
 			velocity[Y] = 0
 		}
 		
-		if (touch.isActive || _isFloating() || _isOutOfBounds(contentOffsetExcess)) {
+		if (touch.isTouching || _isFloating() || _isOutOfBounds(contentOffsetExcess)) {
 			// keep animating as long as user is actively touching or the view has a velocity or the view is bouncing
 			requestAnimationFrame(_tickUpdateTranslation)
 		} else {
@@ -287,7 +288,7 @@ function makeScrollView(opts) {
 	
 	function _makeTouch(pos, active) {
 		return {
-			lastMove: 0, offset: [0,0], direction: [0,0], isActive: active,
+			lastMove: 0, offset: [0,0], direction: [0,0], isTouching: active,
 			start: pos, previous: pos, current: pos, startDirection: pos,
 			contentOffsetAtStart: [contentOffset[X], contentOffset[Y]]
 		}
