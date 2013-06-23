@@ -87,8 +87,8 @@ function makeScrollView(opts) {
 		tags.byId(uid)
 			.on(tags.events.start, _onTouchStart)
 			.on(tags.events.move, _onTouchMove)
-			.on(tags.events.cancel, _onTouchCancel)
-			.on(tags.events.end, _onTouchEnd)
+			.on(tags.events.cancel, _onTouchFinished)
+			.on(tags.events.end, _onTouchFinished)
 	}
 	
 	function _destroy() {
@@ -97,8 +97,8 @@ function makeScrollView(opts) {
 		tags.byId(uid)
 			.off(tags.events.start, _onTouchStart)
 			.off(tags.events.move, _onTouchMove)
-			.off(tags.events.cancel, _onTouchCancel)
-			.off(tags.events.end, _onTouchEnd)
+			.off(tags.events.cancel, _onTouchFinished)
+			.off(tags.events.end, _onTouchFinished)
 	}
 	
 	function _onTouchStart(e) {
@@ -144,15 +144,7 @@ function makeScrollView(opts) {
 		touch.previous = nextPrevious
 	}
 	
-	function _onTouchCancel(e) {
-		_onTouchFinished()
-	}
-	
-	function _onTouchEnd(e) {
-		_onTouchFinished()
-	}
-	
-	function _onTouchFinished() {
+	function _onTouchFinished(e) {
 		touch.isActive = false
 
 		var dt = Date.now() - touch.lastMove
