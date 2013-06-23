@@ -110,7 +110,7 @@ var scrollerBase = {
 					var animation = animate ? this.duration : 'none'
 					$('#'+this.viewID+' .tags-scroller-slider').append(
 						div('tags-scroller-view', style({ position:'absolute' }, size, translate.x(offsetX, animation)),
-							div('tags-scroller-bodyScroller', style(style.scrollable.y, size, {
+							div('tags-scroller-bodyScroller', style(style.scrollable, size, {
 								position:'absolute', top:0
 							})),
 							div('tags-scroller-head', style({

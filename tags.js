@@ -223,11 +223,8 @@ setProps(tags.style, {
 	}),
 	rotate:rotate,
 	transition:transition,
-	scrollable: {
-		x: { overflowX:'auto', overflowScrolling:'touch', overflowY:'hidden' },
-		y: { overflowY:'auto', overflowScrolling:'touch', overflowX:'hidden' },
-		none: { overflow:'hidden', overflowScrolling:'none' }
-	}
+	scrollable: { overflow:'auto', overflowScrolling:'touch' },
+	notScrollable: { overflow:'hidden', overflowScrolling:'none' }
 })
 
 function translate(x, y, duration, delay) {

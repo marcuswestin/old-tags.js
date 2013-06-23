@@ -100,7 +100,7 @@ function makeSingleViewController(opts) {
 		if (keptView) {
 			currentView = keptView
 			keptView.tag.css(translate(slidingPos))
-			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable[Y])
+			keptView.tag.select('.tags-viewBody').css(tags.style.scrollable)
 			opts.updateView(keptView.view)
 			delete keptViews[viewId]
 		} else {
@@ -126,7 +126,7 @@ function makeSingleViewController(opts) {
 			.css(absolute(0,0)).css(translate(slidingPos))
 			.append(div(
 				_makeViewPopper(viewOpts),
-				div('tags-viewBody', style(absolute(0,0), size, style.scrollable[Y]),
+				div('tags-viewBody', style(absolute(0,0), size, style.scrollable),
 					div('tags-viewBouncer', bounceStyles,
 						opts.renderBody(view, viewOpts)
 					)
@@ -161,7 +161,7 @@ function makeSingleViewController(opts) {
 		var oldViewId = opts.getViewId(oldView.view)
 		if (viewOpts.keepCurrentView) {
 			keptViews[oldViewId] = oldView
-			oldView.tag.select('.tags-viewBody').css(tags.style.scrollable.none)
+			oldView.tag.select('.tags-viewBody').css(tags.style.notScrollable)
 		} else {
 			oldView.tag.destroy().remove()
 		}
