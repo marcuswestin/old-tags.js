@@ -147,22 +147,19 @@ function makeScrollView(opts) {
 	function _onTouchFinished(e) {
 		touch.isTouching = false
 
-		var dt = Date.now() - touch.lastMove
-
-		if (!_isFloating()) {
-			velocity[Y] = (touch.previous[Y] - touch.current[Y]) / dt
-		}
+		var deltaTime = Date.now() - touch.lastMove
+		var deltaPos = touch.previous[Y] - touch.current[Y]
 		
-		// If the finger was still at the end then stop scrolling
-		if (dt > 200 || Math.abs(touch.previous[Y] - touch.current[Y]) < 5) {
+		if (deltaTime > 200) {
+			// If the finger was still at the end, then stop scrolling
 			velocity[Y] = 0
-		}
-
-		var excess = _boundsExcess(contentOffset)
-		if (_isOutOfBounds(excess)) {
-			velocity[X] = -excess[X] / 100
-			velocity[Y] = -excess[Y] / 100
-			_startRequestingAnimationFrames()
+			
+		} else if (Math.abs(deltaPos) < 3) {
+			// If the last movement was very small, then stop scrolling
+			velocity[Y] = 0
+			
+		} else {
+			velocity[Y] = deltaPos / deltaTime
 		}
 	}
 
