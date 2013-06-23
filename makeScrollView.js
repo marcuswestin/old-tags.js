@@ -77,6 +77,8 @@ function makeScrollView(opts) {
 	
 	function _setupNativeScroll() {
 		tags.byId(uid).on('scroll', function(e) {
+			naturalOffset[X] = this.scrollLeft
+			naturalOffset[Y] = this.scrollTop
 			visualScroll[X] = this.scrollLeft
 			visualScroll[Y] = this.scrollTop
 			opts.onScroll(scrollView)
