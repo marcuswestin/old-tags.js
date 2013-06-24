@@ -4,7 +4,7 @@
 
 ### **README Out of date**
 
-This README is well out of date, but it gives a good idea of how the library works.
+This README is well out of date, but it gives a hint of how the library works.
 
 ### Examples
 
