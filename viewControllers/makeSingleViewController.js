@@ -2,15 +2,15 @@ var viewport = require('tags/viewport')
 
 var tags = require('tags')
 
-var X = tags.X
-var Y = tags.Y
+var X = tags.constants.X
+var Y = tags.constants.Y
 
 module.exports = makeSingleViewController
 
 function makeSingleViewController(opts) {
 	opts = options(opts, {
 		// misc
-		size:viewport.size(),
+		viewSize:viewport.size,
 		duration: 350,
 		getViewId:null,
 		view:null,
@@ -27,7 +27,7 @@ function makeSingleViewController(opts) {
 		onPop:null
 	})
 	
-	var size = opts.size
+	var viewSize = opts.viewSize
 	var uid = tags.uid()
 	var currentView
 	var keptViews = {}
@@ -60,8 +60,8 @@ function makeSingleViewController(opts) {
 		})
 		
 		var posDelta = posDeltas[viewOpts.animate || 'none']
-		slidingPos[X] -= posDelta.dx * size.width
-		slidingPos[Y] -= posDelta.dy * size.height
+		slidingPos[X] -= posDelta.dx * viewSize[W]
+		slidingPos[Y] -= posDelta.dy * viewSize[H]
 
 		var oldView = currentView
 		
@@ -88,8 +88,8 @@ function makeSingleViewController(opts) {
 	************/
 	function _render() {
 		return div(attr({ id:uid }),
-			div('tags-clip', style(size, absolute, { overflow:'hidden' }),
-				div('tags-slider', style(absolute, translate(0,0)))
+			div('tags-clip', style(size(viewSize), absolute(), { overflow:'hidden' }),
+				div('tags-slider', style(absolute(), translate(0,0)))
 			)
 		)
 	}
@@ -120,21 +120,21 @@ function makeSingleViewController(opts) {
 	
 	function _renderView(view, viewOpts) {
 		var alwaysBounce = (viewOpts.alwaysBounce == null ? opts.alwaysBounce : viewOpts.alwaysBounce)
-		var bounceStyles = (alwaysBounce ? style({ minHeight:size.height+1 }) : null)
+		var bounceStyles = (alwaysBounce ? style({ minHeight:viewSize[H]+1 }) : null)
 		return tags.wrap(document.createElement('div'))
 			.attr({ class:'tags-view' })
 			.css(absolute(0,0)).css(translate(slidingPos))
 			.append(div(
 				_makeViewPopper(viewOpts),
-				div('tags-viewBody', style(absolute(0,0), size, style.scrollable),
+				div('tags-viewBody', style(absolute(0,0), size(viewSize), style.scrollable),
 					div('tags-viewBouncer', bounceStyles,
 						opts.renderBody(view, viewOpts)
 					)
 				),
-				opts.renderHead && div('tags-viewHead', style(absolute.top(0), { width:size.width }),
+				opts.renderHead && div('tags-viewHead', style(absolute.top(0), { width:viewSize[W] }),
 					opts.renderHead(view, viewOpts)
 				),
-				opts.renderFoot && div('tags-viewFoot', style(absolute.bottom(-size.height), { width:size.width }),
+				opts.renderFoot && div('tags-viewFoot', style(absolute.bottom(-viewSize[H]), { width:viewSize[W] }),
 					opts.renderFoot(view, viewOpts)
 				)
 			))
@@ -142,7 +142,7 @@ function makeSingleViewController(opts) {
 	
 	function _makeViewPopper(viewOpts) {
 		if (!viewOpts.keepCurrentView || viewOpts.animate != 'left') { return }
-		return div(style(absolute(0,0), { zIndex:9, width:6, height:size.height }), draggable({
+		return div(style(absolute(0,0), { zIndex:9, width:6, height:viewSize[H] }), draggable({
 			move:function(pos) {
 				var dx = clip(pos.distance[X], 0)
 				slider.css(translate(-slidingPos[X] + dx, -slidingPos[Y], 0))

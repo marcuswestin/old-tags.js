@@ -1,7 +1,7 @@
 var tags = require('./tags')
 
-var X = tags.X
-var Y = tags.Y
+var X = tags.constants.X
+var Y = tags.constants.Y
 
 var Data = {}
 

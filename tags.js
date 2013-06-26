@@ -14,6 +14,7 @@ var map = require('std/map')
 /* API
 ******/
 module.exports = setProps(tags, {
+	exposeGlobals:exposeGlobals,
 	attr: attr,
 	style: style,
 	classes: classes,
@@ -25,12 +26,46 @@ module.exports = setProps(tags, {
 	})
 })
 
-// positions
-var X = tags.X = 0
-var Y = tags.Y = 1
-// ranges
-var A = tags.A = 0
-var B = tags.B = 1
+function exposeGlobals(global) {
+	global = global || window
+	setProps(global, tags.style)
+	setProps(global, tags.constants)
+	setProps(global, {
+		//tags
+		attr:tags.attr,
+		style:tags.style,
+		classes:tags.classes,
+		dangerouslyInsertHtml:tags.dangerouslyInsertHtml,
+		isSafeHtml:tags.isSafeHtml,
+		// tags
+		br: tags.br,
+		div: tags('div'),
+		form: tags('form'),
+		span: tags('span'),
+		a: tags('a'),
+		input: tags('input'),
+		img: tags('img'),
+		canvas: tags('canvas'),
+		label: tags('label'),
+		br: tags.br,
+		iframe: tags('iframe'),
+		audio: tags('audio'),
+	})
+}
+
+tags.constants = {
+	// positions
+	X:0,
+	Y:1,
+	// ranges
+	A:0,
+	B:1,
+	TOP:0,
+	BOTTOM:1,
+	// sizes
+	W:0,
+	H:1
+}
 
 tags.warn = warn
 tags.uid = uid
@@ -215,6 +250,7 @@ tags.br = create(dangerouslyInsertHtmlBase, { _html:'<br/>' })
 /* Style helpers
 ****************/
 setProps(tags.style, {
+	size:size,
 	translate:setProps(translate, {
 		y: translateY,
 		x: translateX,
@@ -224,9 +260,42 @@ setProps(tags.style, {
 	rotate:rotate,
 	transition:transition,
 	scrollable: { overflow:'auto', overflowScrolling:'touch' },
-	notScrollable: { overflow:'hidden', overflowScrolling:'none' }
+	notScrollable: { overflow:'hidden', overflowScrolling:'none' },
+	absolute: setProps(absolute, {
+		top: absoluteTop,
+		bottom: absoluteBottom
+	}),
+	fixed: setProps(fixed, {
+		top: fixedTop,
+		bottom: fixedBottom
+	})
 })
 
+function size(size) {
+	if (size[W] == null) {
+		return { width:size.width, height:size.height }
+	} else {
+		return { width:size[W], height:size[H] }
+	}
+}
+function absolute(left, top) {
+	return (left == null ? { position:'absolute'} : { position:'absolute', left:left, top:top })
+}
+function absoluteTop(top) {
+	return { position:'absolute', top:top }
+}
+function absoluteBottom(bottom) {
+	return { position:'absolute', bottom:bottom }
+}
+function fixed(left, top) {
+	return (left == null ? { position:'fixed' } : { position:'fixed', left:left, top:top })
+}
+function fixedTop(top) {
+	return { position:'fixed', top:top }
+}
+function fixedBottom(bottom) {
+	return { position:'fixed', bottom:bottom }
+}
 function translate(x, y, duration, delay) {
 	if (isObject(x)) {
 		// translate({ x:10, y:20 }, 100, 200)
@@ -268,14 +337,12 @@ function transition(properties, duration) {
 		return { '-webkit-transition':_toDashes(properties)+' '+duration+'ms' }
 	}
 }
-
 function _transform(transformation, duration, delay) {
 	var styles = { '-webkit-transform':transformation }
 	if (duration != null && !isNaN(duration)) { styles['-webkit-transition'] = '-webkit-transform '+Math.round(duration)+'ms' }
 	if (delay != null && !isNaN(delay)) { styles['-webkit-transition-delay'] = delay+'ms' }
 	return styles
 }
-
 
 
 /* Internal utils
@@ -531,7 +598,8 @@ tags.pos = {
 	},
 	sub: function(pos1, pos2) {
 		return [pos1[X] - pos2[X], pos1[Y] - pos2[Y]]
-	}
+	},
+	Infinity: [Infinity, Infinity]
 }
 
 

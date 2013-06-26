@@ -28,15 +28,15 @@ var scrollerBase = {
 	__numViews:0,
 	toTag:tags.toTag(function() {
 		var viewID = this.viewID = tags.uid()
-		viewport.onResize(function(size) {
+		viewport.onResize(function() {
 			$('#'+viewID)
-				.find('.tags-scroller-overflow').css(size)
-					.find('.tags-scroller-slider').css({ height:size.height }).end()
+				.find('.tags-scroller-overflow').css(size(viewport.size))
+					.find('.tags-scroller-slider').css({ height:viewport.size[H] }).end()
 				.end()
 				.find('.tags-scroller-slider')
-					.find('.tags-scroller-bodyScroller').css(size).end()
-					.find('.tags-scroller-foot').css({ width:size.width })
-					.find('.tags-scroller-head').css({ width:size.width })
+					.find('.tags-scroller-bodyScroller').css(size(viewport.size)).end()
+					.find('.tags-scroller-foot').css({ width:viewport.size[W] })
+					.find('.tags-scroller-head').css({ width:viewport.size[W] })
 		})
 		return div('tags-scroller', this.__renderViews())
 	}),
@@ -51,7 +51,7 @@ var scrollerBase = {
 		})
 		
 		return div('tags-scroller-view', attr({ id:this.viewID }), style({ overflow:'hidden', position:'absolute', top:0 }),
-			div('tags-scroller-overflow', style(viewport.getSize(), { overflow:'hidden' }),
+			div('tags-scroller-overflow', style(size(viewport.size, { overflow:'hidden' }),
 				div('tags-scroller-slider', style({ height:viewport.height() }))
 			)
 		)
@@ -105,8 +105,7 @@ var scrollerBase = {
 			var keepStaleView = (opts.useStaleView && this.stack[opts.index])
 			if (!keepStaleView) {
 				while (opts.index >= this.__numViews) {
-					var size = viewport.getSize()
-					var offsetX = this.__numViews * size.width
+					var offsetX = this.__numViews * viewport.size[W]
 					var animation = animate ? this.duration : 'none'
 					$('#'+this.viewID+' .tags-scroller-slider').append(
 						div('tags-scroller-view', style({ position:'absolute' }, size, translate.x(offsetX, animation)),
@@ -114,10 +113,10 @@ var scrollerBase = {
 								position:'absolute', top:0
 							})),
 							div('tags-scroller-head', style({
-								position:'absolute', top:0, width:size.width
+								position:'absolute', top:0, width:viewport.size[W]
 							})),
 							div('tags-scroller-foot', style({
-								position:'absolute', bottom:0, width:size.width
+								position:'absolute', bottom:0, width:viewport.size[W]
 							}))
 						)
 					)

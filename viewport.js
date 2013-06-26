@@ -3,8 +3,6 @@ var tags = require('./tags')
 var viewport = module.exports = {
 	fit:fit,
 	fitWidth:fitWidth,
-	getSize:getSize,
-	size:getSize,
 	width:width,
 	height:height,
 	react:react,
@@ -14,6 +12,16 @@ var viewport = module.exports = {
 }
 
 var navBarHeight = tags.isIOSSafari ? 60 : 0
+var $win = $(window)
+var callbacks = []
+$win.resize(_handleResize)
+_handleResize()
+function _handleResize() {
+	viewport.size = getSize()
+	for (var i=0; i<callbacks.length; i++) {
+		callbacks[i] && callbacks[i](viewport.size)
+	}
+}
 
 function onResize(callback) { callbacks.push(callback) }
 function react(callback) {
@@ -22,9 +30,11 @@ function react(callback) {
 }
 
 function fit($el) {
-	function resize() { $el.css(viewport.getSize()) }
-	$win.resize(resize)
-	resize()
+	$win.resize(_resizeEl)
+	_resizeEl()
+	function _resizeEl() {
+		$el.css({ width:viewport.size[W], height:viewport.height[H] })
+	}
 }
 
 function fitWidth($el) {
@@ -35,22 +45,13 @@ function fitWidth($el) {
 
 function height() { return $win.height() + navBarHeight }
 function width() { return $win.width() }
-function getSize() { return { width:viewport.width(), height:viewport.height() } }
+function getSize() { return [viewport.width(), viewport.height()] }
 function pos() { return tags.makePos(0,0) }
-
-var $win = $(window)
-var callbacks = []
-
-$win.resize(function() {
-	var size = getSize()
-	for (var i=0; i<callbacks.length; i++) {
-		callbacks[i] && callbacks[i](size)
-	}
-})
 
 viewport.fakeIPhone = function() { viewport.fake(320, 480) }
 viewport.fakeIPad = function() { viewport.fake(786, 1024) }
 viewport.fake = function(width, height) {
 	viewport.width = function() { return width }
 	viewport.height = function() { return height }
+	_handleResize()
 }

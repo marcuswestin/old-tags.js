@@ -1,30 +1,31 @@
 var makeTouchScroller = require('./makeTouchScroller')
 
 var tags = require('./tags')
-var X = tags.X
-var Y = tags.Y
+var X = tags.constants.X
+var Y = tags.constants.Y
+var style = tags.style
 
 module.exports = makeScrollView
 
 function makeScrollView(opts) {
 	opts = options(opts, {
-		size:viewport.size(),
+		viewSize:viewport.size,
 		contentSize:null,
 		onScroll:null,
-		useTouchScroller: tags.isTouch
+		useTouchScroller:tags.isTouch
 	})
 	
 	var uid = tags.uid()
 	var touchScroller
 	var scroll = [0,0]
 	var visualScroll = [0,0]
-	var smallestVisibleChange = 1 / (tags.pixelRatio * 2) // the smallest offset change that can be visually detected	
+	var smallestVisibleChange = 1 / (tags.pixelRatio * 1/2) // the smallest offset change that can be visually detected	
 
-	var overflowStyle = (opts.useTouchScroller ? { overflow:'hidden' } : tags.style.scrollable)
+	var overflowStyle = (opts.useTouchScroller ? tags.style.notScrollable : tags.style.scrollable)
 	var scrollView = div('tags-scrollView',
 		attr({ id:uid }), tags.destructible(_destroy),
-		style(opts.size, absolute, translate(0,0), overflowStyle),
-		div('tags-content', style(absolute(0,0), translate(0,0), opts.contentSize, { overflow:'hidden' }))
+		style(style.size(opts.viewSize), absolute(), translate(0,0), overflowStyle),
+		div('tags-content', style(absolute(0,0), translate(0,0), size(opts.contentSize), { overflow:'hidden' }))
 	)
 	
 	nextTick(_init)
@@ -46,7 +47,6 @@ function makeScrollView(opts) {
 			_setupNativeScroll()
 		}
 		scrollView.content = tags.byId(uid, '.tags-content')
-		opts.onScroll(scrollView)
 	}
 
 	function _destroy() {
@@ -68,16 +68,17 @@ function makeScrollView(opts) {
 	}
 	
 	function _onNativeScroll(e) {
+		var change = [this.scrollLeft - scroll[X], this.scrollTop - scroll[Y]]
 		scroll[X] = visualScroll[X] = this.scrollLeft
 		scroll[Y] = visualScroll[Y] = this.scrollTop
-		opts.onScroll(scrollView)
+		opts.onScroll({ change:change })
 	}
 	
 	/* Using touch scroller
 	***********************/
 	function _setupTouchScroller() {
 		touchScroller = makeTouchScroller({
-			size: opts.size,
+			viewSize: opts.viewSize,
 			contentSize: opts.contentSize,
 			onScroll: _onTouchScroll
 		})
@@ -105,7 +106,7 @@ function makeScrollView(opts) {
 			visualScroll[Y] = touchScroller.bouncingOffset[Y]
 			scroll[X] = touchScroller.boundedOffset[X]
 			scroll[Y] = touchScroller.boundedOffset[Y]
-			opts.onScroll(scrollView)
+			opts.onScroll({ change:scrollChange })
 			scrollView.content.el.style.webkitTransform = 'translate3d('+(-visualScroll[X])+'px,'+(-visualScroll[Y])+'px,0)'
 		}
 	}	

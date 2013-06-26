@@ -3,15 +3,17 @@ var requestAnimationFrame = require('std/requestAnimationFrame')
 module.exports = makeTouchScroller
 
 var tags = require('./tags')
-var X = tags.X
-var Y = tags.Y
-var A = tags.A
-var B = tags.B
+var X = tags.constants.X
+var Y = tags.constants.Y
+var A = tags.constants.A
+var B = tags.constants.B
+var H = tags.constants.H
+var W = tags.constants.W
 var isZero = tags.pos.isZero
 
 function makeTouchScroller(opts) {
 	opts = tags.options(opts, {
-		size: null,
+		viewSize: null,
 		contentSize: null,
 		onScroll: null
 	})
@@ -29,8 +31,8 @@ function makeTouchScroller(opts) {
 
 	var touch = _makeTouch([0,0], false)
 	var bounds = [
-		[0, opts.contentSize.width],
-		[0, opts.contentSize.height - opts.size.height]
+		[0, opts.contentSize[W]],
+		[0, opts.contentSize[H] - opts.viewSize[H]]
 	]
 	
 	var touchScroller = {
@@ -210,7 +212,7 @@ function makeTouchScroller(opts) {
 	function _updateTranslation(x,y) {
 		bouncingOffset[X] = x
 		bouncingOffset[Y] = y
-		opts.onScroll(touchScroller)
+		opts.onScroll()
 	}
 	
 	function _makeTouch(pos, active) {
