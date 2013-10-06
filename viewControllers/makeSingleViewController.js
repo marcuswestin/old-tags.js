@@ -7,6 +7,9 @@ var Y = tags.constants.Y
 
 module.exports = makeSingleViewController
 
+function defaultUpdateView(view){}
+function defaultGetViewId(view) { return view.id }
+
 function makeSingleViewController(opts) {
 	opts = options(opts, {
 		// misc
@@ -21,7 +24,7 @@ function makeSingleViewController(opts) {
 		renderFoot:null,
 		// life cycling
 		destroyView:null,
-		updateView:null,
+		updateView:defaultUpdateView,
 		// events
 		onScroll:null,
 		onPop:null
@@ -176,6 +179,3 @@ var posDeltas = {
 	'none': { dx:0, dy:0 }
 }
 
-function defaultGetViewId(view) {
-	return view.id
-}

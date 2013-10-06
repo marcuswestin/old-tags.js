@@ -106,9 +106,12 @@ function makeList(opts) {
 	
 	function _addItemsToList(items, info, appendOrPrepend) {
 		// Ensure items is a non-empty list
-		if (!items) { return }
-		if (!isArray(items)) { items = [items] }
-		if (!items.length) { return }
+		if (items && !isArray(items)) { items = [items] }
+		var hasItems = (items && items.length)
+		if (!hasItems) {
+			if (isEmpty) { empty() }
+			return
+		}
 		
 		// If we are currently empty, remove the empty message
 		if (isEmpty) { tags.byId(uid).empty() }
