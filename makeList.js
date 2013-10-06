@@ -7,6 +7,7 @@ module.exports = makeList
 function defaultGroupBy() { return 1 }
 function defaultRenderGroupHead() { return '' }
 function defaultUpdateGroupHead() {}
+function defaultItemId(item) { return item.id }
 
 var Data = {}
 
@@ -16,7 +17,7 @@ function _destroyList(uid) {
 
 function makeList(opts) {
 	opts = options(opts, {
-		getItemId:null,
+		getItemId:defaultItemId,
 		selectItem:null,
 		toggleActive:function(){},
 		groupBy:defaultGroupBy,
@@ -24,6 +25,7 @@ function makeList(opts) {
 		updateGroupHead:defaultUpdateGroupHead, // Called when a group's contents updated. If it returns content, that becomes the new content
 		renderItem:null,
 		updateItem:null, // Called when an item needs updating. If it returns content, that becomes the new content
+		renderLoading:null,
 		renderEmpty:null,
 		
 		cache: opts.cache && options(opts.cache, {
@@ -36,6 +38,7 @@ function makeList(opts) {
 	
 	var uid = opts.cache ? opts.cache.uid : tags.uid()
 	var isEmpty = true
+	var didRenderLoading = !opts.renderLoading
 	
 	var renderedGroupsById = {} // Tracks groups which have been rendered
 	var groupHtmlCacheById = {} // A lookup table of per-group cached HTML
@@ -57,7 +60,7 @@ function makeList(opts) {
 	/* List instance API
 	 *******************/
 	return setProps(
-		div('tags-list', attr({ id:uid }), opts.renderEmpty(), tags.destructible(_destroyList)),
+		div('tags-list', attr({ id:uid }), _renderEmpty(), tags.destructible(_destroyList)),
 		{
 			uid:uid,
 			append:append,
@@ -70,7 +73,7 @@ function makeList(opts) {
 	
 	function empty() {
 		isEmpty = true
-		tags.byId(uid).empty().append(opts.renderEmpty())
+		tags.byId(uid).empty().append(_renderEmpty())
 		return this
 	}
 	
@@ -93,6 +96,14 @@ function makeList(opts) {
 	
 	/* Internals
 	 ***********/
+	function _renderEmpty() {
+		if (!didRenderLoading) {
+			didRenderLoading = true
+			return opts.renderLoading()
+		}
+		return opts.renderEmpty()
+	}
+	
 	function _addItemsToList(items, info, appendOrPrepend) {
 		// Ensure items is a non-empty list
 		if (!items) { return }

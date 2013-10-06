@@ -12,7 +12,7 @@ function makeSingleViewController(opts) {
 		// misc
 		viewSize:viewport.size,
 		duration: 350,
-		getViewId:null,
+		getViewId:defaultGetViewId,
 		view:null,
 		alwaysBounce:true,
 		// rendering
@@ -174,4 +174,8 @@ var posDeltas = {
 	'up': { dx:0, dy:-1 },
 	'down': { dx:0, dy:1 },
 	'none': { dx:0, dy:0 }
+}
+
+function defaultGetViewId(view) {
+	return view.id
 }
